@@ -1,0 +1,88 @@
+[build]
+  publish = "."
+  functions = "functions"
+  command = "npm install"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_VERSION = "8"
+
+[functions]
+  directory = "functions"
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/stripe/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/stripe/webhook"
+  to = "/.netlify/functions/stripe-webhook"
+  status = 200
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/auth/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/auth/twitter/callback"
+  to = "/.netlify/functions/twitter-auth"
+  status = 200
+
+[[redirects]]
+  from = "/auth/instagram/callback"
+  to = "/.netlify/functions/instagram-auth"
+  status = 200
+
+[[redirects]]
+  from = "/auth/tiktok/callback"
+  to = "/.netlify/functions/tiktok-auth"
+  status = 200
+
+[[redirects]]
+  from = "/auth/youtube/callback"
+  to = "/.netlify/functions/youtube-auth"
+  status = 200
+
+[[redirects]]
+  from = "/auth/twitch/callback"
+  to = "/.netlify/functions/twitch-auth"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard/*"
+  to = "/dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/onboarding/*"
+  to = "/onboarding.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "connect-src 'self' https://dykxhmdozgccawkbxejd.supabase.co https://api.openai.com https://api.replicate.com wss:"
+
+[context.production.environment]
+  NODE_ENV = "production"
+  ENVIRONMENT = "production"
+
+[context.deploy-preview.environment]
+  NODE_ENV = "staging"
+  ENVIRONMENT = "staging"
+
+[context.branch-deploy.environment]
+  NODE_ENV = "development"
+  ENVIRONMENT = "development"
