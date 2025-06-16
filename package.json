@@ -28,7 +28,6 @@
     "dotenv": "^16.3.0",
     "stripe": "^14.9.0",
     "twitter-api-v2": "^1.15.0",
-"tiktok-scraper": "^1.4.36",,
     "openai": "^4.20.0",
     "replicate": "^0.22.0",
     "ffmpeg-static": "^5.2.0",
