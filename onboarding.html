@@ -300,8 +300,8 @@
     <div class="container">
         <div class="header">
             <div id="navLinks" class="nav-links hidden">
-                <button class="nav-btn" onclick="goToDashboard()">📊 Dashboard</button>
-                <button id="adminBtn" class="nav-btn hidden" onclick="goToAdmin()">⚙️ Admin</button>
+                <button class="nav-btn" data-action="dashboard">📊 Dashboard</button>
+                <button id="adminBtn" class="nav-btn hidden" data-action="admin">⚙️ Admin</button>
             </div>
             <h1>🎮 AutoStreamPro Setup</h1>
             <p>Connect your gaming platforms and start automated streaming</p>
@@ -331,28 +331,28 @@
                         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23a855f7'%3E%3Cpath d='M2.149 0L.537 4.119v15.823h5.731V24h3.224l4.058-4.058h6.135L24 15.725V0H2.149zm19.164 14.569l-3.506 3.506h-5.731l-3.224 3.224v-3.224H5.043V2.687h16.27v11.882z'/%3E%3Cpath d='M18.464 7.334v4.746h-2.149V7.334h2.149zm-5.731 0v4.746h-2.149V7.334h2.149z'/%3E%3C/svg%3E" alt="Twitch" class="platform-icon">
                         <div class="platform-name">Twitch</div>
                         <div class="platform-status">Not connected</div>
-                        <button class="connect-btn" onclick="connectPlatform('twitch')">Connect Twitch</button>
+                        <button class="connect-btn" data-platform="twitch">Connect Twitch</button>
                     </div>
 
                     <div class="platform-card" data-platform="youtube">
                         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff0000'%3E%3Cpath d='M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z'/%3E%3C/svg%3E" alt="YouTube" class="platform-icon">
                         <div class="platform-name">YouTube</div>
                         <div class="platform-status">Not connected</div>
-                        <button class="connect-btn" onclick="connectPlatform('youtube')">Connect YouTube</button>
+                        <button class="connect-btn" data-platform="youtube">Connect YouTube</button>
                     </div>
 
                     <div class="platform-card" data-platform="instagram">
                         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e4405f'%3E%3Cpath d='M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z'/%3E%3C/svg%3E" alt="Instagram" class="platform-icon">
                         <div class="platform-name">Instagram</div>
                         <div class="platform-status">Not connected</div>
-                        <button class="connect-btn" onclick="connectPlatform('instagram')">Connect Instagram</button>
+                        <button class="connect-btn" data-platform="instagram">Connect Instagram</button>
                     </div>
 
                     <div class="platform-card" data-platform="tiktok">
                         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000000'%3E%3Cpath d='M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z'/%3E%3C/svg%3E" alt="TikTok" class="platform-icon">
                         <div class="platform-name">TikTok</div>
                         <div class="platform-status">Not connected</div>
-                        <button class="connect-btn" onclick="connectPlatform('tiktok')">Connect TikTok</button>
+                        <button class="connect-btn" data-platform="tiktok">Connect TikTok</button>
                     </div>
                 </div>
 
@@ -369,7 +369,7 @@
                     <div class="step-title">Configure AI Settings</div>
                 </div>
                 <p>Set up your AI preferences for automated content creation and engagement.</p>
-                <button class="next-btn" onclick="nextStep()">Configure AI Settings</button>
+                <button class="next-btn" data-action="next-step">Configure AI Settings</button>
             </div>
 
             <!-- Step 3: Content Strategy -->
@@ -379,7 +379,7 @@
                     <div class="step-title">Content Strategy</div>
                 </div>
                 <p>Define your content goals and automated posting schedule.</p>
-                <button class="next-btn" onclick="nextStep()">Set Content Strategy</button>
+                <button class="next-btn" data-action="next-step">Set Content Strategy</button>
             </div>
 
             <!-- Step 4: Launch -->
@@ -389,7 +389,7 @@
                     <div class="step-title">Launch AutoStreamPro</div>
                 </div>
                 <p>You're all set! Start your automated streaming journey.</p>
-                <button class="next-btn" onclick="launchPlatform()">🚀 Launch My Automated Streams</button>
+                <button class="next-btn" data-action="launch">🚀 Launch My Automated Streams</button>
             </div>
         </div>
     </div>
@@ -398,7 +398,7 @@
         // Initialize Supabase
         const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3MjI2MzAsImV4cCI6MjA1MjI5ODYzMH0.cprEG_vE1fzjGvAA87ZCCHnyGUIgHwXhqsOyoXGDLII';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // Family member emails
         const familyEmails = [
@@ -430,20 +430,36 @@
         // Initialize the application
         async function initializeApp() {
             try {
-                console.log('Initializing AutoStreamPro onboarding...');
+                console.log('🚀 Starting AutoStreamPro onboarding initialization...');
+                
+                // Check if Supabase is loaded
+                if (!window.supabase) {
+                    throw new Error('Supabase library not loaded');
+                }
+                
+                console.log('✅ Supabase library loaded');
                 
                 // Check if user is authenticated
-                const { data: { session } } = await supabase.auth.getSession();
+                console.log('🔍 Checking user authentication...');
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                
+                if (sessionError) {
+                    console.error('❌ Session error:', sessionError);
+                    throw sessionError;
+                }
                 
                 if (!session) {
-                    console.log('No session found, redirecting to signup...');
+                    console.log('❌ No session found, redirecting to signup...');
                     window.location.href = '/signup.html';
                     return;
                 }
+                
+                console.log('✅ User authenticated:', session.user.email);
 
                 // Check if user is family member
+                console.log('👑 Checking family member status...');
                 userIsFamilyMember = await isFamilyMember();
-                console.log('User is family member:', userIsFamilyMember);
+                console.log('Family member status:', userIsFamilyMember);
 
                 if (userIsFamilyMember) {
                     // Family member - show family badge and skip payment checks
@@ -452,30 +468,50 @@
                     console.log('👑 Family member detected - bypassing payment checks');
                 } else {
                     // Regular user - check subscription status
+                    console.log('💳 Checking subscription status...');
                     const hasValidSubscription = await checkSubscriptionStatus();
                     if (!hasValidSubscription) {
-                        console.log('No valid subscription, redirecting to signup...');
+                        console.log('❌ No valid subscription, redirecting to signup...');
                         window.location.href = '/signup.html';
                         return;
                     }
+                    console.log('✅ Valid subscription found');
                 }
 
                 // Show navigation links
                 document.getElementById('navLinks').classList.remove('hidden');
 
                 // Load existing credentials if any
+                console.log('📋 Loading existing credentials...');
                 await loadExistingCredentials();
 
                 // Show main content
                 document.getElementById('loadingScreen').classList.add('hidden');
                 document.getElementById('mainContent').classList.remove('hidden');
                 
-                console.log('Onboarding initialized successfully');
+                console.log('🎉 Onboarding initialized successfully!');
                 
             } catch (error) {
-                console.error('Error initializing app:', error);
+                console.error('💥 Error initializing app:', error);
+                
+                // Show error message to user
+                const loadingScreen = document.getElementById('loadingScreen');
+                loadingScreen.innerHTML = `
+                    <div style="color: #ff6b6b; text-align: center;">
+                        <h3>⚠️ Initialization Error</h3>
+                        <p>There was a problem loading AutoStreamPro.</p>
+                        <p style="font-size: 0.9rem; opacity: 0.8;">Error: ${error.message}</p>
+                        <button data-action="retry" style="margin-top: 20px; padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            🔄 Try Again
+                        </button>
+                    </div>
+                `;
+                
+                // If not family member and error occurs, redirect to signup as fallback
                 if (!userIsFamilyMember) {
-                    window.location.href = '/signup.html';
+                    setTimeout(() => {
+                        window.location.href = '/signup.html';
+                    }, 5000);
                 }
             }
         }
@@ -533,7 +569,7 @@
                         ✅ ${platform.charAt(0).toUpperCase() + platform.slice(1)} credentials configured!
                         <br><strong>Username:</strong> ${username}
                         <br><br>
-                        <button class="save-btn" onclick="editCredentials('${platform}', '${username}')">Edit Credentials</button>
+                        <button class="save-btn" data-action="edit-credentials" data-platform="${platform}" data-username="${username}">Edit Credentials</button>
                     </div>
                 </div>
             `;
@@ -612,7 +648,7 @@
                         <label for="${platform}-token">API Token/Key:</label>
                         <input type="password" id="${platform}-token" placeholder="Enter your ${platform} API token">
                     </div>
-                    <button class="save-btn" onclick="saveCredentials('${platform}')">Save ${platform} Credentials</button>
+                    <button class="save-btn" data-action="save-credentials" data-platform="${platform}">Save ${platform} Credentials</button>
                 </div>
             `;
             
@@ -652,7 +688,7 @@
                     <div class="success-message">
                         ✅ ${platform.charAt(0).toUpperCase() + platform.slice(1)} credentials saved successfully!
                         <br><br>
-                        <button class="save-btn" onclick="editCredentials('${platform}', '${username}')">Edit Credentials</button>
+                        <button class="save-btn" data-action="edit-credentials" data-platform="${platform}" data-username="${username}">Edit Credentials</button>
                     </div>
                 `;
                 
@@ -675,8 +711,8 @@
                     <label for="${platform}-token-edit">API Token/Key:</label>
                     <input type="password" id="${platform}-token-edit" placeholder="Enter your ${platform} API token">
                 </div>
-                <button class="save-btn" onclick="updateCredentials('${platform}')">Update ${platform} Credentials</button>
-                <button class="save-btn" style="background: #666; margin-left: 10px;" onclick="cancelEdit('${platform}', '${currentUsername}')">Cancel</button>
+                <button class="save-btn" data-action="update-credentials" data-platform="${platform}">Update ${platform} Credentials</button>
+                <button class="save-btn" style="background: #666; margin-left: 10px;" data-action="cancel-edit" data-platform="${platform}" data-username="${currentUsername}">Cancel</button>
             `;
         }
 
@@ -713,7 +749,7 @@
                     <div class="success-message">
                         ✅ ${platform.charAt(0).toUpperCase() + platform.slice(1)} credentials updated successfully!
                         <br><br>
-                        <button class="save-btn" onclick="editCredentials('${platform}', '${username}')">Edit Credentials</button>
+                        <button class="save-btn" data-action="edit-credentials" data-platform="${platform}" data-username="${username}">Edit Credentials</button>
                     </div>
                 `;
                 
@@ -730,7 +766,7 @@
                 <div class="success-message">
                     ✅ ${platform.charAt(0).toUpperCase() + platform.slice(1)} credentials saved successfully!
                     <br><br>
-                    <button class="save-btn" onclick="editCredentials('${platform}', '${originalUsername}')">Edit Credentials</button>
+                    <button class="save-btn" data-action="edit-credentials" data-platform="${platform}" data-username="${originalUsername}">Edit Credentials</button>
                 </div>
             `;
         }
@@ -780,7 +816,70 @@
         }
 
         // Initialize the app when page loads
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the app
+            initializeApp();
+            
+            // Set up event listeners for all buttons
+            setupEventListeners();
+        });
+
+        // Set up all event listeners to replace onclick handlers
+        function setupEventListeners() {
+            // Handle all button clicks using event delegation
+            document.addEventListener('click', function(e) {
+                const target = e.target;
+                const action = target.dataset.action;
+                const platform = target.dataset.platform;
+                
+                if (!action) return;
+                
+                switch(action) {
+                    case 'dashboard':
+                        goToDashboard();
+                        break;
+                    case 'admin':
+                        goToAdmin();
+                        break;
+                    case 'next-step':
+                        nextStep();
+                        break;
+                    case 'launch':
+                        launchPlatform();
+                        break;
+                    case 'retry':
+                        location.reload();
+                        break;
+                    case 'save-credentials':
+                        if (platform) saveCredentials(platform);
+                        break;
+                    case 'edit-credentials':
+                        if (platform) {
+                            const username = target.dataset.username;
+                            editCredentials(platform, username);
+                        }
+                        break;
+                    case 'update-credentials':
+                        if (platform) updateCredentials(platform);
+                        break;
+                    case 'cancel-edit':
+                        if (platform) {
+                            const username = target.dataset.username;
+                            cancelEdit(platform, username);
+                        }
+                        break;
+                }
+            });
+            
+            // Handle platform connection buttons
+            document.addEventListener('click', function(e) {
+                const target = e.target;
+                if (target.classList.contains('connect-btn') && target.dataset.platform) {
+                    const platform = target.dataset.platform;
+                    connectPlatform(platform);
+                }
+            });
+        }
 
         // Handle auth state changes
         supabase.auth.onAuthStateChange((event, session) => {
