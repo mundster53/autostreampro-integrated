@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoStreamPro - Family Admin Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Admin Panel - AutoStreamPro</title>
     <style>
         * {
             margin: 0;
@@ -14,599 +13,611 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
             color: white;
+            min-height: 100vh;
+            padding: 20px;
         }
 
-        .container {
+        .admin-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
         }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .admin-header {
+            text-align: center;
             margin-bottom: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 20px;
-            border-radius: 15px;
         }
 
-        .header h1 {
-            font-size: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .admin-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .user-info {
-            text-align: right;
+        .admin-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
         }
 
-        .family-badge {
-            background: linear-gradient(45deg, #FFD700, #FFA500);
-            color: #333;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            display: inline-block;
-            margin: 5px 0;
-        }
-
-        .quick-actions {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .quick-actions h2 {
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-        }
-
-        .action-buttons {
+        .admin-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .action-btn {
-            background: linear-gradient(45deg, #4CAF50, #45a049);
-            color: white;
-            border: none;
-            padding: 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: block;
-            text-align: center;
-        }
-
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
-        }
-
-        .action-btn.primary {
-            background: linear-gradient(45deg, #9C27B0, #7B1FA2);
-        }
-
-        .action-btn.primary:hover {
-            box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
-        }
-
-        .admin-sections {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
         }
 
         .admin-card {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border-radius: 15px;
-            padding: 25px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-header i {
+            font-size: 2rem;
+            margin-right: 15px;
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-header h3 {
+            font-size: 1.4rem;
+        }
+
+        .dashboard-btn {
+            width: 100%;
+            padding: 15px 20px;
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dashboard-btn:hover {
+            background: linear-gradient(45deg, #e55a2b, #e8831a);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.3);
+        }
+
+        .dashboard-btn i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .promo-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .admin-card h3 {
-            margin-bottom: 15px;
-            font-size: 1.3rem;
+        .promo-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
             display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #f0f0f0;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            backdrop-filter: blur(5px);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .promo-list {
+            margin-top: 30px;
+        }
+
+        .promo-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .promo-details h4 {
+            color: #ff6b35;
+            margin-bottom: 5px;
+        }
+
+        .promo-details p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .promo-actions {
+            display: flex;
             gap: 10px;
         }
 
-        .admin-card p {
-            margin-bottom: 15px;
-            opacity: 0.9;
-            line-height: 1.5;
-        }
-
-        .card-btn {
-            background: linear-gradient(45deg, #2196F3, #1976D2);
-            color: white;
+        .btn-small {
+            padding: 8px 15px;
             border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
+            border-radius: 5px;
             cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            margin-top: 10px;
+            font-size: 0.9rem;
             transition: all 0.3s ease;
         }
 
-        .card-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
-        }
-
-        .logout-btn {
-            background: linear-gradient(45deg, #f44336, #d32f2f);
+        .btn-copy {
+            background: #4CAF50;
             color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
         }
 
-        .stats {
+        .btn-toggle {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-small:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-inactive {
+            background: #757575;
+            color: white;
+        }
+
+        .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            gap: 20px;
             margin-bottom: 30px;
         }
 
         .stat-card {
             background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
             border-radius: 10px;
             padding: 20px;
             text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
+            color: #ff6b35;
             margin-bottom: 5px;
         }
 
         .stat-label {
-            opacity: 0.8;
             font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .promo-form {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-header h1 {
+                font-size: 2rem;
+            }
+
+            .promo-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .promo-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>👑 AutoStreamPro Family Admin</h1>
-            <div class="user-info">
-                <div id="userEmail">Loading...</div>
-                <div class="family-badge">Family Member - Lifetime Pro</div>
-                <button class="logout-btn" onclick="logout()">Logout</button>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>🎮 AutoStreamPro Admin</h1>
+            <p>Family Administrator Dashboard</p>
+        </div>
+
+        <div class="admin-grid">
+            <!-- Quick Actions -->
+            <div class="admin-card">
+                <div class="card-header">
+                    <i>🚀</i>
+                    <h3>Quick Actions</h3>
+                </div>
+                <div class="dashboard-actions">
+                    <button class="dashboard-btn" onclick="window.location.href='/dashboard.html'">
+                        <i>📊</i>
+                        My Streaming Dashboard
+                    </button>
+                    <button class="dashboard-btn" onclick="window.location.href='/onboarding.html'">
+                        <i>🎮</i>
+                        Set Up My Streaming Accounts
+                    </button>
+                </div>
+            </div>
+
+            <!-- User Management -->
+            <div class="admin-card">
+                <div class="card-header">
+                    <i>👥</i>
+                    <h3>User Management</h3>
+                </div>
+                <div class="dashboard-actions">
+                    <button class="dashboard-btn" onclick="showUsers()">
+                        <i>👤</i>
+                        View All Users
+                    </button>
+                    <button class="dashboard-btn" onclick="showAnalytics()">
+                        <i>📈</i>
+                        User Analytics
+                    </button>
+                </div>
             </div>
         </div>
 
-        <div class="quick-actions">
-            <h2>🎮 Quick Access</h2>
-            <p>Choose what you'd like to do:</p>
-            <div class="action-buttons">
-                <a href="/dashboard.html" class="action-btn primary">
-                    🎯 My Streaming Dashboard
-                </a>
-                <a href="/dashboard.html" class="action-btn">
-                    🎮 Set Up My Streaming Accounts
-                </a>
-            </div>
-        </div>
-
-        <div class="stats">
+        <!-- Statistics Overview -->
+        <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-number" id="totalUsers">-</div>
+                <div class="stat-number" id="total-users">-</div>
                 <div class="stat-label">Total Users</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="activeUsers">-</div>
+                <div class="stat-number" id="active-users">-</div>
                 <div class="stat-label">Active Users</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="familyMembers">6</div>
-                <div class="stat-label">Family Members</div>
+                <div class="stat-number" id="total-promos">-</div>
+                <div class="stat-label">Promo Codes</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="promoCodes">-</div>
-                <div class="stat-label">Promo Codes</div>
+                <div class="stat-number" id="revenue">-</div>
+                <div class="stat-label">Revenue</div>
             </div>
         </div>
 
-        <div class="admin-sections">
-            <div class="admin-card">
-                <h3>👥 User Management</h3>
-                <p>View and manage all AutoStreamPro users, suspend accounts, and view user details.</p>
-                <button class="card-btn" onclick="loadUsers()">Manage Users</button>
-                <div id="usersList" style="margin-top: 15px;"></div>
+        <!-- Promo Code Management -->
+        <div class="promo-section">
+            <div class="card-header">
+                <i>🎫</i>
+                <h3>Promo Code Manager</h3>
             </div>
 
-            <div class="admin-card">
-                <h3>💰 Payment Management</h3>
-                <p>View payment history, manage subscriptions, and handle refunds.</p>
-                <button class="card-btn" onclick="loadPayments()">View Payments</button>
-                <div id="paymentsList" style="margin-top: 15px;"></div>
-            </div>
-
-            <div class="admin-card">
-                <h3>🎫 Promo Code Manager</h3>
-                <p>Create discount codes for users. 100% discount codes give instant free access!</p>
-                
-                <div id="promoManager">
-                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin-bottom: 15px;">
-                        <h4 style="margin-bottom: 15px;">Create New Promo Code</h4>
-                        
-                        <div style="display: grid; gap: 10px;">
-                            <input type="text" id="promoCode" placeholder="Code (e.g., FRIEND50, FAMILY100)" style="width: 100%; padding: 10px; border: none; border-radius: 5px; font-size: 14px;">
-                            
-                            <input type="number" id="promoDiscount" placeholder="Discount % (1-100)" min="1" max="100" style="width: 100%; padding: 10px; border: none; border-radius: 5px; font-size: 14px;">
-                            
-                            <input type="number" id="promoMaxUses" placeholder="Max Uses (optional)" min="1" style="width: 100%; padding: 10px; border: none; border-radius: 5px; font-size: 14px;">
-                            
-                            <input type="date" id="promoExpires" style="width: 100%; padding: 10px; border: none; border-radius: 5px; font-size: 14px;">
-                            
-                            <button onclick="createPromoCode()" style="width: 100%; padding: 12px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                                Create Promo Code
-                            </button>
-                        </div>
-                        
-                        <div style="margin-top: 15px; padding: 10px; background: rgba(255,215,0,0.1); border-radius: 5px; font-size: 12px;">
-                            <strong>💡 Tips:</strong><br>
-                            • 100% discount = Free lifetime access (no payment)<br>
-                            • Lower % = Discount applied at Stripe checkout<br>
-                            • Leave max uses empty for unlimited<br>
-                            • Codes work on signup page immediately
-                        </div>
-                    </div>
-                    
-                    <div id="promoCodesList" style="margin-top: 15px;"></div>
+            <!-- Create Promo Code Form -->
+            <div class="promo-form">
+                <div class="form-group">
+                    <label for="promo-code">Promo Code</label>
+                    <input type="text" id="promo-code" placeholder="e.g., FRIEND50, FAMILY100" style="text-transform: uppercase;">
                 </div>
-                
-                <button class="card-btn" onclick="loadPromoCodes()">View All Promo Codes</button>
+
+                <div class="form-group">
+                    <label for="promo-discount">Discount %</label>
+                    <input type="number" id="promo-discount" placeholder="e.g., 50" min="1" max="100">
+                </div>
+
+                <div class="form-group">
+                    <label for="promo-max-uses">Max Uses (Optional)</label>
+                    <input type="number" id="promo-max-uses" placeholder="Leave blank for unlimited">
+                </div>
+
+                <div class="form-group">
+                    <label for="promo-expires">Expires (Optional)</label>
+                    <input type="date" id="promo-expires">
+                </div>
+
+                <div class="form-group full-width">
+                    <button class="dashboard-btn" onclick="createPromoCode()">
+                        <i>✨</i>
+                        Create Promo Code
+                    </button>
+                </div>
             </div>
 
-            <div class="admin-card">
-                <h3>📊 Analytics</h3>
-                <p>View platform statistics, user growth, and revenue metrics.</p>
-                <button class="card-btn" onclick="loadAnalytics()">View Analytics</button>
-                <div id="analyticsData" style="margin-top: 15px;"></div>
+            <!-- Existing Promo Codes -->
+            <div class="promo-list">
+                <h4 style="margin-bottom: 20px; color: #ff6b35;">Existing Promo Codes</h4>
+                <div id="promo-codes-list">
+                    <!-- Promo codes will be loaded here -->
+                </div>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Initialize Supabase
-        const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3MjI2MzAsImV4cCI6MjA1MjI5ODYzMH0.cprEG_vE1fzjGvAA87ZCCHnyGUIgHwXhqsOyoXGDLII';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const supabase = window.supabase.createClient(
+            'https://dykxhmdozgccawkbxejd.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM1MTg4NjAsImV4cCI6MjA0OTA5NDg2MH0.jPEOZXiHy1H-FOwL4p5OAhAWy9uXLvXGZKiH9ZbSwfE'
+        );
 
-        // Family member emails
-        const familyEmails = [
-            'mundt53@gmail.com',
-            'duncanmundt1@gmail.com', 
-            'mundstermom@gmail.com',
-            'ChristianMundt95@gmail.com',
-            'jordanmundt1@gmail.com',
-            'julia.elaine.lee@gmail.com'
-        ];
+        // Load dashboard data when page loads
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadStats();
+            await loadPromoCodes();
+        });
 
-        // Initialize admin dashboard
-        async function initializeAdmin() {
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                
-                if (!session) {
-                    window.location.href = '/signup.html';
-                    return;
-                }
-
-                // Check if user is family member
-                const isFamily = familyEmails.includes(session.user.email.toLowerCase());
-                if (!isFamily) {
-                    alert('Access denied. Admin access is only available for family members.');
-                    window.location.href = '/dashboard.html';
-                    return;
-                }
-
-                // Display user email
-                document.getElementById('userEmail').textContent = session.user.email;
-                
-                // Load initial stats
-                loadStats();
-                loadPromoCodes();
-                
-            } catch (error) {
-                console.error('Error initializing admin:', error);
-                alert('Error loading admin dashboard');
-            }
-        }
-
-        // Load platform statistics
+        // Load statistics
         async function loadStats() {
             try {
-                // Load total users
-                const { count: totalUsers } = await supabase
+                // Get total users
+                const { data: users, error: usersError } = await supabase
                     .from('user_profiles')
-                    .select('*', { count: 'exact', head: true });
-                document.getElementById('totalUsers').textContent = totalUsers || 0;
+                    .select('*');
 
-                // Load active users
-                const { count: activeUsers } = await supabase
-                    .from('user_profiles')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('subscription_status', 'active');
-                document.getElementById('activeUsers').textContent = activeUsers || 0;
+                if (!usersError) {
+                    document.getElementById('total-users').textContent = users.length;
+                    document.getElementById('active-users').textContent = users.filter(u => u.subscription_status === 'active').length;
+                }
 
-                // Load promo codes
-                const { count: promoCodes } = await supabase
+                // Get promo codes
+                const { data: promos, error: promosError } = await supabase
                     .from('promo_codes')
-                    .select('*', { count: 'exact', head: true });
-                document.getElementById('promoCodes').textContent = promoCodes || 0;
+                    .select('*');
+
+                if (!promosError) {
+                    document.getElementById('total-promos').textContent = promos.length;
+                }
+
+                // Revenue placeholder
+                document.getElementById('revenue').textContent = '$0';
 
             } catch (error) {
                 console.error('Error loading stats:', error);
             }
         }
 
-        // Load users
-        async function loadUsers() {
-            try {
-                const { data: users, error } = await supabase
-                    .from('user_profiles')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-                    .limit(10);
-
-                if (error) throw error;
-
-                const usersList = document.getElementById('usersList');
-                usersList.innerHTML = users.map(user => `
-                    <div style="background: rgba(255,255,255,0.1); padding: 10px; margin: 5px 0; border-radius: 5px; font-size: 0.9rem;">
-                        <strong>${user.email}</strong><br>
-                        Status: ${user.subscription_status || 'N/A'}<br>
-                        Plan: ${user.subscription_plan || 'N/A'}
-                        ${user.is_family_member ? '<span style="color: #FFD700;"> (Family)</span>' : ''}
-                    </div>
-                `).join('');
-
-            } catch (error) {
-                console.error('Error loading users:', error);
-                document.getElementById('usersList').innerHTML = '<p style="color: #ff6b6b;">Error loading users</p>';
-            }
-        }
-
-        // Load payments
-        async function loadPayments() {
-            try {
-                // This would connect to your payment data
-                document.getElementById('paymentsList').innerHTML = `
-                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 5px;">
-                        <p>Payment tracking coming soon...</p>
-                        <p style="font-size: 12px; opacity: 0.7;">Will show Stripe payments, subscription status, revenue metrics, etc.</p>
-                    </div>
-                `;
-            } catch (error) {
-                console.error('Error loading payments:', error);
-                document.getElementById('paymentsList').innerHTML = '<p style="color: #ff6b6b;">Error loading payment data</p>';
-            }
-        }
-
-        // Show promo manager
-        async function showPromoManager() {
-            document.getElementById('promoManager').innerHTML = `
-                <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 5px;">
-                    <h4>Create New Promo Code</h4>
-                    <input type="text" id="promoCode" placeholder="Code (e.g., FAMILY50)" style="width: 100%; padding: 8px; margin: 5px 0; border: none; border-radius: 3px;">
-                    <input type="number" id="promoDiscount" placeholder="Discount %" style="width: 100%; padding: 8px; margin: 5px 0; border: none; border-radius: 3px;">
-                    <button onclick="createPromoCode()" style="width: 100%; padding: 10px; margin: 5px 0; background: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">Create Code</button>
-                </div>
-            `;
-        }
-
         // Create promo code
         async function createPromoCode() {
-            const code = document.getElementById('promoCode').value.trim();
-            const discount = parseInt(document.getElementById('promoDiscount').value);
-            const maxUses = document.getElementById('promoMaxUses').value;
-            const expires = document.getElementById('promoExpires').value;
+            const code = document.getElementById('promo-code').value.trim().toUpperCase();
+            const discount = parseInt(document.getElementById('promo-discount').value);
+            const maxUses = document.getElementById('promo-max-uses').value;
+            const expires = document.getElementById('promo-expires').value;
 
             if (!code || !discount) {
-                alert('Please enter both code and discount percentage');
-                return;
-            }
-
-            if (discount < 1 || discount > 100) {
-                alert('Discount must be between 1% and 100%');
+                alert('Please enter both promo code and discount percentage');
                 return;
             }
 
             try {
-                const { data: { session } } = await supabase.auth.getSession();
-                
                 const promoData = {
-                    code: code.toLowerCase(),
+                    code: code,
                     discount_percentage: discount,
                     discount_type: 'percentage',
                     is_active: true,
-                    created_by: session.user.id,
+                    current_uses: 0,
                     created_at: new Date().toISOString(),
-                    current_uses: 0
+                    updated_at: new Date().toISOString()
                 };
 
-                // Add optional fields
-                if (maxUses && parseInt(maxUses) > 0) {
+                if (maxUses) {
                     promoData.max_uses = parseInt(maxUses);
                 }
 
                 if (expires) {
-                    promoData.expires_at = new Date(expires + 'T23:59:59').toISOString();
+                    promoData.expires_at = expires;
                 }
 
-                const { error } = await supabase
+                const { data, error } = await supabase
                     .from('promo_codes')
-                    .insert(promoData);
+                    .insert([promoData])
+                    .select();
 
-                if (error) throw error;
+                if (error) {
+                    throw error;
+                }
 
-                const discountText = discount === 100 ? 'FREE ACCESS' : `${discount}% OFF`;
-                alert(`✅ Promo code "${code.toUpperCase()}" created successfully!\n\n${discountText} - Ready to use on signup page immediately!`);
+                alert(`✅ Promo code "${code}" created successfully!`);
                 
                 // Clear form
-                document.getElementById('promoCode').value = '';
-                document.getElementById('promoDiscount').value = '';
-                document.getElementById('promoMaxUses').value = '';
-                document.getElementById('promoExpires').value = '';
-                
-                // Refresh stats and codes list
-                loadStats();
-                loadPromoCodes();
+                document.getElementById('promo-code').value = '';
+                document.getElementById('promo-discount').value = '';
+                document.getElementById('promo-max-uses').value = '';
+                document.getElementById('promo-expires').value = '';
+
+                // Reload promo codes
+                await loadPromoCodes();
+                await loadStats();
 
             } catch (error) {
                 console.error('Error creating promo code:', error);
-                
-                if (error.message.includes('duplicate') || error.message.includes('unique')) {
-                    alert('❌ Promo code already exists. Please choose a different code.');
-                } else {
-                    alert('❌ Failed to create promo code: ' + error.message);
-                }
+                alert('Error creating promo code: ' + error.message);
             }
         }
 
-        // Load and display promo codes
+        // Load existing promo codes
         async function loadPromoCodes() {
             try {
-                const { data: codes, error } = await supabase
+                const { data: promoCodes, error } = await supabase
                     .from('promo_codes')
                     .select('*')
                     .order('created_at', { ascending: false });
 
-                if (error) throw error;
+                if (error) {
+                    throw error;
+                }
 
-                const promoCodesList = document.getElementById('promoCodesList');
+                const promoList = document.getElementById('promo-codes-list');
                 
-                if (codes.length === 0) {
-                    promoCodesList.innerHTML = '<p style="text-align: center; opacity: 0.7;">No promo codes created yet.</p>';
+                if (promoCodes.length === 0) {
+                    promoList.innerHTML = '<p style="opacity: 0.7; text-align: center; padding: 20px;">No promo codes created yet.</p>';
                     return;
                 }
 
-                promoCodesList.innerHTML = `
-                    <h4 style="margin-bottom: 10px;">Existing Promo Codes</h4>
-                    ${codes.map(code => {
-                        const isExpired = code.expires_at && new Date(code.expires_at) < new Date();
-                        const isMaxedOut = code.max_uses && code.current_uses >= code.max_uses;
-                        const isInactive = !code.is_active || isExpired || isMaxedOut;
-                        
-                        return `
-                            <div style="background: rgba(255,255,255,0.1); padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid ${isInactive ? '#ff6b6b' : '#4CAF50'};">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                    <strong style="font-size: 16px; color: ${isInactive ? '#ff6b6b' : '#4CAF50'};">
-                                        ${code.code.toUpperCase()}
-                                    </strong>
-                                    <span style="background: ${code.discount_percentage === 100 ? '#FFD700' : '#3b82f6'}; color: ${code.discount_percentage === 100 ? '#333' : 'white'}; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">
-                                        ${code.discount_percentage === 100 ? 'FREE ACCESS' : code.discount_percentage + '% OFF'}
-                                    </span>
-                                </div>
-                                <div style="font-size: 12px; opacity: 0.8;">
-                                    Used: ${code.current_uses || 0}${code.max_uses ? '/' + code.max_uses : ''} times
-                                    ${code.expires_at ? ' • Expires: ' + new Date(code.expires_at).toLocaleDateString() : ''}
-                                    ${isExpired ? ' • EXPIRED' : ''}
-                                    ${isMaxedOut ? ' • MAX USES REACHED' : ''}
-                                    ${!code.is_active ? ' • INACTIVE' : ''}
-                                </div>
-                                <div style="margin-top: 8px;">
-                                    <button onclick="togglePromoCode('${code.id}', ${!code.is_active})" style="background: ${code.is_active ? '#f44336' : '#4CAF50'}; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 8px;">
-                                        ${code.is_active ? 'Deactivate' : 'Activate'}
-                                    </button>
-                                    <button onclick="copyPromoCode('${code.code}')" style="background: #2196F3; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">
-                                        Copy Code
-                                    </button>
-                                </div>
+                promoList.innerHTML = promoCodes.map(promo => {
+                    const expiresText = promo.expires_at 
+                        ? `Expires: ${new Date(promo.expires_at).toLocaleDateString()}`
+                        : 'No expiration';
+                    
+                    const usageText = promo.max_uses 
+                        ? `${promo.current_uses || 0}/${promo.max_uses} uses`
+                        : `${promo.current_uses || 0} uses`;
+
+                    return `
+                        <div class="promo-item">
+                            <div class="promo-details">
+                                <h4>${promo.code}</h4>
+                                <p>${promo.discount_percentage}% discount • ${usageText} • ${expiresText}</p>
+                                <span class="status-badge ${promo.is_active ? 'status-active' : 'status-inactive'}">
+                                    ${promo.is_active ? 'Active' : 'Inactive'}
+                                </span>
                             </div>
-                        `;
-                    }).join('')}
-                `;
+                            <div class="promo-actions">
+                                <button class="btn-small btn-copy" onclick="copyPromoCode('${promo.code}')">Copy</button>
+                                <button class="btn-small btn-toggle" onclick="togglePromoCode('${promo.id}', ${!promo.is_active})">
+                                    ${promo.is_active ? 'Deactivate' : 'Activate'}
+                                </button>
+                                <button class="btn-small btn-delete" onclick="deletePromoCode('${promo.id}')">Delete</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
 
             } catch (error) {
                 console.error('Error loading promo codes:', error);
-                document.getElementById('promoCodesList').innerHTML = '<p style="color: #ff6b6b;">Error loading promo codes</p>';
-            }
-        }
-
-        // Toggle promo code active status
-        async function togglePromoCode(codeId, activate) {
-            try {
-                const { error } = await supabase
-                    .from('promo_codes')
-                    .update({ 
-                        is_active: activate,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', codeId);
-
-                if (error) throw error;
-
-                alert(`✅ Promo code ${activate ? 'activated' : 'deactivated'} successfully!`);
-                loadPromoCodes(); // Refresh the list
-
-            } catch (error) {
-                console.error('Error toggling promo code:', error);
-                alert('❌ Failed to update promo code');
+                document.getElementById('promo-codes-list').innerHTML = '<p style="color: #f44336;">Error loading promo codes</p>';
             }
         }
 
         // Copy promo code to clipboard
-        async function copyPromoCode(code) {
+        function copyPromoCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                alert(`✅ Promo code "${code}" copied to clipboard!`);
+            }).catch(() => {
+                alert('Could not copy to clipboard');
+            });
+        }
+
+        // Toggle promo code active status
+        async function togglePromoCode(id, newStatus) {
             try {
-                await navigator.clipboard.writeText(code.toUpperCase());
-                alert(`✅ Promo code "${code.toUpperCase()}" copied to clipboard!`);
+                const { error } = await supabase
+                    .from('promo_codes')
+                    .update({ 
+                        is_active: newStatus,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', id);
+
+                if (error) {
+                    throw error;
+                }
+
+                await loadPromoCodes();
+                
             } catch (error) {
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = code.toUpperCase();
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                alert(`✅ Promo code "${code.toUpperCase()}" copied to clipboard!`);
+                console.error('Error toggling promo code:', error);
+                alert('Error updating promo code: ' + error.message);
             }
         }
 
-        // Load analytics
-        async function loadAnalytics() {
-            document.getElementById('analyticsData').innerHTML = '<p>Analytics dashboard coming soon...</p>';
-        }
+        // Delete promo code
+        async function deletePromoCode(id) {
+            if (!confirm('Are you sure you want to delete this promo code?')) {
+                return;
+            }
 
-        // Logout function
-        async function logout() {
             try {
-                await supabase.auth.signOut();
-                window.location.href = '/signup.html';
+                const { error } = await supabase
+                    .from('promo_codes')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) {
+                    throw error;
+                }
+
+                await loadPromoCodes();
+                await loadStats();
+                
             } catch (error) {
-                console.error('Error logging out:', error);
+                console.error('Error deleting promo code:', error);
+                alert('Error deleting promo code: ' + error.message);
             }
         }
 
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', initializeAdmin);
+        // Show users (placeholder)
+        function showUsers() {
+            alert('User management interface coming soon!');
+        }
+
+        // Show analytics (placeholder)
+        function showAnalytics() {
+            alert('Analytics dashboard coming soon!');
+        }
     </script>
 </body>
 </html>
