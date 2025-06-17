@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoStreamPro Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar-transition { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); transition: all 0.2s ease; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .login-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .stat-card { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .stat-card-2 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .stat-card-3 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .stat-card-4 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="min-h-screen login-bg flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">AutoStreamPro</h1>
+                <p class="text-gray-600">Family Admin Dashboard</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Admin Email</label>
+                    <input type="email" id="email" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" id="password" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                
+                <button type="submit" id="loginBtn" 
+                        class="w-full gradient-bg text-white py-3 rounded-lg font-semibold hover:opacity-90 transition duration-200">
+                    <span id="loginBtnText">Admin Login</span>
+                    <i id="loginSpinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
+                </button>
+                
+                <div id="loginError" class="text-red-600 text-sm hidden"></div>
+            </form>
+            
+            <div class="mt-6 text-center text-sm text-gray-600">
+                <p>Family Members Only</p>
+                <p class="mt-1">6 authorized admin accounts</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard" class="hidden">
+        <!-- Sidebar -->
+        <div id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-gray-900 text-white z-50 sidebar-transition">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold">AutoStreamPro</h1>
+                <p class="text-gray-400 text-sm">Family Admin</p>
+            </div>
+            
+            <nav class="mt-6">
+                <a href="#dashboard-view" onclick="showView('dashboard-view')" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition duration-200">
+                    <i class="fas fa-chart-dashboard mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="#users-view" onclick="showView('users-view')" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition duration-200">
+                    <i class="fas fa-users mr-3"></i>
+                    User Management
+                </a>
+                <a href="#payments-view" onclick="showView('payments-view')" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition duration-200">
+                    <i class="fas fa-credit-card mr-3"></i>
+                    Payments
+                </a>
+                <a href="#promo-codes-view" onclick="showView('promo-codes-view')" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition duration-200">
+                    <i class="fas fa-tags mr-3"></i>
+                    Promo Codes
+                </a>
+                <a href="#analytics-view" onclick="showView('analytics-view')" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition duration-200">
+                    <i class="fas fa-chart-line mr-3"></i>
+                    Analytics
+                </a>
+            </nav>
+            
+            <div class="absolute bottom-6 left-6 right-6">
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <p class="text-sm text-gray-300" id="adminInfo">Admin: Loading...</p>
+                    <button onclick="logout()" class="text-red-400 hover:text-red-300 text-sm mt-2">
+                        <i class="fas fa-sign-out-alt mr-1"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="ml-64 min-h-screen">
+            <!-- Header -->
+            <header class="bg-white shadow-sm p-6">
+                <div class="flex justify-between items-center">
+                    <h2 id="pageTitle" class="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-sm text-gray-600">
+                            <span id="currentTime"></span>
+                        </div>
+                        <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                            Family Admin
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard View -->
+            <div id="dashboard-view" class="view-content p-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="stat-card text-white p-6 rounded-lg shadow-lg card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-sm">Total Users</p>
+                                <p class="text-3xl font-bold" id="totalUsers">-</p>
+                            </div>
+                            <i class="fas fa-users text-2xl text-white/60"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card-2 text-white p-6 rounded-lg shadow-lg card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-sm">Active Subscriptions</p>
+                                <p class="text-3xl font-bold" id="activeSubscriptions">-</p>
+                            </div>
+                            <i class="fas fa-credit-card text-2xl text-white/60"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card-3 text-white p-6 rounded-lg shadow-lg card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-sm">Monthly Revenue</p>
+                                <p class="text-3xl font-bold" id="monthlyRevenue">-</p>
+                            </div>
+                            <i class="fas fa-dollar-sign text-2xl text-white/60"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card-4 text-white p-6 rounded-lg shadow-lg card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-sm">Family Members</p>
+                                <p class="text-3xl font-bold">6</p>
+                            </div>
+                            <i class="fas fa-crown text-2xl text-white/60"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-lg font-semibold mb-4">User Growth</h3>
+                        <canvas id="userGrowthChart" height="300"></canvas>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-lg font-semibold mb-4">Revenue Trends</h3>
+                        <canvas id="revenueChart" height="300"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="mt-6 bg-white rounded-lg shadow-lg">
+                    <div class="p-6 border-b">
+                        <h3 class="text-lg font-semibold">Recent Activity</h3>
+                    </div>
+                    <div id="recentActivity" class="p-6">
+                        <p class="text-gray-500">Loading recent activity...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users View -->
+            <div id="users-view" class="view-content hidden p-6">
+                <div class="bg-white rounded-lg shadow-lg">
+                    <div class="p-6 border-b">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-semibold">User Management</h3>
+                            <div class="flex space-x-3">
+                                <input type="text" id="userSearch" placeholder="Search users..." 
+                                       class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <select id="userFilter" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Users</option>
+                                    <option value="active">Active</option>
+                                    <option value="suspended">Suspended</option>
+                                    <option value="family">Family</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="usersTable" class="p-6">
+                        <p class="text-gray-500">Loading users...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments View -->
+            <div id="payments-view" class="view-content hidden p-6">
+                <div class="bg-white rounded-lg shadow-lg">
+                    <div class="p-6 border-b">
+                        <h3 class="text-lg font-semibold">Payment Management</h3>
+                    </div>
+                    <div id="paymentsTable" class="p-6">
+                        <p class="text-gray-500">Loading payments...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Promo Codes View -->
+            <div id="promo-codes-view" class="view-content hidden p-6">
+                <div class="bg-white rounded-lg shadow-lg">
+                    <div class="p-6 border-b">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-semibold">Promo Code Management</h3>
+                            <button onclick="showCreatePromoModal()" 
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200">
+                                <i class="fas fa-plus mr-2"></i>
+                                Create Promo Code
+                            </button>
+                        </div>
+                    </div>
+                    <div id="promoCodesTable" class="p-6">
+                        <p class="text-gray-500">Loading promo codes...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics View -->
+            <div id="analytics-view" class="view-content hidden p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-lg font-semibold mb-4">Subscription Analytics</h3>
+                        <canvas id="subscriptionChart" height="300"></canvas>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-lg font-semibold mb-4">Promo Code Performance</h3>
+                        <canvas id="promoChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Promo Code Modal -->
+    <div id="createPromoModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Create Promo Code</h3>
+                <button onclick="hideCreatePromoModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="createPromoForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Code</label>
+                    <input type="text" id="promoCode" required 
+                           class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="SAVE20">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <input type="text" id="promoDescription" 
+                           class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="20% off all plans">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                        <select id="promoType" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="percentage">Percentage</option>
+                            <option value="fixed">Fixed Amount</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Value</label>
+                        <input type="number" id="promoValue" required min="1"
+                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               placeholder="20">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Max Uses</label>
+                        <input type="number" id="promoMaxUses" min="1"
+                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               placeholder="Unlimited">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Expires</label>
+                        <input type="date" id="promoExpires"
+                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                
+                <div class="flex space-x-3 pt-4">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200">
+                        Create Code
+                    </button>
+                    <button type="button" onclick="hideCreatePromoModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition duration-200">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let adminToken = localStorage.getItem('adminToken');
+        let currentUser = null;
+
+        // Check if already logged in
+        if (adminToken) {
+            verifyToken();
+        }
+
+        // Login form submission
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const loginBtnText = document.getElementById('loginBtnText');
+            const loginSpinner = document.getElementById('loginSpinner');
+            const loginError = document.getElementById('loginError');
+            
+            // Show loading state
+            loginBtnText.textContent = 'Logging in...';
+            loginSpinner.classList.remove('hidden');
+            loginBtn.disabled = true;
+            loginError.classList.add('hidden');
+            
+            try {
+                const response = await fetch('/.netlify/functions/admin-auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    adminToken = data.token;
+                    localStorage.setItem('adminToken', adminToken);
+                    currentUser = data.user;
+                    showDashboard();
+                } else {
+                    throw new Error(data.error || 'Login failed');
+                }
+                
+            } catch (error) {
+                loginError.textContent = error.message;
+                loginError.classList.remove('hidden');
+            } finally {
+                loginBtnText.textContent = 'Admin Login';
+                loginSpinner.classList.add('hidden');
+                loginBtn.disabled = false;
+            }
+        });
+
+        // Verify existing token
+        async function verifyToken() {
+            try {
+                const response = await fetch('/.netlify/functions/admin-auth', {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.valid) {
+                    currentUser = data.user;
+                    showDashboard();
+                } else {
+                    localStorage.removeItem('adminToken');
+                    adminToken = null;
+                }
+            } catch (error) {
+                localStorage.removeItem('adminToken');
+                adminToken = null;
+            }
+        }
+
+        // Show dashboard
+        function showDashboard() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('adminInfo').textContent = `Admin: ${currentUser.email}`;
+            
+            // Load initial data
+            loadDashboardData();
+            updateTime();
+            setInterval(updateTime, 1000);
+        }
+
+        // Show different views
+        function showView(viewId) {
+            // Hide all views
+            document.querySelectorAll('.view-content').forEach(view => {
+                view.classList.add('hidden');
+            });
+            
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('bg-gray-800', 'text-white');
+            });
+            
+            // Show selected view
+            document.getElementById(viewId).classList.remove('hidden');
+            
+            // Add active class to current nav link
+            event.target.closest('.nav-link').classList.add('bg-gray-800', 'text-white');
+            
+            // Update page title
+            const titles = {
+                'dashboard-view': 'Dashboard Overview',
+                'users-view': 'User Management',
+                'payments-view': 'Payment Management',
+                'promo-codes-view': 'Promo Code Management',
+                'analytics-view': 'Analytics & Reports'
+            };
+            document.getElementById('pageTitle').textContent = titles[viewId];
+            
+            // Load view-specific data
+            switch(viewId) {
+                case 'users-view':
+                    loadUsers();
+                    break;
+                case 'payments-view':
+                    loadPayments();
+                    break;
+                case 'promo-codes-view':
+                    loadPromoCodes();
+                    break;
+                case 'analytics-view':
+                    loadAnalytics();
+                    break;
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load basic stats
+                await Promise.all([
+                    loadUsers(true), // Summary only
+                    loadPayments(true), // Summary only
+                    loadPromoCodes(true) // Summary only
+                ]);
+                
+                // Initialize charts
+                initDashboardCharts();
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Load users
+        async function loadUsers(summaryOnly = false) {
+            try {
+                const response = await fetch('/.netlify/functions/admin-users', {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (summaryOnly) {
+                        document.getElementById('totalUsers').textContent = data.pagination?.total || data.users.length;
+                    } else {
+                        displayUsersTable(data.users);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        // Display users table
+        function displayUsersTable(users) {
+            const tableHtml = `
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${users.map(user => `
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <div class="h-10 w-10 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center text-white font-semibold">
+                                                    ${user.fullName ? user.fullName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                                                </div>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">${user.fullName || 'N/A'}</div>
+                                                <div class="text-sm text-gray-500">${user.email}</div>
+                                                ${user.isFamilyMember ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Family</span>' : ''}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPlanBadgeClass(user.subscriptionPlan)}">
+                                            ${user.subscriptionPlan || 'None'}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(user.subscriptionStatus, user.isSuspended)}">
+                                            ${user.isSuspended ? 'Suspended' : (user.subscriptionStatus || 'Unknown')}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        ${new Date(user.createdAt).toLocaleDateString()}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div class="flex space-x-2">
+                                            ${!user.isSuspended ? 
+                                                `<button onclick="suspendUser('${user.id}')" class="text-red-600 hover:text-red-900">Suspend</button>` :
+                                                `<button onclick="activateUser('${user.id}')" class="text-green-600 hover:text-green-900">Activate</button>`
+                                            }
+                                            <button onclick="viewUser('${user.id}')" class="text-blue-600 hover:text-blue-900">View</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('usersTable').innerHTML = tableHtml;
+        }
+
+        // Load payments
+        async function loadPayments(summaryOnly = false) {
+            try {
+                const response = await fetch('/.netlify/functions/admin-payments', {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (summaryOnly) {
+                        const activeSubscriptions = data.transactions?.filter(t => t.type === 'subscription' && t.status === 'active').length || 0;
+                        document.getElementById('activeSubscriptions').textContent = activeSubscriptions;
+                        
+                        // Calculate monthly revenue (this would need proper calculation based on actual data)
+                        const monthlyRevenue = data.transactions?.reduce((total, t) => {
+                            if (t.type === 'subscription' && t.status === 'active') {
+                                return total + (t.amount / 100);
+                            }
+                            return total;
+                        }, 0) || 0;
+                        document.getElementById('monthlyRevenue').textContent = `$${monthlyRevenue.toFixed(0)}`;
+                    } else {
+                        displayPaymentsTable(data.transactions);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading payments:', error);
+            }
+        }
+
+        // Display payments table
+        function displayPaymentsTable(payments) {
+            const tableHtml = `
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${payments.map(payment => `
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">${payment.customerName || 'N/A'}</div>
+                                        <div class="text-sm text-gray-500">${payment.customerEmail}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        ${payment.type === 'subscription' ? 'Subscription' : 'Payment'}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        $${(payment.amount / 100).toFixed(2)}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusBadgeClass(payment.status)}">
+                                            ${payment.status}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        ${new Date(payment.createdAt).toLocaleDateString()}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button onclick="viewPayment('${payment.id}')" class="text-blue-600 hover:text-blue-900">View</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('paymentsTable').innerHTML = tableHtml;
+        }
+
+        // Load promo codes
+        async function loadPromoCodes(summaryOnly = false) {
+            try {
+                const response = await fetch('/.netlify/functions/admin-promo-codes', {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (!summaryOnly) {
+                        displayPromoCodesTable(data.promoCodes);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading promo codes:', error);
+            }
+        }
+
+        // Display promo codes table
+        function displayPromoCodesTable(promoCodes) {
+            const tableHtml = `
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usage</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${promoCodes.map(promo => `
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">${promo.code}</div>
+                                        <div class="text-sm text-gray-500">${promo.description || 'No description'}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        ${promo.discount_type === 'percentage' ? `${promo.discount_value}%` : `$${(promo.discount_value / 100).toFixed(2)}`}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        ${promo.used_count}${promo.max_uses ? ` / ${promo.max_uses}` : ' / ∞'}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPromoStatusBadgeClass(promo)}">
+                                            ${getPromoStatus(promo)}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        ${promo.created_by_email || 'System'}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div class="flex space-x-2">
+                                            ${promo.is_active ? 
+                                                `<button onclick="deactivatePromo('${promo.id}')" class="text-red-600 hover:text-red-900">Deactivate</button>` :
+                                                `<button onclick="activatePromo('${promo.id}')" class="text-green-600 hover:text-green-900">Activate</button>`
+                                            }
+                                            <button onclick="viewPromo('${promo.id}')" class="text-blue-600 hover:text-blue-900">View</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('promoCodesTable').innerHTML = tableHtml;
+        }
+
+        // Load analytics
+        function loadAnalytics() {
+            // Initialize analytics charts
+            initAnalyticsCharts();
+        }
+
+        // Initialize dashboard charts
+        function initDashboardCharts() {
+            // User growth chart
+            const userCtx = document.getElementById('userGrowthChart').getContext('2d');
+            new Chart(userCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'New Users',
+                        data: [10, 15, 25, 35, 50, 65],
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Revenue chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: [1200, 1800, 2400, 3200, 4100, 5000],
+                        backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                        borderColor: 'rgb(34, 197, 94)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize analytics charts
+        function initAnalyticsCharts() {
+            // Subscription analytics chart
+            const subCtx = document.getElementById('subscriptionChart').getContext('2d');
+            new Chart(subCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Starter', 'Expert', 'Pro', 'Family'],
+                    datasets: [{
+                        data: [30, 25, 20, 6],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(239, 68, 68, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Promo code performance chart
+            const promoCtx = document.getElementById('promoChart').getContext('2d');
+            new Chart(promoCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['SAVE20', 'WELCOME10', 'FAMILY50', 'NEWYEAR'],
+                    datasets: [{
+                        label: 'Uses',
+                        data: [45, 32, 18, 12],
+                        backgroundColor: 'rgba(168, 85, 247, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Promo code modal functions
+        function showCreatePromoModal() {
+            document.getElementById('createPromoModal').classList.remove('hidden');
+        }
+
+        function hideCreatePromoModal() {
+            document.getElementById('createPromoModal').classList.add('hidden');
+            document.getElementById('createPromoForm').reset();
+        }
+
+        // Create promo code form submission
+        document.getElementById('createPromoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                action: 'create',
+                code: document.getElementById('promoCode').value,
+                description: document.getElementById('promoDescription').value,
+                discountType: document.getElementById('promoType').value,
+                discountValue: parseInt(document.getElementById('promoValue').value),
+                maxUses: document.getElementById('promoMaxUses').value ? parseInt(document.getElementById('promoMaxUses').value) : null,
+                expiresAt: document.getElementById('promoExpires').value || null
+            };
+            
+            try {
+                const response = await fetch('/.netlify/functions/admin-promo-codes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    hideCreatePromoModal();
+                    loadPromoCodes(); // Refresh the table
+                    alert('Promo code created successfully!');
+                } else {
+                    alert('Error creating promo code: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error creating promo code: ' + error.message);
+            }
+        });
+
+        // User actions
+        async function suspendUser(userId) {
+            if (!confirm('Are you sure you want to suspend this user?')) return;
+            
+            try {
+                const response = await fetch('/.netlify/functions/admin-users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify({ action: 'suspend', userId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadUsers(); // Refresh the table
+                    alert('User suspended successfully');
+                } else {
+                    alert('Error suspending user: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error suspending user: ' + error.message);
+            }
+        }
+
+        async function activateUser(userId) {
+            try {
+                const response = await fetch('/.netlify/functions/admin-users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify({ action: 'activate', userId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadUsers(); // Refresh the table
+                    alert('User activated successfully');
+                } else {
+                    alert('Error activating user: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error activating user: ' + error.message);
+            }
+        }
+
+        function viewUser(userId) {
+            // Implement user detail view
+            alert('User detail view - Coming soon!');
+        }
+
+        // Promo code actions
+        async function deactivatePromo(promoId) {
+            if (!confirm('Are you sure you want to deactivate this promo code?')) return;
+            
+            try {
+                const response = await fetch('/.netlify/functions/admin-promo-codes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify({ action: 'deactivate', promoId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadPromoCodes(); // Refresh the table
+                    alert('Promo code deactivated successfully');
+                } else {
+                    alert('Error deactivating promo code: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error deactivating promo code: ' + error.message);
+            }
+        }
+
+        async function activatePromo(promoId) {
+            try {
+                const response = await fetch('/.netlify/functions/admin-promo-codes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminToken}`
+                    },
+                    body: JSON.stringify({ action: 'activate', promoId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadPromoCodes(); // Refresh the table
+                    alert('Promo code activated successfully');
+                } else {
+                    alert('Error activating promo code: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error activating promo code: ' + error.message);
+            }
+        }
+
+        function viewPromo(promoId) {
+            // Implement promo detail view
+            alert('Promo detail view - Coming soon!');
+        }
+
+        function viewPayment(paymentId) {
+            // Implement payment detail view
+            alert('Payment detail view - Coming soon!');
+        }
+
+        // Utility functions
+        function getPlanBadgeClass(plan) {
+            const classes = {
+                'starter': 'bg-blue-100 text-blue-800',
+                'expert': 'bg-green-100 text-green-800',
+                'pro': 'bg-purple-100 text-purple-800',
+                'lifetime': 'bg-yellow-100 text-yellow-800'
+            };
+            return classes[plan] || 'bg-gray-100 text-gray-800';
+        }
+
+        function getStatusBadgeClass(status, isSuspended) {
+            if (isSuspended) return 'bg-red-100 text-red-800';
+            
+            const classes = {
+                'active': 'bg-green-100 text-green-800',
+                'trialing': 'bg-blue-100 text-blue-800',
+                'past_due': 'bg-yellow-100 text-yellow-800',
+                'canceled': 'bg-red-100 text-red-800'
+            };
+            return classes[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        function getPaymentStatusBadgeClass(status) {
+            const classes = {
+                'succeeded': 'bg-green-100 text-green-800',
+                'active': 'bg-green-100 text-green-800',
+                'pending': 'bg-yellow-100 text-yellow-800',
+                'failed': 'bg-red-100 text-red-800',
+                'canceled': 'bg-red-100 text-red-800'
+            };
+            return classes[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        function getPromoStatusBadgeClass(promo) {
+            if (!promo.is_active) return 'bg-red-100 text-red-800';
+            if (promo.expires_at && new Date(promo.expires_at) < new Date()) return 'bg-red-100 text-red-800';
+            if (promo.max_uses && promo.used_count >= promo.max_uses) return 'bg-red-100 text-red-800';
+            return 'bg-green-100 text-green-800';
+        }
+
+        function getPromoStatus(promo) {
+            if (!promo.is_active) return 'Inactive';
+            if (promo.expires_at && new Date(promo.expires_at) < new Date()) return 'Expired';
+            if (promo.max_uses && promo.used_count >= promo.max_uses) return 'Max Uses Reached';
+            return 'Active';
+        }
+
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleString();
+        }
+
+        function logout() {
+            localStorage.removeItem('adminToken');
+            adminToken = null;
+            currentUser = null;
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        // Search and filter functionality
+        document.getElementById('userSearch')?.addEventListener('input', (e) => {
+            // Implement user search
+            console.log('Searching users:', e.target.value);
+        });
+
+        document.getElementById('userFilter')?.addEventListener('change', (e) => {
+            // Implement user filtering
+            console.log('Filtering users:', e.target.value);
+        });
+    </script>
+</body>
+</html>
