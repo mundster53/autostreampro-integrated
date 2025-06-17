@@ -61,8 +61,127 @@ async function handleSignup(e) {
         console.log('🔄 Creating Supabase account...');
         
         // Family detection
-    const familyEmails = ['mundt53@gmail.com', 'duncanmundt1@gmail.com', 'mundstermom@gmail.com', 'ChristianMundt95@gmail.com', 'jordanmundt1@gmail.com', 'julia.elaine.lee@gmail.com'];
-    const isFamily = familyEmails.includes(email.toLowerCase());
+        const isFamily = familyEmails.includes(email.toLowerCase());
+        
+        if (isFamily) {
+            console.log('👑 Family member detected - creating free account');
+            
+            // Create Supabase auth account
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: email,
+                password: password
+            });
+            
+            if (authError) throw authError;
+            console.log('✅ Family auth account created');
+            
+            // Create family member profile
+            const { error: profileError } = await supabase
+                .from('user_profiles')
+                .upsert({
+                    user_id: authData.user.id,
+                    email: email,
+                    is_family_member: true,
+                    subscription_status: 'active',
+                    subscription_plan: 'pro',
+                    subscription_type: 'lifetime',
+                    access_level: 'family_admin'
+                });
+            
+            if (profileError) throw profileError;
+            console.log('✅ Family profile created');
+            
+            showSuccess('form-message', '🎉 Welcome to the family! You have lifetime Pro access.');
+            
+            setTimeout(() => {
+                window.location.href = '/dashboard.html';
+            }, 2000);
+            return;
+        }
+        
+        // Regular user - existing code
+        console.log('💳 Regular user - processing normally');
+        
+        // Create account
+        const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {
+                    plan: selectedPlan,
+                    price: selectedPrice
+                }
+            }
+        });
+        
+        if (error) {
+            throw error;
+        }
+        
+        if (!data.user) {
+            throw new Error('Account creation failed');
+        }
+        
+        console.log('✅ Account created:', data.user.id);
+        
+        // Store for Stripe
+        sessionStorage.setItem('userEmail', email);
+        sessionStorage.setItem('userId', data.user.id);
+        sessionStorage.setItem('selectedPlan', selectedPlan);
+        sessionStorage.setItem('selectedPrice', selectedPrice);
+        
+        showSuccess('form-message', 'Account created! Setting up payment...');
+        
+        // Create Stripe checkout
+        await createStripeCheckout(data.user);
+        
+    } catch (error) {
+        console.error('❌ Signup failed:', error);
+        handleSignupError(error);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Start Free Trial →';
+    }
+}
+    
+    // Basic validation
+    if (!email || !password) {
+        showError('form-message', 'Please enter both email and password');
+        return;
+    }
+    
+    if (!isValidEmail(email)) {
+        showError('email-error', 'Please enter a valid email address');
+        return;
+    }
+    
+    if (password.length < 6) {
+        showError('password-error', 'Password must be at least 6 characters');
+        return;
+    }
+    
+    // Check Supabase
+    if (!supabase) {
+        showError('form-message', 'Please configure Supabase credentials to continue');
+        return;
+    }
+    
+    // Show loading
+    btn.disabled = true;
+    btn.textContent = 'Creating Account...';
+    
+    try {
+        console.log('🔄 Creating Supabase account...');
+        
+        // Family member emails
+const familyEmails = [
+    'mundt53@gmail.com',
+    'duncanmundt1@gmail.com', 
+    'mundstermom@gmail.com',
+    'ChristianMundt95@gmail.com',
+    'jordanmundt1@gmail.com',
+    'julia.elaine.lee@gmail.com'
+];
     
     if (isFamily) {
         console.log('👑 Family member detected');
