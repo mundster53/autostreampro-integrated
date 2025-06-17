@@ -416,9 +416,17 @@
         // Check if current user is family member
         async function isFamilyMember() {
             try {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (session && session.user) {
-                    return familyEmails.includes(session.user.email.toLowerCase());
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) {
+                    console.error('Error getting session for family check:', error);
+                    return false;
+                }
+                
+                if (session && session.user && session.user.email) {
+                    const userEmail = session.user.email.toLowerCase();
+                    const isFamilyMember = familyEmails.includes(userEmail);
+                    console.log(`Checking family status for: ${userEmail} - Result: ${isFamilyMember}`);
+                    return isFamilyMember;
                 }
                 return false;
             } catch (error) {
@@ -445,10 +453,9 @@
                 
                 if (sessionError) {
                     console.error('❌ Session error:', sessionError);
-                    throw sessionError;
                 }
                 
-                if (!session) {
+                if (!session || !session.user) {
                     console.log('❌ No session found, redirecting to signup...');
                     window.location.href = '/signup.html';
                     return;
@@ -456,19 +463,39 @@
                 
                 console.log('✅ User authenticated:', session.user.email);
 
-                // Check if user is family member
+                // Check if user is family member FIRST
                 console.log('👑 Checking family member status...');
                 userIsFamilyMember = await isFamilyMember();
                 console.log('Family member status:', userIsFamilyMember);
 
                 if (userIsFamilyMember) {
-                    // Family member - show family badge and skip payment checks
+                    // Family member - show family badge and skip ALL other checks
+                    console.log('👑 FAMILY MEMBER DETECTED - Bypassing all payment and subscription checks');
                     document.getElementById('familyBadge').classList.remove('hidden');
                     document.getElementById('adminBtn').classList.remove('hidden');
-                    console.log('👑 Family member detected - bypassing payment checks');
-                } else {
-                    // Regular user - check subscription status
-                    console.log('💳 Checking subscription status...');
+                    
+                    // Show navigation links
+                    document.getElementById('navLinks').classList.remove('hidden');
+
+                    // Load existing credentials if any (but don't fail if this errors)
+                    try {
+                        console.log('📋 Loading existing credentials for family member...');
+                        await loadExistingCredentials();
+                    } catch (credError) {
+                        console.warn('⚠️ Could not load existing credentials (this is OK):', credError);
+                    }
+
+                    // Show main content for family member
+                    document.getElementById('loadingScreen').classList.add('hidden');
+                    document.getElementById('mainContent').classList.remove('hidden');
+                    
+                    console.log('🎉 Family member onboarding initialized successfully!');
+                    return; // Exit here for family members
+                }
+
+                // For regular users only - check subscription status
+                console.log('💳 Checking subscription status for regular user...');
+                try {
                     const hasValidSubscription = await checkSubscriptionStatus();
                     if (!hasValidSubscription) {
                         console.log('❌ No valid subscription, redirecting to signup...');
@@ -476,25 +503,55 @@
                         return;
                     }
                     console.log('✅ Valid subscription found');
+                } catch (subError) {
+                    console.error('❌ Subscription check failed:', subError);
+                    window.location.href = '/signup.html';
+                    return;
                 }
 
-                // Show navigation links
+                // Show navigation links for regular users
                 document.getElementById('navLinks').classList.remove('hidden');
 
                 // Load existing credentials if any
-                console.log('📋 Loading existing credentials...');
-                await loadExistingCredentials();
+                try {
+                    console.log('📋 Loading existing credentials...');
+                    await loadExistingCredentials();
+                } catch (credError) {
+                    console.warn('⚠️ Could not load existing credentials (this is OK):', credError);
+                }
 
                 // Show main content
                 document.getElementById('loadingScreen').classList.add('hidden');
                 document.getElementById('mainContent').classList.remove('hidden');
                 
-                console.log('🎉 Onboarding initialized successfully!');
+                console.log('🎉 Regular user onboarding initialized successfully!');
                 
             } catch (error) {
                 console.error('💥 Error initializing app:', error);
                 
-                // Show error message to user
+                // CRITICAL: Check if user is family member before redirecting
+                try {
+                    const isFamily = await isFamilyMember();
+                    if (isFamily) {
+                        console.log('🚨 Error occurred but user is FAMILY MEMBER - Showing page anyway');
+                        
+                        // Show family badge
+                        document.getElementById('familyBadge').classList.remove('hidden');
+                        document.getElementById('adminBtn').classList.remove('hidden');
+                        document.getElementById('navLinks').classList.remove('hidden');
+                        
+                        // Show main content despite errors
+                        document.getElementById('loadingScreen').classList.add('hidden');
+                        document.getElementById('mainContent').classList.remove('hidden');
+                        
+                        console.log('🎉 Family member access granted despite initialization errors');
+                        return; // Don't redirect family members
+                    }
+                } catch (familyCheckError) {
+                    console.error('Could not check family status during error handling:', familyCheckError);
+                }
+                
+                // Show error message to user (only for non-family members)
                 const loadingScreen = document.getElementById('loadingScreen');
                 loadingScreen.innerHTML = `
                     <div style="color: #ff6b6b; text-align: center;">
@@ -507,12 +564,10 @@
                     </div>
                 `;
                 
-                // If not family member and error occurs, redirect to signup as fallback
-                if (!userIsFamilyMember) {
-                    setTimeout(() => {
-                        window.location.href = '/signup.html';
-                    }, 5000);
-                }
+                // Only redirect non-family members to signup as fallback
+                setTimeout(() => {
+                    window.location.href = '/signup.html';
+                }, 5000);
             }
         }
 
