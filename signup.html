@@ -1,302 +1,724 @@
-// ==================================================
-// ADD THIS RIGHT AFTER LINE 461 (after supabase initialization)
-// ==================================================
-
-// Family member emails - ADD THIS
-const familyEmails = [
-    'mundt53@gmail.com',
-    'duncanmundt1@gmail.com', 
-    'mundstermom@gmail.com',
-    'ChristianMundt95@gmail.com',
-    'jordanmundt1@gmail.com',
-    'julia.elaine.lee@gmail.com'
-];
-
-// ==================================================
-// REPLACE YOUR handleSignup FUNCTION (starting around line 550)
-// WITH THIS VERSION THAT INCLUDES FAMILY DETECTION:
-// ==================================================
-
-// Handle form submission
-async function handleSignup(e) {
-    e.preventDefault();
-    console.log('🚀 Form submitted');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - AutoStreamPro</title>
+    <meta name="description" content="Start your free trial with AutoStreamPro - Turn gaming into your career">
     
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const btn = document.getElementById('signup-btn');
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     
-    console.log(`📊 Data: email=${email}, password=${password.length} chars, plan=${selectedPlan}`);
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
-    // Clear previous messages
-    clearMessages();
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    // Basic validation
-    if (!email || !password) {
-        showError('form-message', 'Please enter both email and password');
-        return;
-    }
-    
-    if (!isValidEmail(email)) {
-        showError('email-error', 'Please enter a valid email address');
-        return;
-    }
-    
-    if (password.length < 6) {
-        showError('password-error', 'Password must be at least 6 characters');
-        return;
-    }
-    
-    // Check Supabase
-    if (!supabase) {
-        showError('form-message', 'Please configure Supabase credentials to continue');
-        return;
-    }
-    
-    // Show loading
-    btn.disabled = true;
-    btn.textContent = 'Creating Account...';
-    
-    try {
-        console.log('🔄 Creating Supabase account...');
+    <style>
+        * {
+            box-sizing: border-box;
+        }
         
-        // Family detection
-        const isFamily = familyEmails.includes(email.toLowerCase());
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%);
+            min-height: 100vh;
+            color: white;
+        }
         
-        if (isFamily) {
-            console.log('👑 Family member detected - creating free account');
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .signup-card {
+            background: rgba(255, 255, 255, 0.95);
+            color: #374151;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(20px);
+        }
+        
+        .trial-badge {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #3b82f6;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+        
+        .plans-section {
+            margin-bottom: 30px;
+        }
+        
+        .plans-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+        
+        .plan-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            position: relative;
+        }
+        
+        .plan-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 8px 25px -5px rgba(59, 130, 246, 0.25);
+        }
+        
+        .plan-card.selected {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            box-shadow: 0 8px 25px -5px rgba(59, 130, 246, 0.25);
+        }
+        
+        .plan-card.popular::before {
+            content: 'Most Popular';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #3b82f6;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .plan-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+        
+        .plan-info {
+            flex: 1;
+        }
+        
+        .plan-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        
+        .plan-description {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .plan-price {
+            text-align: right;
+        }
+        
+        .price-amount {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1f2937;
+        }
+        
+        .price-period {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            background: white;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .trial-info {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .trial-icon {
+            width: 20px;
+            height: 20px;
+            color: #3b82f6;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .trial-text {
+            color: #1e40af;
+        }
+        
+        .trial-title {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .trial-subtitle {
+            font-size: 14px;
+        }
+        
+        .signup-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.3);
+        }
+        
+        .signup-btn:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -5px rgba(59, 130, 246, 0.4);
+        }
+        
+        .signup-btn:disabled {
+            background: #d1d5db;
+            color: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .success {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .legal {
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 20px;
+        }
+        
+        .legal a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+        
+        .legal a:hover {
+            text-decoration: underline;
+        }
+        
+        .nav {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 15px 0;
+            margin-bottom: 20px;
+            border-radius: 15px;
+        }
+        
+        .nav-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="index.html" class="logo">
+                <span style="font-size: 1.5rem;">⚡</span>
+                AutoStreamPro
+            </a>
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link">Sign In</a>
+                <a href="index.html" class="nav-link">← Back to Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>Start Your Gaming Career</h1>
+            <p>Choose your plan and begin automating your stream marketing today</p>
+        </div>
+        
+        <div class="signup-card">
+            <div class="trial-badge">
+                🎮 14-Day Free Trial • No Credit Card Required
+            </div>
             
-            // Create Supabase auth account
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: email,
-                password: password
-            });
+            <!-- Plan Selection -->
+            <div class="plans-section">
+                <h3 class="plans-title">Choose Your Plan</h3>
+                
+                <div class="plan-card" data-plan="starter" data-price="20">
+                    <div class="plan-header">
+                        <div class="plan-info">
+                            <div class="plan-name">Starter</div>
+                            <div class="plan-description">Perfect for new streamers</div>
+                        </div>
+                        <div class="plan-price">
+                            <div class="price-amount">$20</div>
+                            <div class="price-period">/month</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="plan-card popular selected" data-plan="expert" data-price="50">
+                    <div class="plan-header">
+                        <div class="plan-info">
+                            <div class="plan-name">Expert</div>
+                            <div class="plan-description">For growing streamers</div>
+                        </div>
+                        <div class="plan-price">
+                            <div class="price-amount">$50</div>
+                            <div class="price-period">/month</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="plan-card" data-plan="pro" data-price="75">
+                    <div class="plan-header">
+                        <div class="plan-info">
+                            <div class="plan-name">Pro</div>
+                            <div class="plan-description">For teams and agencies</div>
+                        </div>
+                        <div class="plan-price">
+                            <div class="price-amount">$75</div>
+                            <div class="price-period">/month</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
-            if (authError) throw authError;
-            console.log('✅ Family auth account created');
+            <!-- Signup Form -->
+            <div class="form-section">
+                <form id="signup-form">
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" id="email" name="email" class="form-input" placeholder="your@email.com" required>
+                        <div id="email-error" class="message error"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" name="password" class="form-input" placeholder="Choose a secure password" required>
+                        <div id="password-error" class="message error"></div>
+                    </div>
+                    
+                    <div class="trial-info">
+                        <svg class="trial-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <div class="trial-text">
+                            <div class="trial-title">14-Day Free Trial</div>
+                            <div class="trial-subtitle">Full access to all features. Cancel anytime during trial.</div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="signup-btn" id="signup-btn">
+                        Start Free Trial →
+                    </button>
+                    
+                    <div id="form-message" class="message"></div>
+                </form>
+            </div>
             
-            // Create family member profile
-            const { error: profileError } = await supabase
-                .from('user_profiles')
-                .upsert({
-                    user_id: authData.user.id,
-                    email: email,
-                    is_family_member: true,
-                    subscription_status: 'active',
-                    subscription_plan: 'pro',
-                    subscription_type: 'lifetime',
-                    access_level: 'family_admin'
+            <div class="legal">
+                By signing up, you agree to our 
+                <a href="#">Terms of Service</a> and 
+                <a href="#">Privacy Policy</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase Configuration - REPLACE WITH YOUR ACTUAL VALUES
+        const SUPABASE_URL = 'https://dykxhmdozgccawkbxejd.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
+        
+        console.log('=== AUTOSTREAMPRO SIGNUP PAGE ===');
+        
+        // Initialize Supabase
+        let supabase = null;
+        try {
+            if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('✅ Supabase initialized');
+            } else {
+                console.log('⚠️ Supabase credentials not configured');
+            }
+        } catch (error) {
+            console.error('❌ Supabase initialization failed:', error);
+        }
+        
+        // Plan selection variables
+        let selectedPlan = 'expert';
+        let selectedPrice = 50;
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 Page loaded');
+            
+            setupPlanSelection();
+            setupForm();
+            
+            // Check URL params for plan selection
+            const urlParams = new URLSearchParams(window.location.search);
+            const planFromUrl = urlParams.get('plan');
+            if (planFromUrl && ['starter', 'expert', 'pro'].includes(planFromUrl)) {
+                const prices = {starter: 20, expert: 50, pro: 75};
+                selectPlan(planFromUrl, prices[planFromUrl]);
+            }
+            
+            console.log('🚀 Initialization complete');
+        });
+        
+        // Setup plan selection
+        function setupPlanSelection() {
+            const planCards = document.querySelectorAll('.plan-card');
+            console.log(`🎯 Found ${planCards.length} plan cards`);
+            
+            planCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    selectPlan(this.dataset.plan, parseInt(this.dataset.price));
                 });
-            
-            if (profileError) throw profileError;
-            console.log('✅ Family profile created');
-            
-            showSuccess('form-message', '🎉 Welcome to the family! You have lifetime Pro access.');
-            
-            setTimeout(() => {
-                window.location.href = '/dashboard.html';
-            }, 2000);
-            return;
+            });
         }
         
-        // Regular user - existing code
-        console.log('💳 Regular user - processing normally');
-        
-        // Create account
-        const { data, error } = await supabase.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-                data: {
-                    plan: selectedPlan,
-                    price: selectedPrice
-                }
+        // Select plan
+        function selectPlan(plan, price) {
+            console.log(`📦 Plan selected: ${plan} ($${price})`);
+            
+            // Remove selected from all cards
+            document.querySelectorAll('.plan-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selected to clicked card
+            const selectedCard = document.querySelector(`[data-plan="${plan}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
             }
-        });
-        
-        if (error) {
-            throw error;
+            
+            selectedPlan = plan;
+            selectedPrice = price;
         }
         
-        if (!data.user) {
-            throw new Error('Account creation failed');
+        // Setup form
+        function setupForm() {
+            const form = document.getElementById('signup-form');
+            if (form) {
+                console.log('📝 Form found and setup');
+                form.addEventListener('submit', handleSignup);
+            } else {
+                console.error('❌ Form not found');
+            }
+            
+            // Test input functionality
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            
+            if (emailInput && passwordInput) {
+                console.log('📥 Input fields found');
+                
+                emailInput.addEventListener('input', function() {
+                    console.log(`📧 Email input: ${this.value.length} chars`);
+                });
+                
+                passwordInput.addEventListener('input', function() {
+                    console.log(`🔒 Password input: ${this.value.length} chars`);
+                });
+            } else {
+                console.error('❌ Input fields not found');
+            }
         }
         
-        console.log('✅ Account created:', data.user.id);
+        // Handle form submission
+        async function handleSignup(e) {
+            e.preventDefault();
+            console.log('🚀 Form submitted');
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('signup-btn');
+            
+            console.log(`📊 Data: email=${email}, password=${password.length} chars, plan=${selectedPlan}`);
+            
+            // Clear previous messages
+            clearMessages();
+            
+            // Basic validation
+            if (!email || !password) {
+                showError('form-message', 'Please enter both email and password');
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                showError('email-error', 'Please enter a valid email address');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showError('password-error', 'Password must be at least 6 characters');
+                return;
+            }
+            
+            // Check Supabase
+            if (!supabase) {
+                showError('form-message', 'Please configure Supabase credentials to continue');
+                return;
+            }
+            
+            // Show loading
+            btn.disabled = true;
+            btn.textContent = 'Creating Account...';
+            
+            try {
+                console.log('🔄 Creating Supabase account...');
+                
+                // Create account
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            plan: selectedPlan,
+                            price: selectedPrice
+                        }
+                    }
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (!data.user) {
+                    throw new Error('Account creation failed');
+                }
+                
+                console.log('✅ Account created:', data.user.id);
+                
+                // Store for Stripe
+                sessionStorage.setItem('userEmail', email);
+                sessionStorage.setItem('userId', data.user.id);
+                sessionStorage.setItem('selectedPlan', selectedPlan);
+                sessionStorage.setItem('selectedPrice', selectedPrice);
+                
+                showSuccess('form-message', 'Account created! Setting up payment...');
+                
+                // Create Stripe checkout
+                await createStripeCheckout(data.user);
+                
+            } catch (error) {
+                console.error('❌ Signup failed:', error);
+                handleSignupError(error);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Start Free Trial →';
+            }
+        }
         
-        // Store for Stripe
-        sessionStorage.setItem('userEmail', email);
-        sessionStorage.setItem('userId', data.user.id);
-        sessionStorage.setItem('selectedPlan', selectedPlan);
-        sessionStorage.setItem('selectedPrice', selectedPrice);
-        
-        showSuccess('form-message', 'Account created! Setting up payment...');
+        // Handle signup errors
+        function handleSignupError(error) {
+            let message = 'Signup failed. Please try again.';
+            
+            if (error.message.includes('already registered') || error.message.includes('already exists')) {
+                message = 'Email already exists. Try signing in instead.';
+                showError('email-error', message);
+            } else if (error.message.includes('invalid email')) {
+                message = 'Please enter a valid email address.';
+                showError('email-error', message);
+            } else if (error.message.includes('password')) {
+                message = 'Password requirements not met.';
+                showError('password-error', message);
+            } else {
+                showError('form-message', error.message || message);
+            }
+        }
         
         // Create Stripe checkout
-        await createStripeCheckout(data.user);
-        
-    } catch (error) {
-        console.error('❌ Signup failed:', error);
-        handleSignupError(error);
-    } finally {
-        btn.disabled = false;
-        btn.textContent = 'Start Free Trial →';
-    }
-}
-    
-    // Basic validation
-    if (!email || !password) {
-        showError('form-message', 'Please enter both email and password');
-        return;
-    }
-    
-    if (!isValidEmail(email)) {
-        showError('email-error', 'Please enter a valid email address');
-        return;
-    }
-    
-    if (password.length < 6) {
-        showError('password-error', 'Password must be at least 6 characters');
-        return;
-    }
-    
-    // Check Supabase
-    if (!supabase) {
-        showError('form-message', 'Please configure Supabase credentials to continue');
-        return;
-    }
-    
-    // Show loading
-    btn.disabled = true;
-    btn.textContent = 'Creating Account...';
-    
-    try {
-        console.log('🔄 Creating Supabase account...');
-        
-        // Family member emails
-const familyEmails = [
-    'mundt53@gmail.com',
-    'duncanmundt1@gmail.com', 
-    'mundstermom@gmail.com',
-    'ChristianMundt95@gmail.com',
-    'jordanmundt1@gmail.com',
-    'julia.elaine.lee@gmail.com'
-];
-    
-    if (isFamily) {
-        console.log('👑 Family member detected');
-        showSuccess('form-message', '🎉 Welcome to the family! You have lifetime Pro access.');
-        setTimeout(() => window.location.href = '/dashboard.html', 2000);
-        return;
-    }
-        
-        // Regular user - YOUR EXISTING CODE CONTINUES UNCHANGED
-        console.log('💳 Regular user - processing normally');
-        
-        // Create account
-        const { data, error } = await supabase.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-                data: {
-                    plan: selectedPlan,
-                    price: selectedPrice
+        async function createStripeCheckout(user) {
+            try {
+                console.log('💳 Creating Stripe checkout...');
+                
+                const response = await fetch('/.netlify/functions/stripe-checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        plan: selectedPlan,
+                        userEmail: user.email,
+                        userId: user.id,
+                        userName: user.email.split('@')[0]
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.checkoutUrl) {
+                    console.log('✅ Redirecting to Stripe...');
+                    window.location.href = data.checkoutUrl;
+                } else {
+                    throw new Error(data.message || 'Payment setup failed');
                 }
+                
+            } catch (error) {
+                console.error('❌ Stripe checkout failed:', error);
+                showError('form-message', 'Payment setup failed. Please try again.');
             }
-        });
-        
-        if (error) {
-            throw error;
         }
         
-        if (!data.user) {
-            throw new Error('Account creation failed');
+        // Utility functions
+        function showError(elementId, message) {
+            const el = document.getElementById(elementId);
+            if (el) {
+                el.textContent = message;
+                el.className = 'message error';
+                el.style.display = 'block';
+            }
         }
         
-        console.log('✅ Account created:', data.user.id);
+        function showSuccess(elementId, message) {
+            const el = document.getElementById(elementId);
+            if (el) {
+                el.textContent = message;
+                el.className = 'message success';
+                el.style.display = 'block';
+            }
+        }
         
-        // Store for Stripe
-        sessionStorage.setItem('userEmail', email);
-        sessionStorage.setItem('userId', data.user.id);
-        sessionStorage.setItem('selectedPlan', selectedPlan);
-        sessionStorage.setItem('selectedPrice', selectedPrice);
-        
-        showSuccess('form-message', 'Account created! Setting up payment...');
-        
-        // Create Stripe checkout
-        await createStripeCheckout(data.user);
-        
-    } catch (error) {
-        console.error('❌ Signup failed:', error);
-        handleSignupError(error);
-    } finally {
-        btn.disabled = false;
-        btn.textContent = 'Start Free Trial →';
-    }
-}
-
-// ==================================================
-// ADD THIS NEW FUNCTION AFTER YOUR handleSignupError FUNCTION
-// ==================================================
-
-// Create family account (no payment)
-async function createFamilyAccount(email, password) {
-    try {
-        console.log('👑 Creating family account for:', email);
-
-        // Create Supabase auth account
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: email,
-            password: password
-        });
-
-        if (authError) throw authError;
-        console.log('✅ Family auth account created');
-
-        // Create family member profile with lifetime Pro access
-        const { error: profileError } = await supabase
-            .from('user_profiles')
-            .upsert({
-                user_id: authData.user.id,
-                email: email,
-                is_family_member: true,
-                subscription_status: 'active',
-                subscription_plan: 'pro',
-                subscription_type: 'lifetime',
-                access_level: 'family_admin',
-                family_access_granted_at: new Date().toISOString(),
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
+        function clearMessages() {
+            const messages = ['email-error', 'password-error', 'form-message'];
+            messages.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.display = 'none';
+                    el.textContent = '';
+                }
             });
-
-        if (profileError) throw profileError;
-        console.log('✅ Family profile created');
-
-        // Create admin permissions
-        const { error: adminError } = await supabase
-            .from('admin_permissions')
-            .upsert({
-                user_id: authData.user.id,
-                email: email,
-                role: 'family_admin',
-                permissions: ['view_users', 'manage_users', 'view_payments', 'manage_payments', 'create_promo_codes', 'manage_promo_codes', 'view_analytics', 'full_access'],
-                granted_at: new Date().toISOString(),
-                is_active: true
-            });
-
-        if (adminError) throw adminError;
-        console.log('✅ Admin permissions created');
-
-        // Success!
-        showSuccess('form-message', '🎉 Welcome to the family! You have lifetime Pro access.');
+        }
         
-        // Redirect to dashboard after 2 seconds
-        setTimeout(() => {
-            window.location.href = '/dashboard.html';
-        }, 2000);
-
-    } catch (error) {
-        console.error('❌ Family account creation error:', error);
-        showError('form-message', 'Account creation failed: ' + error.message);
-    }
-}
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+        
+        console.log('📜 Script loaded successfully');
+    </script>
+</body>
+</html>
