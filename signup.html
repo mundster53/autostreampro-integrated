@@ -804,7 +804,7 @@
                 
                 // Handle family members or 100% promo codes
                 if (isFamily || (promoData.valid && promoData.discount >= 100)) {
-                    console.log('🎉 Free account - redirecting to dashboard');
+                    console.log('🎉 Free account - setting up session and redirecting');
                     
                     const message = isFamily 
                         ? '🎉 Welcome to the family! You have lifetime Pro access.'
@@ -816,9 +816,32 @@
                     sessionStorage.setItem('userEmail', email);
                     sessionStorage.setItem('userId', authData.user.id);
                     sessionStorage.setItem('isFamilyMember', isFamily.toString());
+                    sessionStorage.setItem('hasLifetimeAccess', 'true');
+                    sessionStorage.setItem('subscriptionPlan', 'pro');
+                    sessionStorage.setItem('subscriptionStatus', 'active');
+                    
+                    // Try to sign in the user immediately
+                    console.log('🔐 Signing in user...');
+                    const { error: signInError } = await supabase.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+                    
+                    if (signInError) {
+                        console.warn('Sign in error:', signInError);
+                    } else {
+                        console.log('✅ User signed in successfully');
+                    }
                     
                     setTimeout(() => {
-                        window.location.href = '/dashboard.html';
+                        console.log('🔄 Redirecting to dashboard...');
+                        if (isFamily) {
+                            // Family members go to admin panel
+                            window.location.href = '/admin.html';
+                        } else {
+                            // Regular free users go to dashboard
+                            window.location.href = '/dashboard.html';
+                        }
                     }, 2000);
                     return;
                 }
