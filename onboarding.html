@@ -28,6 +28,31 @@
         .header {
             text-align: center;
             margin-bottom: 40px;
+            position: relative;
+        }
+
+        .nav-links {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
         }
 
         .header h1 {
@@ -274,6 +299,10 @@
 <body>
     <div class="container">
         <div class="header">
+            <div id="navLinks" class="nav-links hidden">
+                <button class="nav-btn" onclick="goToDashboard()">📊 Dashboard</button>
+                <button id="adminBtn" class="nav-btn hidden" onclick="goToAdmin()">⚙️ Admin</button>
+            </div>
             <h1>🎮 AutoStreamPro Setup</h1>
             <p>Connect your gaming platforms and start automated streaming</p>
             <div id="familyBadge" class="family-badge hidden">
@@ -419,6 +448,7 @@
                 if (userIsFamilyMember) {
                     // Family member - show family badge and skip payment checks
                     document.getElementById('familyBadge').classList.remove('hidden');
+                    document.getElementById('adminBtn').classList.remove('hidden');
                     console.log('👑 Family member detected - bypassing payment checks');
                 } else {
                     // Regular user - check subscription status
@@ -429,6 +459,12 @@
                         return;
                     }
                 }
+
+                // Show navigation links
+                document.getElementById('navLinks').classList.remove('hidden');
+
+                // Load existing credentials if any
+                await loadExistingCredentials();
 
                 // Show main content
                 document.getElementById('loadingScreen').classList.add('hidden');
@@ -442,6 +478,67 @@
                     window.location.href = '/signup.html';
                 }
             }
+        }
+
+        // Load existing credentials
+        async function loadExistingCredentials() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return;
+
+                const { data: credentials, error } = await supabase
+                    .from('user_platform_credentials')
+                    .select('platform, username')
+                    .eq('user_id', session.user.id);
+
+                if (error) {
+                    console.error('Error loading credentials:', error);
+                    return;
+                }
+
+                credentials.forEach(cred => {
+                    const platform = cred.platform;
+                    const card = document.querySelector(`[data-platform="${platform}"]`);
+                    const button = card.querySelector('.connect-btn');
+                    const status = card.querySelector('.platform-status');
+                    
+                    // Mark as connected
+                    card.classList.add('connected');
+                    button.classList.add('connected-btn');
+                    button.textContent = '✓ Connected';
+                    status.textContent = `Connected as ${cred.username}`;
+                    connectedPlatforms.push(platform);
+                    
+                    // Show existing credentials with edit option
+                    showExistingCredentials(platform, cred.username);
+                });
+
+                updateProgress();
+
+            } catch (error) {
+                console.error('Error loading existing credentials:', error);
+            }
+        }
+
+        // Show existing credentials with edit option
+        function showExistingCredentials(platform, username) {
+            const credentialsSection = document.getElementById('credentialsSection');
+            const credentialsForms = document.getElementById('credentialsForms');
+            
+            credentialsSection.classList.remove('hidden');
+            
+            const formHTML = `
+                <div class="credentials-form" id="${platform}-credentials">
+                    <div class="success-message">
+                        ✅ ${platform.charAt(0).toUpperCase() + platform.slice(1)} credentials configured!
+                        <br><strong>Username:</strong> ${username}
+                        <br><br>
+                        <button class="save-btn" onclick="editCredentials('${platform}', '${username}')">Edit Credentials</button>
+                    </div>
+                </div>
+            `;
+            
+            credentialsForms.innerHTML += formHTML;
         }
 
         // Check subscription status for regular users
@@ -549,11 +646,13 @@
                 
                 if (error) throw error;
                 
-                // Show success message
+                // Show success message with edit option
                 const form = document.getElementById(`${platform}-credentials`);
                 form.innerHTML = `
                     <div class="success-message">
                         ✅ ${platform.charAt(0).toUpperCase() + platform.slice(1)} credentials saved successfully!
+                        <br><br>
+                        <button class="save-btn" onclick="editCredentials('${platform}', '${username}')">Edit Credentials</button>
                     </div>
                 `;
                 
@@ -561,6 +660,79 @@
                 console.error('Error saving credentials:', error);
                 alert('Failed to save credentials. Please try again.');
             }
+        }
+
+        // Edit existing credentials
+        function editCredentials(platform, currentUsername) {
+            const form = document.getElementById(`${platform}-credentials`);
+            form.innerHTML = `
+                <h4>Edit ${platform.charAt(0).toUpperCase() + platform.slice(1)} Credentials</h4>
+                <div class="form-group">
+                    <label for="${platform}-username-edit">Username/Channel Name:</label>
+                    <input type="text" id="${platform}-username-edit" value="${currentUsername}" placeholder="Enter your ${platform} username">
+                </div>
+                <div class="form-group">
+                    <label for="${platform}-token-edit">API Token/Key:</label>
+                    <input type="password" id="${platform}-token-edit" placeholder="Enter your ${platform} API token">
+                </div>
+                <button class="save-btn" onclick="updateCredentials('${platform}')">Update ${platform} Credentials</button>
+                <button class="save-btn" style="background: #666; margin-left: 10px;" onclick="cancelEdit('${platform}', '${currentUsername}')">Cancel</button>
+            `;
+        }
+
+        // Update credentials
+        async function updateCredentials(platform) {
+            const username = document.getElementById(`${platform}-username-edit`).value;
+            const token = document.getElementById(`${platform}-token-edit`).value;
+            
+            if (!username || !token) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return;
+                
+                // Update credentials in database
+                const { error } = await supabase
+                    .from('user_platform_credentials')
+                    .upsert({
+                        user_id: session.user.id,
+                        platform: platform,
+                        username: username,
+                        encrypted_token: token,
+                        updated_at: new Date().toISOString()
+                    });
+                
+                if (error) throw error;
+                
+                // Show success message
+                const form = document.getElementById(`${platform}-credentials`);
+                form.innerHTML = `
+                    <div class="success-message">
+                        ✅ ${platform.charAt(0).toUpperCase() + platform.slice(1)} credentials updated successfully!
+                        <br><br>
+                        <button class="save-btn" onclick="editCredentials('${platform}', '${username}')">Edit Credentials</button>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error updating credentials:', error);
+                alert('Failed to update credentials. Please try again.');
+            }
+        }
+
+        // Cancel credential editing
+        function cancelEdit(platform, originalUsername) {
+            const form = document.getElementById(`${platform}-credentials`);
+            form.innerHTML = `
+                <div class="success-message">
+                    ✅ ${platform.charAt(0).toUpperCase() + platform.slice(1)} credentials saved successfully!
+                    <br><br>
+                    <button class="save-btn" onclick="editCredentials('${platform}', '${originalUsername}')">Edit Credentials</button>
+                </div>
+            `;
         }
 
         // Update progress bar
@@ -585,8 +757,26 @@
                 return;
             }
             
-            // Redirect to main dashboard
+            // Show success message and redirect to dashboard
+            const confirmed = confirm(`🎉 Congratulations! You've successfully set up AutoStreamPro with ${connectedPlatforms.length} platform(s).\n\nClick OK to go to your dashboard where you can:\n• Monitor your automated streams\n• View analytics\n• Manage content\n• Update settings\n\nYou can always return here to add more platforms or edit credentials.`);
+            
+            if (confirmed) {
+                // Redirect to main dashboard
+                window.location.href = '/dashboard.html';
+            }
+        }
+
+        // Quick navigation functions
+        function goToDashboard() {
             window.location.href = '/dashboard.html';
+        }
+
+        function goToAdmin() {
+            if (userIsFamilyMember) {
+                window.location.href = '/admin.html';
+            } else {
+                alert('Admin access is only available for family members.');
+            }
         }
 
         // Initialize the app when page loads
