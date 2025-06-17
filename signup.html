@@ -540,61 +540,25 @@
                 if (authError) throw authError;
                 console.log('✅ Free auth account created');
                 
-                // Create user profile
-                const profileData = {
-                    user_id: authData.user.id,
-                    email: email,
-                    subscription_status: 'active',
-                    subscription_plan: 'pro',
-                    subscription_type: 'lifetime',
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                };
+                // Use your existing backend function for profile creation
+                const response = await fetch('/.netlify/functions/family-access-setup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: authData.user.id,
+                        email: email
+                    })
+                });
                 
-                if (type === 'family') {
-                    profileData.is_family_member = true;
-                    profileData.access_level = 'family_admin';
-                    profileData.family_access_granted_at = new Date().toISOString();
-                } else if (type === 'promo') {
-                    profileData.promo_code_used = promoData.code;
-                    profileData.access_level = 'user';
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.message || 'Failed to setup account');
                 }
                 
-                const { error: profileError } = await supabase
-                    .from('user_profiles')
-                    .upsert(profileData);
-                
-                if (profileError) throw profileError;
-                console.log('✅ Free profile created');
-                
-                // Create admin permissions for family members
-                if (type === 'family') {
-                    const { error: adminError } = await supabase
-                        .from('admin_permissions')
-                        .upsert({
-                            user_id: authData.user.id,
-                            email: email,
-                            role: 'family_admin',
-                            permissions: ['view_users', 'manage_users', 'view_payments', 'manage_payments', 'create_promo_codes', 'manage_promo_codes', 'view_analytics', 'full_access'],
-                            granted_at: new Date().toISOString(),
-                            is_active: true
-                        });
-                    
-                    if (adminError) console.warn('Could not create admin permissions:', adminError);
-                }
-                
-                // Update promo code usage if applicable
-                if (type === 'promo' && promoData && promoData.promoId) {
-                    const { error: updateError } = await supabase
-                        .from('promo_codes')
-                        .update({ 
-                            current_uses: promoData.currentUses + 1,
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('id', promoData.promoId);
-                    
-                    if (updateError) console.warn('Could not update promo usage:', updateError);
-                }
+                console.log('✅ Account setup completed via backend');
                 
                 const message = type === 'family' 
                     ? '🎉 Welcome to the family! You have lifetime Pro access.'
