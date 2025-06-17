@@ -718,7 +718,7 @@
             }
         }
         
-        // Handle form submission
+        // Handle form submission - SIMPLIFIED VERSION
         async function handleSignup(e) {
             e.preventDefault();
             console.log('🚀 Form submitted');
@@ -785,55 +785,57 @@
                 // Family detection
                 const isFamily = familyEmails.includes(email.toLowerCase());
                 
-                // Check if user already exists in database
-                const { data: existingProfile } = await supabase
-                    .from('user_profiles')
-                    .select('user_id, email, is_family_member, subscription_status')
-                    .eq('email', email.toLowerCase())
-                    .single();
+                // Create auth account first
+                console.log('🔄 Creating auth account...');
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: email,
+                    password: password
+                });
                 
-                if (existingProfile) {
-                    console.log('👤 User profile already exists');
-                    
-                    if (isFamily && !existingProfile.is_family_member) {
-                        // Family member with existing account - upgrade them
-                        console.log('⬆️ Upgrading existing user to family status');
-                        await upgradeFamilyMember(email);
-                        return;
-                    } else if (isFamily && existingProfile.is_family_member) {
-                        // Family member trying to sign up again
-                        showError('form-message', 'You already have a family account! Please sign in instead.');
-                        setTimeout(() => {
-                            window.location.href = '/dashboard.html';
-                        }, 2000);
-                        return;
-                    } else {
-                        // Regular user with existing account
+                if (authError) {
+                    if (authError.message.includes('already registered') || authError.message.includes('already exists')) {
                         showError('form-message', 'Account already exists. Please sign in instead.');
                         return;
                     }
+                    throw authError;
                 }
                 
-                // No existing profile - proceed with normal signup
-                console.log('🆕 Creating new account');
+                console.log('✅ Auth account created:', authData.user.id);
                 
-                // Handle family members with free accounts
-                if (isFamily) {
-                    console.log('👑 Family member detected - creating free account');
-                    await createFreeAccount(email, password, 'family');
+                // Handle family members or 100% promo codes
+                if (isFamily || (promoData.valid && promoData.discount >= 100)) {
+                    console.log('🎉 Free account - redirecting to dashboard');
+                    
+                    const message = isFamily 
+                        ? '🎉 Welcome to the family! You have lifetime Pro access.'
+                        : `🎉 Welcome! Your ${promoData.discount}% discount gave you free access!`;
+                    
+                    showSuccess('form-message', message);
+                    
+                    // Store user info for dashboard
+                    sessionStorage.setItem('userEmail', email);
+                    sessionStorage.setItem('userId', authData.user.id);
+                    sessionStorage.setItem('isFamilyMember', isFamily.toString());
+                    
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html';
+                    }, 2000);
                     return;
                 }
                 
-                // Handle 100% discount codes (free account)
-                if (promoData.valid && promoData.discount >= 100) {
-                    console.log('🎉 100% discount code - creating free account');
-                    await createFreeAccount(email, password, 'promo', promoData);
-                    return;
-                }
+                // Regular user with Stripe
+                console.log('💳 Regular user - setting up payment...');
                 
-                // Regular user or partial discount - continue with Stripe
-                console.log('💳 Regular user - processing normally');
-                await createRegularAccount(email, password, promoData);
+                // Store for Stripe
+                sessionStorage.setItem('userEmail', email);
+                sessionStorage.setItem('userId', authData.user.id);
+                sessionStorage.setItem('selectedPlan', selectedPlan);
+                sessionStorage.setItem('selectedPrice', selectedPrice);
+                
+                showSuccess('form-message', 'Account created! Setting up payment...');
+                
+                // Create Stripe checkout
+                await createStripeCheckout(authData.user, promoData);
                 
             } catch (error) {
                 console.error('❌ Signup failed:', error);
