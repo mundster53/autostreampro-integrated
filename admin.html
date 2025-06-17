@@ -3,1109 +3,610 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoStreamPro Admin Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>AutoStreamPro - Family Admin Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        .sidebar-transition { transition: all 0.3s ease; }
-        .card-hover:hover { transform: translateY(-2px); transition: all 0.2s ease; }
-        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .login-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .stat-card { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-        .stat-card-2 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-        .stat-card-3 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-        .stat-card-4 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .family-badge {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #333;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 5px 0;
+        }
+
+        .quick-actions {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .quick-actions h2 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(45deg, #9C27B0, #7B1FA2);
+        }
+
+        .action-btn.primary:hover {
+            box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
+        }
+
+        .admin-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .admin-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .admin-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-card p {
+            margin-bottom: 15px;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .card-btn {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .card-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        }
+
+        .logout-btn {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
-<body class="bg-gray-100">
-    <!-- Login Screen -->
-    <div id="loginScreen" class="min-h-screen login-bg flex items-center justify-center">
-        <div class="bg-white p-8 rounded-lg shadow-xl max-w-md w-full mx-4">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">AutoStreamPro</h1>
-                <p class="text-gray-600">Family Admin Dashboard</p>
-            </div>
-            
-            <form id="loginForm" class="space-y-6">
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Admin Email</label>
-                    <input type="email" id="email" required 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                </div>
-                
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                    <input type="password" id="password" required 
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                </div>
-                
-                <button type="submit" id="loginBtn" 
-                        class="w-full gradient-bg text-white py-3 rounded-lg font-semibold hover:opacity-90 transition duration-200">
-                    <span id="loginBtnText">Admin Login</span>
-                    <i id="loginSpinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
-                </button>
-                
-                <div id="loginError" class="text-red-600 text-sm hidden"></div>
-            </form>
-            
-            <div class="mt-6 text-center text-sm text-gray-600">
-                <p>Family Members Only</p>
-                <p class="mt-1">6 authorized admin accounts</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Dashboard -->
-    <div id="dashboard" class="hidden">
-        <!-- Sidebar -->
-        <div id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-gray-900 text-white z-50 sidebar-transition">
-            <div class="p-6">
-                <h1 class="text-2xl font-bold">AutoStreamPro</h1>
-                <p class="text-gray-400 text-sm">Family Admin</p>
-            </div>
-            
-            <nav class="mt-6">
-                <div class="px-6 py-2 text-gray-400 text-xs uppercase tracking-wide font-semibold">
-                    Personal
-                </div>
-                <a href="/onboarding.html?family=true" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition duration-200">
-                    <i class="fas fa-stream mr-3"></i>
-                    My Streams
-                </a>
-                <a href="/onboarding.html?step=1" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition duration-200">
-                    <i class="fas fa-play-circle mr-3"></i>
-                    Quick Start
-                </a>
-                
-                <div class="px-6 py-2 text-gray-400 text-xs uppercase tracking-wide font-semibold mt-4">
-                    Admin
-                </div>
-                <a href="#dashboard-view" onclick="showView('dashboard-view')" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition duration-200">
-                    <i class="fas fa-chart-dashboard mr-3"></i>
-                    Dashboard
-                </a>
-                <a href="#users-view" onclick="showView('users-view')" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition duration-200">
-                    <i class="fas fa-users mr-3"></i>
-                    User Management
-                </a>
-                <a href="#payments-view" onclick="showView('payments-view')" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition duration-200">
-                    <i class="fas fa-credit-card mr-3"></i>
-                    Payments
-                </a>
-                <a href="#promo-codes-view" onclick="showView('promo-codes-view')" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition duration-200">
-                    <i class="fas fa-tags mr-3"></i>
-                    Promo Codes
-                </a>
-                <a href="#analytics-view" onclick="showView('analytics-view')" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition duration-200">
-                    <i class="fas fa-chart-line mr-3"></i>
-                    Analytics
-                </a>
-            </nav>
-            
-            <div class="absolute bottom-6 left-6 right-6">
-                <div class="bg-gray-800 rounded-lg p-4">
-                    <p class="text-sm text-gray-300" id="adminInfo">Admin: Loading...</p>
-                    <button onclick="logout()" class="text-red-400 hover:text-red-300 text-sm mt-2">
-                        <i class="fas fa-sign-out-alt mr-1"></i>
-                        Logout
-                    </button>
-                </div>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👑 AutoStreamPro Family Admin</h1>
+            <div class="user-info">
+                <div id="userEmail">Loading...</div>
+                <div class="family-badge">Family Member - Lifetime Pro</div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="ml-64 min-h-screen">
-            <!-- Header -->
-            <header class="bg-white shadow-sm p-6">
-                <div class="flex justify-between items-center">
-                    <h2 id="pageTitle" class="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
-                    <div class="flex items-center space-x-4">
-                        <a href="/onboarding.html?family=true" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200 flex items-center space-x-2">
-                            <i class="fas fa-stream"></i>
-                            <span>My Streams</span>
-                        </a>
-                        <div class="text-sm text-gray-600">
-                            <span id="currentTime"></span>
-                        </div>
-                        <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
-                            Family Admin
-                        </div>
-                    </div>
-                </div>
-            </header>
+        <div class="quick-actions">
+            <h2>🎮 Quick Access</h2>
+            <p>Choose what you'd like to do:</p>
+            <div class="action-buttons">
+                <a href="/dashboard.html" class="action-btn primary">
+                    🎯 My Streaming Dashboard
+                </a>
+                <a href="/signup.html" class="action-btn">
+                    🎮 Set Up New Gaming Account
+                </a>
+            </div>
+        </div>
 
-            <!-- Dashboard View -->
-            <div id="dashboard-view" class="view-content p-6">
-                <!-- Family Member Quick Actions -->
-                <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-lg shadow-lg mb-8">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="text-xl font-bold mb-2">
-                                <i class="fas fa-crown text-yellow-300 mr-2"></i>
-                                Welcome, Family Admin!
-                            </h3>
-                            <p class="text-blue-100 mb-4">You have both admin access AND lifetime Pro streaming features.</p>
-                            <div class="flex space-x-4">
-                                <a href="/onboarding.html?family=true" class="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-blue-50 transition duration-200 flex items-center space-x-2">
-                                    <i class="fas fa-rocket"></i>
-                                    <span>Set Up My Streams</span>
-                                </a>
-                                <a href="/onboarding.html?step=1" class="bg-blue-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-400 transition duration-200 flex items-center space-x-2">
-                                    <i class="fas fa-play-circle"></i>
-                                    <span>Quick Start Guide</span>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="hidden md:block">
-                            <i class="fas fa-gamepad text-8xl text-blue-200 opacity-20"></i>
-                        </div>
-                    </div>
-                </div>
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalUsers">-</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="activeUsers">-</div>
+                <div class="stat-label">Active Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="familyMembers">6</div>
+                <div class="stat-label">Family Members</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="promoCodes">-</div>
+                <div class="stat-label">Promo Codes</div>
+            </div>
+        </div>
 
-                <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="stat-card text-white p-6 rounded-lg shadow-lg card-hover">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-white/80 text-sm">Total Users</p>
-                                <p class="text-3xl font-bold" id="totalUsers">-</p>
-                            </div>
-                            <i class="fas fa-users text-2xl text-white/60"></i>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card-2 text-white p-6 rounded-lg shadow-lg card-hover">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-white/80 text-sm">Active Subscriptions</p>
-                                <p class="text-3xl font-bold" id="activeSubscriptions">-</p>
-                            </div>
-                            <i class="fas fa-credit-card text-2xl text-white/60"></i>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card-3 text-white p-6 rounded-lg shadow-lg card-hover">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-white/80 text-sm">Monthly Revenue</p>
-                                <p class="text-3xl font-bold" id="monthlyRevenue">-</p>
-                            </div>
-                            <i class="fas fa-dollar-sign text-2xl text-white/60"></i>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card-4 text-white p-6 rounded-lg shadow-lg card-hover">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-white/80 text-sm">Family Members</p>
-                                <p class="text-3xl font-bold">6</p>
-                            </div>
-                            <i class="fas fa-crown text-2xl text-white/60"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Charts -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="text-lg font-semibold mb-4">User Growth</h3>
-                        <canvas id="userGrowthChart" height="300"></canvas>
-                    </div>
-                    
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="text-lg font-semibold mb-4">Revenue Trends</h3>
-                        <canvas id="revenueChart" height="300"></canvas>
-                    </div>
-                </div>
-
-                <!-- Recent Activity -->
-                <div class="mt-6 bg-white rounded-lg shadow-lg">
-                    <div class="p-6 border-b">
-                        <h3 class="text-lg font-semibold">Recent Activity</h3>
-                    </div>
-                    <div id="recentActivity" class="p-6">
-                        <p class="text-gray-500">Loading recent activity...</p>
-                    </div>
-                </div>
+        <div class="admin-sections">
+            <div class="admin-card">
+                <h3>👥 User Management</h3>
+                <p>View and manage all AutoStreamPro users, suspend accounts, and view user details.</p>
+                <button class="card-btn" onclick="loadUsers()">Manage Users</button>
+                <div id="usersList" style="margin-top: 15px;"></div>
             </div>
 
-            <!-- Users View -->
-            <div id="users-view" class="view-content hidden p-6">
-                <div class="bg-white rounded-lg shadow-lg">
-                    <div class="p-6 border-b">
-                        <div class="flex justify-between items-center">
-                            <h3 class="text-lg font-semibold">User Management</h3>
-                            <div class="flex space-x-3">
-                                <input type="text" id="userSearch" placeholder="Search users..." 
-                                       class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <select id="userFilter" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="">All Users</option>
-                                    <option value="active">Active</option>
-                                    <option value="suspended">Suspended</option>
-                                    <option value="family">Family</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="usersTable" class="p-6">
-                        <p class="text-gray-500">Loading users...</p>
-                    </div>
-                </div>
+            <div class="admin-card">
+                <h3>💰 Payment Management</h3>
+                <p>View payment history, manage subscriptions, and handle refunds.</p>
+                <button class="card-btn" onclick="loadPayments()">View Payments</button>
+                <div id="paymentsList" style="margin-top: 15px;"></div>
             </div>
 
-            <!-- Payments View -->
-            <div id="payments-view" class="view-content hidden p-6">
-                <div class="bg-white rounded-lg shadow-lg">
-                    <div class="p-6 border-b">
-                        <h3 class="text-lg font-semibold">Payment Management</h3>
-                    </div>
-                    <div id="paymentsTable" class="p-6">
-                        <p class="text-gray-500">Loading payments...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Promo Codes View -->
-            <div id="promo-codes-view" class="view-content hidden p-6">
-                <div class="bg-white rounded-lg shadow-lg">
-                    <div class="p-6 border-b">
-                        <div class="flex justify-between items-center">
-                            <h3 class="text-lg font-semibold">Promo Code Management</h3>
-                            <button onclick="showCreatePromoModal()" 
-                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200">
-                                <i class="fas fa-plus mr-2"></i>
+            <div class="admin-card">
+                <h3>🎫 Promo Code Manager</h3>
+                <p>Create discount codes for users. 100% discount codes give instant free access!</p>
+                
+                <div id="promoManager">
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                        <h4 style="margin-bottom: 15px;">Create New Promo Code</h4>
+                        
+                        <div style="display: grid; gap: 10px;">
+                            <input type="text" id="promoCode" placeholder="Code (e.g., FRIEND50, FAMILY100)" style="width: 100%; padding: 10px; border: none; border-radius: 5px; font-size: 14px;">
+                            
+                            <input type="number" id="promoDiscount" placeholder="Discount % (1-100)" min="1" max="100" style="width: 100%; padding: 10px; border: none; border-radius: 5px; font-size: 14px;">
+                            
+                            <input type="number" id="promoMaxUses" placeholder="Max Uses (optional)" min="1" style="width: 100%; padding: 10px; border: none; border-radius: 5px; font-size: 14px;">
+                            
+                            <input type="date" id="promoExpires" style="width: 100%; padding: 10px; border: none; border-radius: 5px; font-size: 14px;">
+                            
+                            <button onclick="createPromoCode()" style="width: 100%; padding: 12px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
                                 Create Promo Code
                             </button>
                         </div>
+                        
+                        <div style="margin-top: 15px; padding: 10px; background: rgba(255,215,0,0.1); border-radius: 5px; font-size: 12px;">
+                            <strong>💡 Tips:</strong><br>
+                            • 100% discount = Free lifetime access (no payment)<br>
+                            • Lower % = Discount applied at Stripe checkout<br>
+                            • Leave max uses empty for unlimited<br>
+                            • Codes work on signup page immediately
+                        </div>
                     </div>
-                    <div id="promoCodesTable" class="p-6">
-                        <p class="text-gray-500">Loading promo codes...</p>
-                    </div>
+                    
+                    <div id="promoCodesList" style="margin-top: 15px;"></div>
                 </div>
+                
+                <button class="card-btn" onclick="loadPromoCodes()">View All Promo Codes</button>
             </div>
 
-            <!-- Analytics View -->
-            <div id="analytics-view" class="view-content hidden p-6">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="text-lg font-semibold mb-4">Subscription Analytics</h3>
-                        <canvas id="subscriptionChart" height="300"></canvas>
-                    </div>
-                    
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="text-lg font-semibold mb-4">Promo Code Performance</h3>
-                        <canvas id="promoChart" height="300"></canvas>
-                    </div>
-                </div>
+            <div class="admin-card">
+                <h3>📊 Analytics</h3>
+                <p>View platform statistics, user growth, and revenue metrics.</p>
+                <button class="card-btn" onclick="loadAnalytics()">View Analytics</button>
+                <div id="analyticsData" style="margin-top: 15px;"></div>
             </div>
-        </div>
-    </div>
-
-    <!-- Create Promo Code Modal -->
-    <div id="createPromoModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-        <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold">Create Promo Code</h3>
-                <button onclick="hideCreatePromoModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <form id="createPromoForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Code</label>
-                    <input type="text" id="promoCode" required 
-                           class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                           placeholder="SAVE20">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <input type="text" id="promoDescription" 
-                           class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                           placeholder="20% off all plans">
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                        <select id="promoType" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="percentage">Percentage</option>
-                            <option value="fixed">Fixed Amount</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Value</label>
-                        <input type="number" id="promoValue" required min="1"
-                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               placeholder="20">
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Max Uses</label>
-                        <input type="number" id="promoMaxUses" min="1"
-                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               placeholder="Unlimited">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Expires</label>
-                        <input type="date" id="promoExpires"
-                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                </div>
-                
-                <div class="flex space-x-3 pt-4">
-                    <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200">
-                        Create Code
-                    </button>
-                    <button type="button" onclick="hideCreatePromoModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition duration-200">
-                        Cancel
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 
     <script>
-        // Global variables
-        let adminToken = localStorage.getItem('adminToken');
-        let currentUser = null;
+        // Initialize Supabase
+        const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3MjI2MzAsImV4cCI6MjA1MjI5ODYzMH0.cprEG_vE1fzjGvAA87ZCCHnyGUIgHwXhqsOyoXGDLII';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Check if already logged in
-        if (adminToken) {
-            verifyToken();
-        }
+        // Family member emails
+        const familyEmails = [
+            'mundt53@gmail.com',
+            'duncanmundt1@gmail.com', 
+            'mundstermom@gmail.com',
+            'ChristianMundt95@gmail.com',
+            'jordanmundt1@gmail.com',
+            'julia.elaine.lee@gmail.com'
+        ];
 
-        // Login form submission
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const loginBtn = document.getElementById('loginBtn');
-            const loginBtnText = document.getElementById('loginBtnText');
-            const loginSpinner = document.getElementById('loginSpinner');
-            const loginError = document.getElementById('loginError');
-            
-            // Show loading state
-            loginBtnText.textContent = 'Logging in...';
-            loginSpinner.classList.remove('hidden');
-            loginBtn.disabled = true;
-            loginError.classList.add('hidden');
-            
+        // Initialize admin dashboard
+        async function initializeAdmin() {
             try {
-                const response = await fetch('/.netlify/functions/admin-auth', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
+                const { data: { session } } = await supabase.auth.getSession();
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    adminToken = data.token;
-                    localStorage.setItem('adminToken', adminToken);
-                    currentUser = data.user;
-                    showDashboard();
-                } else {
-                    throw new Error(data.error || 'Login failed');
+                if (!session) {
+                    window.location.href = '/signup.html';
+                    return;
                 }
-                
-            } catch (error) {
-                loginError.textContent = error.message;
-                loginError.classList.remove('hidden');
-            } finally {
-                loginBtnText.textContent = 'Admin Login';
-                loginSpinner.classList.add('hidden');
-                loginBtn.disabled = false;
-            }
-        });
 
-        // Verify existing token
-        async function verifyToken() {
-            try {
-                const response = await fetch('/.netlify/functions/admin-auth', {
-                    headers: { 'Authorization': `Bearer ${adminToken}` }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success && data.valid) {
-                    currentUser = data.user;
-                    showDashboard();
-                } else {
-                    localStorage.removeItem('adminToken');
-                    adminToken = null;
+                // Check if user is family member
+                const isFamily = familyEmails.includes(session.user.email.toLowerCase());
+                if (!isFamily) {
+                    alert('Access denied. Admin access is only available for family members.');
+                    window.location.href = '/dashboard.html';
+                    return;
                 }
+
+                // Display user email
+                document.getElementById('userEmail').textContent = session.user.email;
+                
+                // Load initial stats
+                loadStats();
+                loadPromoCodes();
+                
             } catch (error) {
-                localStorage.removeItem('adminToken');
-                adminToken = null;
+                console.error('Error initializing admin:', error);
+                alert('Error loading admin dashboard');
             }
         }
 
-        // Show dashboard
-        function showDashboard() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('adminInfo').textContent = `Admin: ${currentUser.email}`;
-            
-            // Load initial data
-            loadDashboardData();
-            updateTime();
-            setInterval(updateTime, 1000);
-        }
-
-        // Show different views
-        function showView(viewId) {
-            // Hide all views
-            document.querySelectorAll('.view-content').forEach(view => {
-                view.classList.add('hidden');
-            });
-            
-            // Remove active class from all nav links
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('bg-gray-800', 'text-white');
-            });
-            
-            // Show selected view
-            document.getElementById(viewId).classList.remove('hidden');
-            
-            // Add active class to current nav link
-            event.target.closest('.nav-link').classList.add('bg-gray-800', 'text-white');
-            
-            // Update page title
-            const titles = {
-                'dashboard-view': 'Dashboard Overview',
-                'users-view': 'User Management',
-                'payments-view': 'Payment Management',
-                'promo-codes-view': 'Promo Code Management',
-                'analytics-view': 'Analytics & Reports'
-            };
-            document.getElementById('pageTitle').textContent = titles[viewId];
-            
-            // Load view-specific data
-            switch(viewId) {
-                case 'users-view':
-                    loadUsers();
-                    break;
-                case 'payments-view':
-                    loadPayments();
-                    break;
-                case 'promo-codes-view':
-                    loadPromoCodes();
-                    break;
-                case 'analytics-view':
-                    loadAnalytics();
-                    break;
-            }
-        }
-
-        // Load dashboard data
-        async function loadDashboardData() {
+        // Load platform statistics
+        async function loadStats() {
             try {
-                // Load basic stats
-                await Promise.all([
-                    loadUsers(true), // Summary only
-                    loadPayments(true), // Summary only
-                    loadPromoCodes(true) // Summary only
-                ]);
-                
-                // Initialize charts
-                initDashboardCharts();
-                
+                // Load total users
+                const { count: totalUsers } = await supabase
+                    .from('user_profiles')
+                    .select('*', { count: 'exact', head: true });
+                document.getElementById('totalUsers').textContent = totalUsers || 0;
+
+                // Load active users
+                const { count: activeUsers } = await supabase
+                    .from('user_profiles')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('subscription_status', 'active');
+                document.getElementById('activeUsers').textContent = activeUsers || 0;
+
+                // Load promo codes
+                const { count: promoCodes } = await supabase
+                    .from('promo_codes')
+                    .select('*', { count: 'exact', head: true });
+                document.getElementById('promoCodes').textContent = promoCodes || 0;
+
             } catch (error) {
-                console.error('Error loading dashboard data:', error);
+                console.error('Error loading stats:', error);
             }
         }
 
         // Load users
-        async function loadUsers(summaryOnly = false) {
+        async function loadUsers() {
             try {
-                const response = await fetch('/.netlify/functions/admin-users', {
-                    headers: { 'Authorization': `Bearer ${adminToken}` }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    if (summaryOnly) {
-                        document.getElementById('totalUsers').textContent = data.pagination?.total || data.users.length;
-                    } else {
-                        displayUsersTable(data.users);
-                    }
-                }
+                const { data: users, error } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                if (error) throw error;
+
+                const usersList = document.getElementById('usersList');
+                usersList.innerHTML = users.map(user => `
+                    <div style="background: rgba(255,255,255,0.1); padding: 10px; margin: 5px 0; border-radius: 5px; font-size: 0.9rem;">
+                        <strong>${user.email}</strong><br>
+                        Status: ${user.subscription_status || 'N/A'}<br>
+                        Plan: ${user.subscription_plan || 'N/A'}
+                        ${user.is_family_member ? '<span style="color: #FFD700;"> (Family)</span>' : ''}
+                    </div>
+                `).join('');
+
             } catch (error) {
                 console.error('Error loading users:', error);
+                document.getElementById('usersList').innerHTML = '<p style="color: #ff6b6b;">Error loading users</p>';
             }
-        }
-
-        // Display users table
-        function displayUsersTable(users) {
-            const tableHtml = `
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            ${users.map(user => `
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10">
-                                                <div class="h-10 w-10 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center text-white font-semibold">
-                                                    ${user.fullName ? user.fullName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
-                                                </div>
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">${user.fullName || 'N/A'}</div>
-                                                <div class="text-sm text-gray-500">${user.email}</div>
-                                                ${user.isFamilyMember ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Family</span>' : ''}
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPlanBadgeClass(user.subscriptionPlan)}">
-                                            ${user.subscriptionPlan || 'None'}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(user.subscriptionStatus, user.isSuspended)}">
-                                            ${user.isSuspended ? 'Suspended' : (user.subscriptionStatus || 'Unknown')}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        ${new Date(user.createdAt).toLocaleDateString()}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div class="flex space-x-2">
-                                            ${!user.isSuspended ? 
-                                                `<button onclick="suspendUser('${user.id}')" class="text-red-600 hover:text-red-900">Suspend</button>` :
-                                                `<button onclick="activateUser('${user.id}')" class="text-green-600 hover:text-green-900">Activate</button>`
-                                            }
-                                            <button onclick="viewUser('${user.id}')" class="text-blue-600 hover:text-blue-900">View</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-            
-            document.getElementById('usersTable').innerHTML = tableHtml;
         }
 
         // Load payments
-        async function loadPayments(summaryOnly = false) {
+        async function loadPayments() {
             try {
-                const response = await fetch('/.netlify/functions/admin-payments', {
-                    headers: { 'Authorization': `Bearer ${adminToken}` }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    if (summaryOnly) {
-                        const activeSubscriptions = data.transactions?.filter(t => t.type === 'subscription' && t.status === 'active').length || 0;
-                        document.getElementById('activeSubscriptions').textContent = activeSubscriptions;
-                        
-                        // Calculate monthly revenue (this would need proper calculation based on actual data)
-                        const monthlyRevenue = data.transactions?.reduce((total, t) => {
-                            if (t.type === 'subscription' && t.status === 'active') {
-                                return total + (t.amount / 100);
-                            }
-                            return total;
-                        }, 0) || 0;
-                        document.getElementById('monthlyRevenue').textContent = `$${monthlyRevenue.toFixed(0)}`;
-                    } else {
-                        displayPaymentsTable(data.transactions);
-                    }
-                }
+                // This would connect to your payment data
+                document.getElementById('paymentsList').innerHTML = `
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 5px;">
+                        <p>Payment tracking coming soon...</p>
+                        <p style="font-size: 12px; opacity: 0.7;">Will show Stripe payments, subscription status, revenue metrics, etc.</p>
+                    </div>
+                `;
             } catch (error) {
                 console.error('Error loading payments:', error);
+                document.getElementById('paymentsList').innerHTML = '<p style="color: #ff6b6b;">Error loading payment data</p>';
             }
         }
 
-        // Display payments table
-        function displayPaymentsTable(payments) {
-            const tableHtml = `
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            ${payments.map(payment => `
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">${payment.customerName || 'N/A'}</div>
-                                        <div class="text-sm text-gray-500">${payment.customerEmail}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        ${payment.type === 'subscription' ? 'Subscription' : 'Payment'}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        $${(payment.amount / 100).toFixed(2)}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusBadgeClass(payment.status)}">
-                                            ${payment.status}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        ${new Date(payment.createdAt).toLocaleDateString()}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button onclick="viewPayment('${payment.id}')" class="text-blue-600 hover:text-blue-900">View</button>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+        // Show promo manager
+        async function showPromoManager() {
+            document.getElementById('promoManager').innerHTML = `
+                <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 5px;">
+                    <h4>Create New Promo Code</h4>
+                    <input type="text" id="promoCode" placeholder="Code (e.g., FAMILY50)" style="width: 100%; padding: 8px; margin: 5px 0; border: none; border-radius: 3px;">
+                    <input type="number" id="promoDiscount" placeholder="Discount %" style="width: 100%; padding: 8px; margin: 5px 0; border: none; border-radius: 3px;">
+                    <button onclick="createPromoCode()" style="width: 100%; padding: 10px; margin: 5px 0; background: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">Create Code</button>
                 </div>
             `;
-            
-            document.getElementById('paymentsTable').innerHTML = tableHtml;
         }
 
-        // Load promo codes
-        async function loadPromoCodes(summaryOnly = false) {
+        // Create promo code
+        async function createPromoCode() {
+            const code = document.getElementById('promoCode').value.trim();
+            const discount = parseInt(document.getElementById('promoDiscount').value);
+            const maxUses = document.getElementById('promoMaxUses').value;
+            const expires = document.getElementById('promoExpires').value;
+
+            if (!code || !discount) {
+                alert('Please enter both code and discount percentage');
+                return;
+            }
+
+            if (discount < 1 || discount > 100) {
+                alert('Discount must be between 1% and 100%');
+                return;
+            }
+
             try {
-                const response = await fetch('/.netlify/functions/admin-promo-codes', {
-                    headers: { 'Authorization': `Bearer ${adminToken}` }
-                });
+                const { data: { session } } = await supabase.auth.getSession();
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    if (!summaryOnly) {
-                        displayPromoCodesTable(data.promoCodes);
-                    }
+                const promoData = {
+                    code: code.toLowerCase(),
+                    discount_percentage: discount,
+                    discount_type: 'percentage',
+                    is_active: true,
+                    created_by: session.user.id,
+                    created_at: new Date().toISOString(),
+                    current_uses: 0
+                };
+
+                // Add optional fields
+                if (maxUses && parseInt(maxUses) > 0) {
+                    promoData.max_uses = parseInt(maxUses);
                 }
+
+                if (expires) {
+                    promoData.expires_at = new Date(expires + 'T23:59:59').toISOString();
+                }
+
+                const { error } = await supabase
+                    .from('promo_codes')
+                    .insert(promoData);
+
+                if (error) throw error;
+
+                const discountText = discount === 100 ? 'FREE ACCESS' : `${discount}% OFF`;
+                alert(`✅ Promo code "${code.toUpperCase()}" created successfully!\n\n${discountText} - Ready to use on signup page immediately!`);
+                
+                // Clear form
+                document.getElementById('promoCode').value = '';
+                document.getElementById('promoDiscount').value = '';
+                document.getElementById('promoMaxUses').value = '';
+                document.getElementById('promoExpires').value = '';
+                
+                // Refresh stats and codes list
+                loadStats();
+                loadPromoCodes();
+
+            } catch (error) {
+                console.error('Error creating promo code:', error);
+                
+                if (error.message.includes('duplicate') || error.message.includes('unique')) {
+                    alert('❌ Promo code already exists. Please choose a different code.');
+                } else {
+                    alert('❌ Failed to create promo code: ' + error.message);
+                }
+            }
+        }
+
+        // Load and display promo codes
+        async function loadPromoCodes() {
+            try {
+                const { data: codes, error } = await supabase
+                    .from('promo_codes')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const promoCodesList = document.getElementById('promoCodesList');
+                
+                if (codes.length === 0) {
+                    promoCodesList.innerHTML = '<p style="text-align: center; opacity: 0.7;">No promo codes created yet.</p>';
+                    return;
+                }
+
+                promoCodesList.innerHTML = `
+                    <h4 style="margin-bottom: 10px;">Existing Promo Codes</h4>
+                    ${codes.map(code => {
+                        const isExpired = code.expires_at && new Date(code.expires_at) < new Date();
+                        const isMaxedOut = code.max_uses && code.current_uses >= code.max_uses;
+                        const isInactive = !code.is_active || isExpired || isMaxedOut;
+                        
+                        return `
+                            <div style="background: rgba(255,255,255,0.1); padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid ${isInactive ? '#ff6b6b' : '#4CAF50'};">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <strong style="font-size: 16px; color: ${isInactive ? '#ff6b6b' : '#4CAF50'};">
+                                        ${code.code.toUpperCase()}
+                                    </strong>
+                                    <span style="background: ${code.discount_percentage === 100 ? '#FFD700' : '#3b82f6'}; color: ${code.discount_percentage === 100 ? '#333' : 'white'}; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                                        ${code.discount_percentage === 100 ? 'FREE ACCESS' : code.discount_percentage + '% OFF'}
+                                    </span>
+                                </div>
+                                <div style="font-size: 12px; opacity: 0.8;">
+                                    Used: ${code.current_uses || 0}${code.max_uses ? '/' + code.max_uses : ''} times
+                                    ${code.expires_at ? ' • Expires: ' + new Date(code.expires_at).toLocaleDateString() : ''}
+                                    ${isExpired ? ' • EXPIRED' : ''}
+                                    ${isMaxedOut ? ' • MAX USES REACHED' : ''}
+                                    ${!code.is_active ? ' • INACTIVE' : ''}
+                                </div>
+                                <div style="margin-top: 8px;">
+                                    <button onclick="togglePromoCode('${code.id}', ${!code.is_active})" style="background: ${code.is_active ? '#f44336' : '#4CAF50'}; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 8px;">
+                                        ${code.is_active ? 'Deactivate' : 'Activate'}
+                                    </button>
+                                    <button onclick="copyPromoCode('${code.code}')" style="background: #2196F3; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                                        Copy Code
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                `;
+
             } catch (error) {
                 console.error('Error loading promo codes:', error);
+                document.getElementById('promoCodesList').innerHTML = '<p style="color: #ff6b6b;">Error loading promo codes</p>';
             }
         }
 
-        // Display promo codes table
-        function displayPromoCodesTable(promoCodes) {
-            const tableHtml = `
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usage</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            ${promoCodes.map(promo => `
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">${promo.code}</div>
-                                        <div class="text-sm text-gray-500">${promo.description || 'No description'}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        ${promo.discount_type === 'percentage' ? `${promo.discount_value}%` : `$${(promo.discount_value / 100).toFixed(2)}`}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        ${promo.used_count}${promo.max_uses ? ` / ${promo.max_uses}` : ' / ∞'}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPromoStatusBadgeClass(promo)}">
-                                            ${getPromoStatus(promo)}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        ${promo.created_by_email || 'System'}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div class="flex space-x-2">
-                                            ${promo.is_active ? 
-                                                `<button onclick="deactivatePromo('${promo.id}')" class="text-red-600 hover:text-red-900">Deactivate</button>` :
-                                                `<button onclick="activatePromo('${promo.id}')" class="text-green-600 hover:text-green-900">Activate</button>`
-                                            }
-                                            <button onclick="viewPromo('${promo.id}')" class="text-blue-600 hover:text-blue-900">View</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-            
-            document.getElementById('promoCodesTable').innerHTML = tableHtml;
+        // Toggle promo code active status
+        async function togglePromoCode(codeId, activate) {
+            try {
+                const { error } = await supabase
+                    .from('promo_codes')
+                    .update({ 
+                        is_active: activate,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', codeId);
+
+                if (error) throw error;
+
+                alert(`✅ Promo code ${activate ? 'activated' : 'deactivated'} successfully!`);
+                loadPromoCodes(); // Refresh the list
+
+            } catch (error) {
+                console.error('Error toggling promo code:', error);
+                alert('❌ Failed to update promo code');
+            }
+        }
+
+        // Copy promo code to clipboard
+        async function copyPromoCode(code) {
+            try {
+                await navigator.clipboard.writeText(code.toUpperCase());
+                alert(`✅ Promo code "${code.toUpperCase()}" copied to clipboard!`);
+            } catch (error) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = code.toUpperCase();
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert(`✅ Promo code "${code.toUpperCase()}" copied to clipboard!`);
+            }
         }
 
         // Load analytics
-        function loadAnalytics() {
-            // Initialize analytics charts
-            initAnalyticsCharts();
+        async function loadAnalytics() {
+            document.getElementById('analyticsData').innerHTML = '<p>Analytics dashboard coming soon...</p>';
         }
 
-        // Initialize dashboard charts
-        function initDashboardCharts() {
-            // User growth chart
-            const userCtx = document.getElementById('userGrowthChart').getContext('2d');
-            new Chart(userCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'New Users',
-                        data: [10, 15, 25, 35, 50, 65],
-                        borderColor: 'rgb(59, 130, 246)',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-
-            // Revenue chart
-            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-            new Chart(revenueCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'Revenue ($)',
-                        data: [1200, 1800, 2400, 3200, 4100, 5000],
-                        backgroundColor: 'rgba(34, 197, 94, 0.8)',
-                        borderColor: 'rgb(34, 197, 94)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
-
-        // Initialize analytics charts
-        function initAnalyticsCharts() {
-            // Subscription analytics chart
-            const subCtx = document.getElementById('subscriptionChart').getContext('2d');
-            new Chart(subCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Starter', 'Expert', 'Pro', 'Family'],
-                    datasets: [{
-                        data: [30, 25, 20, 6],
-                        backgroundColor: [
-                            'rgba(59, 130, 246, 0.8)',
-                            'rgba(16, 185, 129, 0.8)',
-                            'rgba(245, 158, 11, 0.8)',
-                            'rgba(239, 68, 68, 0.8)'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-
-            // Promo code performance chart
-            const promoCtx = document.getElementById('promoChart').getContext('2d');
-            new Chart(promoCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['SAVE20', 'WELCOME10', 'FAMILY50', 'NEWYEAR'],
-                    datasets: [{
-                        label: 'Uses',
-                        data: [45, 32, 18, 12],
-                        backgroundColor: 'rgba(168, 85, 247, 0.8)'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
-
-        // Promo code modal functions
-        function showCreatePromoModal() {
-            document.getElementById('createPromoModal').classList.remove('hidden');
-        }
-
-        function hideCreatePromoModal() {
-            document.getElementById('createPromoModal').classList.add('hidden');
-            document.getElementById('createPromoForm').reset();
-        }
-
-        // Create promo code form submission
-        document.getElementById('createPromoForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = {
-                action: 'create',
-                code: document.getElementById('promoCode').value,
-                description: document.getElementById('promoDescription').value,
-                discountType: document.getElementById('promoType').value,
-                discountValue: parseInt(document.getElementById('promoValue').value),
-                maxUses: document.getElementById('promoMaxUses').value ? parseInt(document.getElementById('promoMaxUses').value) : null,
-                expiresAt: document.getElementById('promoExpires').value || null
-            };
-            
+        // Logout function
+        async function logout() {
             try {
-                const response = await fetch('/.netlify/functions/admin-promo-codes', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${adminToken}`
-                    },
-                    body: JSON.stringify(formData)
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    hideCreatePromoModal();
-                    loadPromoCodes(); // Refresh the table
-                    alert('Promo code created successfully!');
-                } else {
-                    alert('Error creating promo code: ' + data.error);
-                }
+                await supabase.auth.signOut();
+                window.location.href = '/signup.html';
             } catch (error) {
-                alert('Error creating promo code: ' + error.message);
-            }
-        });
-
-        // User actions
-        async function suspendUser(userId) {
-            if (!confirm('Are you sure you want to suspend this user?')) return;
-            
-            try {
-                const response = await fetch('/.netlify/functions/admin-users', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${adminToken}`
-                    },
-                    body: JSON.stringify({ action: 'suspend', userId })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    loadUsers(); // Refresh the table
-                    alert('User suspended successfully');
-                } else {
-                    alert('Error suspending user: ' + data.error);
-                }
-            } catch (error) {
-                alert('Error suspending user: ' + error.message);
+                console.error('Error logging out:', error);
             }
         }
 
-        async function activateUser(userId) {
-            try {
-                const response = await fetch('/.netlify/functions/admin-users', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${adminToken}`
-                    },
-                    body: JSON.stringify({ action: 'activate', userId })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    loadUsers(); // Refresh the table
-                    alert('User activated successfully');
-                } else {
-                    alert('Error activating user: ' + data.error);
-                }
-            } catch (error) {
-                alert('Error activating user: ' + error.message);
-            }
-        }
-
-        function viewUser(userId) {
-            // Implement user detail view
-            alert('User detail view - Coming soon!');
-        }
-
-        // Promo code actions
-        async function deactivatePromo(promoId) {
-            if (!confirm('Are you sure you want to deactivate this promo code?')) return;
-            
-            try {
-                const response = await fetch('/.netlify/functions/admin-promo-codes', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${adminToken}`
-                    },
-                    body: JSON.stringify({ action: 'deactivate', promoId })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    loadPromoCodes(); // Refresh the table
-                    alert('Promo code deactivated successfully');
-                } else {
-                    alert('Error deactivating promo code: ' + data.error);
-                }
-            } catch (error) {
-                alert('Error deactivating promo code: ' + error.message);
-            }
-        }
-
-        async function activatePromo(promoId) {
-            try {
-                const response = await fetch('/.netlify/functions/admin-promo-codes', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${adminToken}`
-                    },
-                    body: JSON.stringify({ action: 'activate', promoId })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    loadPromoCodes(); // Refresh the table
-                    alert('Promo code activated successfully');
-                } else {
-                    alert('Error activating promo code: ' + data.error);
-                }
-            } catch (error) {
-                alert('Error activating promo code: ' + error.message);
-            }
-        }
-
-        function viewPromo(promoId) {
-            // Implement promo detail view
-            alert('Promo detail view - Coming soon!');
-        }
-
-        function viewPayment(paymentId) {
-            // Implement payment detail view
-            alert('Payment detail view - Coming soon!');
-        }
-
-        // Utility functions
-        function getPlanBadgeClass(plan) {
-            const classes = {
-                'starter': 'bg-blue-100 text-blue-800',
-                'expert': 'bg-green-100 text-green-800',
-                'pro': 'bg-purple-100 text-purple-800',
-                'lifetime': 'bg-yellow-100 text-yellow-800'
-            };
-            return classes[plan] || 'bg-gray-100 text-gray-800';
-        }
-
-        function getStatusBadgeClass(status, isSuspended) {
-            if (isSuspended) return 'bg-red-100 text-red-800';
-            
-            const classes = {
-                'active': 'bg-green-100 text-green-800',
-                'trialing': 'bg-blue-100 text-blue-800',
-                'past_due': 'bg-yellow-100 text-yellow-800',
-                'canceled': 'bg-red-100 text-red-800'
-            };
-            return classes[status] || 'bg-gray-100 text-gray-800';
-        }
-
-        function getPaymentStatusBadgeClass(status) {
-            const classes = {
-                'succeeded': 'bg-green-100 text-green-800',
-                'active': 'bg-green-100 text-green-800',
-                'pending': 'bg-yellow-100 text-yellow-800',
-                'failed': 'bg-red-100 text-red-800',
-                'canceled': 'bg-red-100 text-red-800'
-            };
-            return classes[status] || 'bg-gray-100 text-gray-800';
-        }
-
-        function getPromoStatusBadgeClass(promo) {
-            if (!promo.is_active) return 'bg-red-100 text-red-800';
-            if (promo.expires_at && new Date(promo.expires_at) < new Date()) return 'bg-red-100 text-red-800';
-            if (promo.max_uses && promo.used_count >= promo.max_uses) return 'bg-red-100 text-red-800';
-            return 'bg-green-100 text-green-800';
-        }
-
-        function getPromoStatus(promo) {
-            if (!promo.is_active) return 'Inactive';
-            if (promo.expires_at && new Date(promo.expires_at) < new Date()) return 'Expired';
-            if (promo.max_uses && promo.used_count >= promo.max_uses) return 'Max Uses Reached';
-            return 'Active';
-        }
-
-        function updateTime() {
-            const now = new Date();
-            document.getElementById('currentTime').textContent = now.toLocaleString();
-        }
-
-        function logout() {
-            localStorage.removeItem('adminToken');
-            adminToken = null;
-            currentUser = null;
-            document.getElementById('dashboard').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('email').value = '';
-            document.getElementById('password').value = '';
-        }
-
-        // Search and filter functionality
-        document.getElementById('userSearch')?.addEventListener('input', (e) => {
-            // Implement user search
-            console.log('Searching users:', e.target.value);
-        });
-
-        document.getElementById('userFilter')?.addEventListener('change', (e) => {
-            // Implement user filtering
-            console.log('Filtering users:', e.target.value);
-        });
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initializeAdmin);
     </script>
 </body>
 </html>
