@@ -420,6 +420,13 @@
                         <div id="password-error" class="message error"></div>
                     </div>
                     
+                    <div class="form-group">
+                        <label for="promoCode" class="form-label">Promo Code (Optional)</label>
+                        <input type="text" id="promoCode" name="promoCode" class="form-input" placeholder="Enter promo code for discount">
+                        <div id="promo-error" class="message error"></div>
+                        <div id="promo-success" class="message success"></div>
+                    </div>
+                    
                     <div class="trial-info">
                         <svg class="trial-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -464,6 +471,145 @@
             }
         } catch (error) {
             console.error('❌ Supabase initialization failed:', error);
+        }
+        
+        // Family member emails
+        const familyEmails = [
+            'mundt53@gmail.com',
+            'duncanmundt1@gmail.com', 
+            'mundstermom@gmail.com',
+            'ChristianMundt95@gmail.com',
+            'jordanmundt1@gmail.com',
+            'julia.elaine.lee@gmail.com'
+        ];
+        
+        // Validate promo code
+        async function validatePromoCode(code) {
+            if (!code || !code.trim()) {
+                return { valid: false, discount: 0 };
+            }
+            
+            try {
+                const { data, error } = await supabase
+                    .from('promo_codes')
+                    .select('*')
+                    .eq('code', code.toLowerCase())
+                    .eq('is_active', true)
+                    .single();
+                
+                if (error || !data) {
+                    return { valid: false, discount: 0 };
+                }
+                
+                // Check if expired
+                if (data.expires_at && new Date(data.expires_at) < new Date()) {
+                    return { valid: false, discount: 0, message: 'Promo code has expired' };
+                }
+                
+                // Check usage limits
+                if (data.max_uses && data.current_uses >= data.max_uses) {
+                    return { valid: false, discount: 0, message: 'Promo code usage limit reached' };
+                }
+                
+                return { 
+                    valid: true, 
+                    discount: data.discount_percentage || 0,
+                    discountType: data.discount_type || 'percentage',
+                    promoId: data.id,
+                    code: data.code,
+                    currentUses: data.current_uses || 0
+                };
+                
+            } catch (error) {
+                console.error('Error validating promo code:', error);
+                return { valid: false, discount: 0 };
+            }
+        }
+        
+        // Create free account for 100% promo codes or family members
+        async function createFreeAccount(email, password, type, promoData = null) {
+            try {
+                console.log('🎉 Creating free account via', type);
+                
+                // Create Supabase auth account
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: email,
+                    password: password
+                });
+                
+                if (authError) throw authError;
+                console.log('✅ Free auth account created');
+                
+                // Create user profile
+                const profileData = {
+                    user_id: authData.user.id,
+                    email: email,
+                    subscription_status: 'active',
+                    subscription_plan: 'pro',
+                    subscription_type: 'lifetime',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                };
+                
+                if (type === 'family') {
+                    profileData.is_family_member = true;
+                    profileData.access_level = 'family_admin';
+                    profileData.family_access_granted_at = new Date().toISOString();
+                } else if (type === 'promo') {
+                    profileData.promo_code_used = promoData.code;
+                    profileData.access_level = 'user';
+                }
+                
+                const { error: profileError } = await supabase
+                    .from('user_profiles')
+                    .upsert(profileData);
+                
+                if (profileError) throw profileError;
+                console.log('✅ Free profile created');
+                
+                // Create admin permissions for family members
+                if (type === 'family') {
+                    const { error: adminError } = await supabase
+                        .from('admin_permissions')
+                        .upsert({
+                            user_id: authData.user.id,
+                            email: email,
+                            role: 'family_admin',
+                            permissions: ['view_users', 'manage_users', 'view_payments', 'manage_payments', 'create_promo_codes', 'manage_promo_codes', 'view_analytics', 'full_access'],
+                            granted_at: new Date().toISOString(),
+                            is_active: true
+                        });
+                    
+                    if (adminError) console.warn('Could not create admin permissions:', adminError);
+                }
+                
+                // Update promo code usage if applicable
+                if (type === 'promo' && promoData && promoData.promoId) {
+                    const { error: updateError } = await supabase
+                        .from('promo_codes')
+                        .update({ 
+                            current_uses: promoData.currentUses + 1,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', promoData.promoId);
+                    
+                    if (updateError) console.warn('Could not update promo usage:', updateError);
+                }
+                
+                const message = type === 'family' 
+                    ? '🎉 Welcome to the family! You have lifetime Pro access.'
+                    : `🎉 Welcome! Your ${promoData.discount}% discount gave you free access!`;
+                    
+                showSuccess('form-message', message);
+                
+                setTimeout(() => {
+                    window.location.href = '/dashboard.html';
+                }, 2000);
+                
+            } catch (error) {
+                console.error('❌ Free account creation error:', error);
+                showError('form-message', 'Account creation failed: ' + error.message);
+            }
         }
         
         // Plan selection variables
@@ -591,6 +737,47 @@
             try {
                 console.log('🔄 Creating Supabase account...');
                 
+                // Check promo code first
+                const promoCode = document.getElementById('promoCode').value.trim();
+                let promoData = { valid: false, discount: 0 };
+                
+                if (promoCode) {
+                    console.log('🎫 Validating promo code:', promoCode);
+                    promoData = await validatePromoCode(promoCode);
+                    
+                    if (promoData.valid) {
+                        console.log('✅ Valid promo code:', promoData.discount + '% discount');
+                        document.getElementById('promo-success').textContent = `✅ ${promoData.discount}% discount applied!`;
+                        document.getElementById('promo-success').style.display = 'block';
+                    } else {
+                        console.log('❌ Invalid promo code');
+                        showError('promo-error', promoData.message || 'Invalid promo code');
+                        btn.disabled = false;
+                        btn.textContent = 'Start Free Trial →';
+                        return;
+                    }
+                }
+                
+                // Family detection
+                const isFamily = familyEmails.includes(email.toLowerCase());
+                
+                // Handle family members
+                if (isFamily) {
+                    console.log('👑 Family member detected - creating free account');
+                    await createFreeAccount(email, password, 'family');
+                    return;
+                }
+                
+                // Handle 100% discount codes (free account)
+                if (promoData.valid && promoData.discount >= 100) {
+                    console.log('🎉 100% discount code - creating free account');
+                    await createFreeAccount(email, password, 'promo', promoData);
+                    return;
+                }
+                
+                // Regular user or partial discount - continue with existing flow
+                console.log('💳 Regular user - processing normally');
+                
                 // Create account
                 const { data, error } = await supabase.auth.signUp({
                     email: email,
@@ -622,7 +809,7 @@
                 showSuccess('form-message', 'Account created! Setting up payment...');
                 
                 // Create Stripe checkout
-                await createStripeCheckout(data.user);
+                await createStripeCheckout(data.user, promoData);
                 
             } catch (error) {
                 console.error('❌ Signup failed:', error);
@@ -652,21 +839,29 @@
         }
         
         // Create Stripe checkout
-        async function createStripeCheckout(user) {
+        async function createStripeCheckout(user, promoData = { valid: false, discount: 0 }) {
             try {
                 console.log('💳 Creating Stripe checkout...');
+                
+                const requestBody = {
+                    plan: selectedPlan,
+                    userEmail: user.email,
+                    userId: user.id,
+                    userName: user.email.split('@')[0]
+                };
+                
+                // Add promo data if valid
+                if (promoData.valid) {
+                    requestBody.promoCode = promoData.code;
+                    requestBody.discount = promoData.discount;
+                }
                 
                 const response = await fetch('/.netlify/functions/stripe-checkout', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        plan: selectedPlan,
-                        userEmail: user.email,
-                        userId: user.id,
-                        userName: user.email.split('@')[0]
-                    })
+                    body: JSON.stringify(requestBody)
                 });
                 
                 const data = await response.json();
@@ -704,7 +899,7 @@
         }
         
         function clearMessages() {
-            const messages = ['email-error', 'password-error', 'form-message'];
+            const messages = ['email-error', 'password-error', 'form-message', 'promo-error', 'promo-success'];
             messages.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
