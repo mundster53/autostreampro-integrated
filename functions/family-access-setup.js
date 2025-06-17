@@ -161,32 +161,63 @@ async function setupFamilyAccess(userId, email, supabase) {
             throw new Error('User is not a family member');
         }
 
-        // Update user profile with family member status and Pro access
-        const { data: updatedProfile, error: profileError } = await supabase
+        // First, try to update existing profile
+        const { data: existingProfile, error: fetchError } = await supabase
             .from('user_profiles')
-            .upsert({
-                user_id: userId,
-                email: email.toLowerCase(),
-                is_family_member: true,
-                subscription_status: 'active',
-                subscription_plan: 'pro',
-                subscription_type: 'lifetime',
-                trial_ends_at: null,
-                billing_cycle: 'lifetime',
-                access_level: 'admin',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-                family_access_granted_at: new Date().toISOString()
-            }, {
-                onConflict: 'user_id',
-                ignoreDuplicates: false
-            })
-            .select()
+            .select('*')
+            .eq('user_id', userId)
             .single();
 
-        if (profileError) {
-            console.error('Profile update error:', profileError);
-            throw new Error(`Failed to update profile: ${profileError.message}`);
+        let updatedProfile;
+        
+        if (existingProfile) {
+            // Update existing profile
+            const { data, error: updateError } = await supabase
+                .from('user_profiles')
+                .update({
+                    is_family_member: true,
+                    subscription_status: 'active',
+                    subscription_plan: 'pro',
+                    subscription_type: 'lifetime',
+                    trial_ends_at: null,
+                    billing_cycle: 'lifetime',
+                    access_level: 'family_admin',
+                    updated_at: new Date().toISOString(),
+                    family_access_granted_at: new Date().toISOString()
+                })
+                .eq('user_id', userId)
+                .select()
+                .single();
+
+            if (updateError) {
+                throw new Error(`Failed to update profile: ${updateError.message}`);
+            }
+            updatedProfile = data;
+        } else {
+            // Create new profile
+            const { data, error: insertError } = await supabase
+                .from('user_profiles')
+                .insert({
+                    user_id: userId,
+                    email: email.toLowerCase(),
+                    is_family_member: true,
+                    subscription_status: 'active',
+                    subscription_plan: 'pro',
+                    subscription_type: 'lifetime',
+                    trial_ends_at: null,
+                    billing_cycle: 'lifetime',
+                    access_level: 'family_admin',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    family_access_granted_at: new Date().toISOString()
+                })
+                .select()
+                .single();
+
+            if (insertError) {
+                throw new Error(`Failed to create profile: ${insertError.message}`);
+            }
+            updatedProfile = data;
         }
 
         // Create lifetime subscription record
