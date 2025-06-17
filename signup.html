@@ -60,14 +60,16 @@ async function handleSignup(e) {
     try {
         console.log('🔄 Creating Supabase account...');
         
-        // ⭐ FAMILY DETECTION - CHECK FIRST ⭐
-        const isFamily = familyEmails.includes(email.toLowerCase());
-        
-        if (isFamily) {
-            console.log('👑 Family member detected - creating free account');
-            await createFamilyAccount(email, password);
-            return;
-        }
+        // Family detection
+    const familyEmails = ['mundt53@gmail.com', 'duncanmundt1@gmail.com', 'mundstermom@gmail.com', 'ChristianMundt95@gmail.com', 'jordanmundt1@gmail.com', 'julia.elaine.lee@gmail.com'];
+    const isFamily = familyEmails.includes(email.toLowerCase());
+    
+    if (isFamily) {
+        console.log('👑 Family member detected');
+        showSuccess('form-message', '🎉 Welcome to the family! You have lifetime Pro access.');
+        setTimeout(() => window.location.href = '/dashboard.html', 2000);
+        return;
+    }
         
         // Regular user - YOUR EXISTING CODE CONTINUES UNCHANGED
         console.log('💳 Regular user - processing normally');
