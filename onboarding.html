@@ -3,46 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Setup Your Automation - AutoStreamPro</title>
-    <meta name="description" content="Connect your gaming and social accounts to start automating your stream marketing">
-    
-    <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Supabase -->
+    <title>AutoStreamPro - Set Up Your Streams</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
         }
-        
-        .setup-card {
-            background: white;
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .family-badge {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #333;
+            padding: 8px 16px;
             border-radius: 20px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(229, 231, 235, 0.8);
-            transition: all 0.3s ease;
+            font-weight: bold;
+            display: inline-block;
+            margin: 10px 0;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
         }
-        
-        .setup-card:hover {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
-            transform: translateY(-2px);
+
+        .step-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
-        .step-indicator {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .step-number {
+            background: #4CAF50;
             color: white;
             width: 40px;
             height: 40px;
@@ -50,702 +76,527 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
-            font-size: 16px;
+            font-weight: bold;
+            margin-right: 15px;
         }
-        
-        .step-indicator.completed {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+
+        .step-title {
+            font-size: 1.5rem;
+            font-weight: bold;
         }
-        
-        .step-indicator.inactive {
-            background: #e5e7eb;
-            color: #9ca3af;
+
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
         }
-        
-        .connect-btn {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            color: white;
-            padding: 12px 24px;
+
+        .platform-card {
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: none;
+            padding: 20px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
             cursor: pointer;
-            font-size: 14px;
-            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.3);
-            min-width: 120px;
         }
-        
+
+        .platform-card:hover {
+            border-color: #4CAF50;
+            transform: translateY(-2px);
+        }
+
+        .platform-card.connected {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.2);
+        }
+
+        .platform-icon {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+
+        .platform-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .platform-status {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .connect-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
         .connect-btn:hover {
-            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
             transform: translateY(-1px);
-            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
         }
-        
-        .connect-btn.connected {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.3);
+
+        .connect-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
         }
-        
-        .connect-btn.connected:hover {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+
+        .connected-btn {
+            background: #4CAF50;
+            cursor: default;
         }
-        
+
+        .credentials-form {
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .save-btn {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
         .progress-bar {
-            background: #e5e7eb;
-            height: 8px;
-            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            height: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
             overflow: hidden;
         }
-        
+
         .progress-fill {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            background: linear-gradient(45deg, #4CAF50, #45a049);
             height: 100%;
-            border-radius: 4px;
-            transition: width 0.5s ease;
+            transition: width 0.3s ease;
         }
-        
+
+        .success-message {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% {
+                color: rgba(0,0,0,0);
+                text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0);
+            }
+            40% {
+                color: white;
+                text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0);
+            }
+            60% {
+                text-shadow: .25em 0 0 white, .5em 0 0 rgba(0,0,0,0);
+            }
+            80%, 100% {
+                text-shadow: .25em 0 0 white, .5em 0 0 white;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
         .next-btn {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            background: linear-gradient(45deg, #9C27B0, #7B1FA2);
             color: white;
-            padding: 16px 32px;
-            border-radius: 12px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
-            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.3);
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 20px;
             width: 100%;
+            transition: all 0.3s ease;
         }
-        
+
         .next-btn:hover {
-            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
             transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.4);
-        }
-        
-        .next-btn:disabled {
-            background: #d1d5db;
-            color: #9ca3af;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .fade-in {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.6s ease;
-        }
-        
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
+            box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
         }
     </style>
 </head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 AutoStreamPro Setup</h1>
+            <p>Connect your gaming platforms and start automated streaming</p>
+            <div id="familyBadge" class="family-badge hidden">
+                👑 Family Member - Lifetime Pro Access
+            </div>
+        </div>
 
-<body class="bg-gray-50 min-h-screen">
-    
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center space-x-3">
-                    <span class="text-2xl">⚡</span>
-                    <span class="text-xl font-bold text-gray-900">AutoStreamPro</span>
-                </div>
-                
-                <div class="flex items-center space-x-4">
-                    <span class="text-gray-600 font-medium">Setup Progress</span>
-                    <div class="w-32 progress-bar">
-                        <div class="progress-fill" id="progress-fill" style="width: 25%"></div>
-                    </div>
-                    <span class="text-sm text-gray-500" id="progress-text">1 of 4</span>
-                </div>
-            </div>
+        <div id="loadingScreen" class="loading">
+            Initializing your AutoStreamPro experience
         </div>
-    </nav>
 
-    <!-- Main Content -->
-    <div class="max-w-4xl mx-auto px-6 py-12">
-        
-        <!-- Welcome Header -->
-        <div class="text-center mb-12 fade-in">
-            <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                </svg>
+        <div id="mainContent" class="hidden">
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill" style="width: 25%"></div>
             </div>
-            <h1 class="text-4xl font-bold text-gray-900 mb-4" id="welcome-title">
-                Welcome to AutoStreamPro! 🎮
-            </h1>
-            <p class="text-xl text-gray-600 max-w-2xl mx-auto" id="welcome-text">
-                Let's connect your gaming and social accounts so we can start automating your stream marketing. This takes about 5 minutes.
-            </p>
-        </div>
-        
-        <!-- Setup Steps -->
-        <div class="grid gap-8">
-            
-            <!-- Step 1: Gaming Platforms -->
-            <div class="setup-card p-8 fade-in" id="step-1">
-                <div class="flex items-center mb-6">
-                    <div class="step-indicator" id="step1-indicator">1</div>
-                    <div class="ml-4">
-                        <h3 class="text-xl font-semibold text-gray-900">Connect Your Gaming Platforms</h3>
-                        <p class="text-gray-600">We need access to monitor your streams and create clips</p>
-                    </div>
+
+            <!-- Step 1: Connect Gaming Platforms -->
+            <div class="step-container">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <div class="step-title">Connect Your Gaming Platforms</div>
                 </div>
                 
-                <div class="grid md:grid-cols-2 gap-6">
-                    <!-- Twitch -->
-                    <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-                                <svg class="w-6 h-6 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <div class="font-semibold text-gray-900">Twitch</div>
-                                <div class="text-sm text-gray-600">Stream monitoring & clips</div>
-                            </div>
-                        </div>
-                        <button class="connect-btn" onclick="connectPlatform('twitch')" id="twitch-btn">
-                            Connect
-                        </button>
+                <div class="platform-grid">
+                    <div class="platform-card" data-platform="twitch">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23a855f7'%3E%3Cpath d='M2.149 0L.537 4.119v15.823h5.731V24h3.224l4.058-4.058h6.135L24 15.725V0H2.149zm19.164 14.569l-3.506 3.506h-5.731l-3.224 3.224v-3.224H5.043V2.687h16.27v11.882z'/%3E%3Cpath d='M18.464 7.334v4.746h-2.149V7.334h2.149zm-5.731 0v4.746h-2.149V7.334h2.149z'/%3E%3C/svg%3E" alt="Twitch" class="platform-icon">
+                        <div class="platform-name">Twitch</div>
+                        <div class="platform-status">Not connected</div>
+                        <button class="connect-btn" onclick="connectPlatform('twitch')">Connect Twitch</button>
                     </div>
-                    
-                    <!-- YouTube -->
-                    <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
-                                <svg class="w-6 h-6 text-red-600" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <div class="font-semibold text-gray-900">YouTube</div>
-                                <div class="text-sm text-gray-600">Stream monitoring & uploads</div>
-                            </div>
-                        </div>
-                        <button class="connect-btn" onclick="connectPlatform('youtube')" id="youtube-btn">
-                            Connect
-                        </button>
+
+                    <div class="platform-card" data-platform="youtube">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff0000'%3E%3Cpath d='M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z'/%3E%3C/svg%3E" alt="YouTube" class="platform-icon">
+                        <div class="platform-name">YouTube</div>
+                        <div class="platform-status">Not connected</div>
+                        <button class="connect-btn" onclick="connectPlatform('youtube')">Connect YouTube</button>
                     </div>
+
+                    <div class="platform-card" data-platform="instagram">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e4405f'%3E%3Cpath d='M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z'/%3E%3C/svg%3E" alt="Instagram" class="platform-icon">
+                        <div class="platform-name">Instagram</div>
+                        <div class="platform-status">Not connected</div>
+                        <button class="connect-btn" onclick="connectPlatform('instagram')">Connect Instagram</button>
+                    </div>
+
+                    <div class="platform-card" data-platform="tiktok">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000000'%3E%3Cpath d='M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z'/%3E%3C/svg%3E" alt="TikTok" class="platform-icon">
+                        <div class="platform-name">TikTok</div>
+                        <div class="platform-status">Not connected</div>
+                        <button class="connect-btn" onclick="connectPlatform('tiktok')">Connect TikTok</button>
+                    </div>
+                </div>
+
+                <div id="credentialsSection" class="hidden">
+                    <h3 style="margin: 30px 0 20px 0;">Enter Your Platform Credentials</h3>
+                    <div id="credentialsForms"></div>
                 </div>
             </div>
-            
-            <!-- Step 2: Social Media Platforms -->
-            <div class="setup-card p-8 fade-in" id="step-2" style="opacity: 0.5;">
-                <div class="flex items-center mb-6">
-                    <div class="step-indicator inactive" id="step2-indicator">2</div>
-                    <div class="ml-4">
-                        <h3 class="text-xl font-semibold text-gray-900">Connect Social Media</h3>
-                        <p class="text-gray-600">Where we'll automatically post your gaming clips and updates</p>
-                    </div>
+
+            <!-- Step 2: AI Configuration -->
+            <div class="step-container">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <div class="step-title">Configure AI Settings</div>
                 </div>
-                
-                <div class="grid md:grid-cols-3 gap-6">
-                    <!-- Twitter/X -->
-                    <div class="flex flex-col items-center p-4 border border-gray-200 rounded-lg">
-                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3">
-                            <svg class="w-6 h-6 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                            </svg>
-                        </div>
-                        <div class="text-center mb-3">
-                            <div class="font-semibold text-gray-900">Twitter/X</div>
-                            <div class="text-sm text-gray-600">Clips & updates</div>
-                        </div>
-                        <button class="connect-btn" onclick="connectPlatform('twitter')" id="twitter-btn" disabled>
-                            Connect
-                        </button>
-                    </div>
-                    
-                    <!-- Instagram -->
-                    <div class="flex flex-col items-center p-4 border border-gray-200 rounded-lg">
-                        <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-3">
-                            <svg class="w-6 h-6 text-pink-600" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.070-4.85.070-3.204 0-3.584-.012-4.849-.070-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                            </svg>
-                        </div>
-                        <div class="text-center mb-3">
-                            <div class="font-semibold text-gray-900">Instagram</div>
-                            <div class="text-sm text-gray-600">Stories & posts</div>
-                        </div>
-                        <button class="connect-btn" onclick="connectPlatform('instagram')" id="instagram-btn" disabled>
-                            Connect
-                        </button>
-                    </div>
-                    
-                    <!-- TikTok -->
-                    <div class="flex flex-col items-center p-4 border border-gray-200 rounded-lg">
-                        <div class="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center mb-3">
-                            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M19.321 5.562a5.124 5.124 0 0 1-.443-.258 6.228 6.228 0 0 1-1.137-.966c-.849-.948-1.286-2.081-1.302-3.368H13.82v14.22c-.013 1.685-1.351 3.051-3.029 3.051-1.647 0-2.989-1.335-2.989-2.977 0-1.642 1.342-2.977 2.989-2.977.339 0 .664.06.964.169v-3.004a5.968 5.968 0 0 0-.964-.08c-3.298 0-5.973 2.658-5.973 5.938 0 3.279 2.675 5.938 5.973 5.938 3.298 0 5.973-2.658 5.973-5.938V8.943a9.143 9.143 0 0 0 5.236 1.629v-2.955a6.196 6.196 0 0 1-2.677-2.055z"/>
-                            </svg>
-                        </div>
-                        <div class="text-center mb-3">
-                            <div class="font-semibold text-gray-900">TikTok</div>
-                            <div class="text-sm text-gray-600">Short clips</div>
-                        </div>
-                        <button class="connect-btn" onclick="connectPlatform('tiktok')" id="tiktok-btn" disabled>
-                            Connect
-                        </button>
-                    </div>
-                </div>
+                <p>Set up your AI preferences for automated content creation and engagement.</p>
+                <button class="next-btn" onclick="nextStep()">Configure AI Settings</button>
             </div>
-            
-            <!-- Step 3: AI Preferences -->
-            <div class="setup-card p-8 fade-in" id="step-3" style="opacity: 0.5;">
-                <div class="flex items-center mb-6">
-                    <div class="step-indicator inactive" id="step3-indicator">3</div>
-                    <div class="ml-4">
-                        <h3 class="text-xl font-semibold text-gray-900">Customize Your AI</h3>
-                        <p class="text-gray-600">Tell us about your gaming style so we can personalize your content</p>
-                    </div>
+
+            <!-- Step 3: Content Strategy -->
+            <div class="step-container">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <div class="step-title">Content Strategy</div>
                 </div>
-                
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-900 mb-2">Primary Games</label>
-                        <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="primary-games" disabled>
-                            <option value="">Select your main games...</option>
-                            <option value="fortnite">Fortnite</option>
-                            <option value="valorant">Valorant</option>
-                            <option value="minecraft">Minecraft</option>
-                            <option value="warzone">Call of Duty: Warzone</option>
-                            <option value="apex">Apex Legends</option>
-                            <option value="lol">League of Legends</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-900 mb-2">Content Style</label>
-                        <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="content-style" disabled>
-                            <option value="">Choose your style...</option>
-                            <option value="highlight">Epic Highlights & Kills</option>
-                            <option value="funny">Funny Moments & Fails</option>
-                            <option value="educational">Tips & Tutorials</option>
-                            <option value="competitive">Competitive Gameplay</option>
-                            <option value="casual">Casual & Chill</option>
-                        </select>
-                    </div>
-                </div>
+                <p>Define your content goals and automated posting schedule.</p>
+                <button class="next-btn" onclick="nextStep()">Set Content Strategy</button>
             </div>
-            
-            <!-- Step 4: Automation Settings -->
-            <div class="setup-card p-8 fade-in" id="step-4" style="opacity: 0.5;">
-                <div class="flex items-center mb-6">
-                    <div class="step-indicator inactive" id="step4-indicator">4</div>
-                    <div class="ml-4">
-                        <h3 class="text-xl font-semibold text-gray-900">Automation Preferences</h3>
-                        <p class="text-gray-600">How often should we post and promote your content?</p>
-                    </div>
+
+            <!-- Step 4: Launch -->
+            <div class="step-container">
+                <div class="step-header">
+                    <div class="step-number">4</div>
+                    <div class="step-title">Launch AutoStreamPro</div>
                 </div>
-                
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-900 mb-2">Posting Frequency</label>
-                        <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="posting-frequency" disabled>
-                            <option value="">Select frequency...</option>
-                            <option value="realtime">Real-time (during streams)</option>
-                            <option value="daily">Daily highlights</option>
-                            <option value="weekly">Weekly compilations</option>
-                            <option value="manual">Manual approval</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-900 mb-2">Auto-posting Time</label>
-                        <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" id="posting-time" disabled>
-                            <option value="">Best time...</option>
-                            <option value="optimal">AI chooses optimal times</option>
-                            <option value="evening">Evening (6-9 PM)</option>
-                            <option value="afternoon">Afternoon (12-3 PM)</option>
-                            <option value="morning">Morning (9-12 PM)</option>
-                        </select>
-                    </div>
-                </div>
+                <p>You're all set! Start your automated streaming journey.</p>
+                <button class="next-btn" onclick="launchPlatform()">🚀 Launch My Automated Streams</button>
             </div>
-        </div>
-        
-        <!-- Action Buttons -->
-        <div class="flex justify-between items-center mt-12 fade-in">
-            <button class="px-6 py-3 text-gray-600 hover:text-gray-900 font-medium" onclick="goBack()">
-                ← Previous Step
-            </button>
-            
-            <button class="next-btn" onclick="goToNext()" id="next-btn" disabled>
-                Next Step
-                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-                </svg>
-            </button>
         </div>
     </div>
 
     <script>
-        // Supabase Configuration
-        const SUPABASE_URL = 'https://dykxhmdozgccawkbxejd.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        let user = null;
-        let currentStep = 1;
-        let connectedPlatforms = new Set();
-        
-        // Initialize Supabase and check authentication
-        async function initSupabase() {
+        // Initialize Supabase
+        const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3MjI2MzAsImV4cCI6MjA1MjI5ODYzMH0.cprEG_vE1fzjGvAA87ZCCHnyGUIgHwXhqsOyoXGDLII';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Family member emails
+        const familyEmails = [
+            'mundt53@gmail.com',
+            'duncanmundt1@gmail.com', 
+            'mundstermom@gmail.com',
+            'ChristianMundt95@gmail.com',
+            'jordanmundt1@gmail.com',
+            'julia.elaine.lee@gmail.com'
+        ];
+
+        let connectedPlatforms = [];
+        let userIsFamilyMember = false;
+
+        // Check if current user is family member
+        async function isFamilyMember() {
             try {
-                console.log('Initializing Supabase onboarding...');
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session && session.user) {
+                    return familyEmails.includes(session.user.email.toLowerCase());
+                }
+                return false;
+            } catch (error) {
+                console.error('Error checking family status:', error);
+                return false;
+            }
+        }
+
+        // Initialize the application
+        async function initializeApp() {
+            try {
+                console.log('Initializing AutoStreamPro onboarding...');
                 
-                // Get current session
-                const { data: { session }, error } = await supabase.auth.getSession();
+                // Check if user is authenticated
+                const { data: { session } } = await supabase.auth.getSession();
                 
-                if (error) {
-                    console.error('Session error:', error);
-                    redirectToSignup();
+                if (!session) {
+                    console.log('No session found, redirecting to signup...');
+                    window.location.href = '/signup.html';
                     return;
                 }
-                
-                if (!session || !session.user) {
-                    console.log('No authenticated user found - redirecting to signup');
-                    redirectToSignup();
-                    return;
-                }
-                
-                user = session.user;
-                console.log('User authenticated in onboarding:', user);
-                
-                // Check for Stripe success
-                checkStripeSuccess();
-                
-                // Load any existing user data
-                await loadUserPreferences();
-                
-            } catch (error) {
-                console.error('Supabase initialization failed:', error);
-                redirectToSignup();
-            }
-        }
-        
-        // Redirect to signup if not authenticated
-        function redirectToSignup() {
-            console.log('Redirecting to signup...');
-            window.location.href = 'signup.html';
-        }
-        
-        // Check for Stripe success callback
-        function checkStripeSuccess() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const sessionId = urlParams.get('session_id');
-            const trial = urlParams.get('trial');
-            
-            if (sessionId && trial === 'true') {
-                console.log('Stripe checkout successful, session:', sessionId);
-                
-                // Update welcome message
-                const welcomeTitle = document.getElementById('welcome-title');
-                const welcomeText = document.getElementById('welcome-text');
-                
-                if (welcomeTitle) {
-                    welcomeTitle.innerHTML = '🎉 Trial Started Successfully!';
-                }
-                
-                if (welcomeText) {
-                    welcomeText.textContent = 'Your 14-day free trial has begun! Let\'s connect your accounts to start automating your content.';
-                }
-                
-                // Clean up URL
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-        }
-        
-        // Load user preferences if they exist
-        async function loadUserPreferences() {
-            try {
-                console.log('Loading user preferences for:', user.id);
-                
-                // Get plan info from user metadata if available
-                if (user.user_metadata) {
-                    const plan = user.user_metadata.plan;
-                    const price = user.user_metadata.price;
-                    console.log('User plan from Supabase metadata:', plan, price);
-                }
-                
-            } catch (error) {
-                console.error('Failed to load user preferences:', error);
-            }
-        }
-        
-        // Platform connection functions
-        async function connectPlatform(platform) {
-            try {
-                console.log('Connecting platform:', platform, 'for user:', user.id);
-                
-                const response = await fetch(`/.netlify/functions/${platform}-auth`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${user.access_token || 'supabase-user'}`
-                    },
-                    body: JSON.stringify({
-                        userId: user.id,
-                        action: 'connect',
-                        userEmail: user.email
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.authUrl) {
-                    // Store current state
-                    sessionStorage.setItem('onboardingStep', currentStep);
-                    sessionStorage.setItem('connectedPlatforms', JSON.stringify([...connectedPlatforms]));
-                    sessionStorage.setItem('supabaseUserId', user.id);
-                    
-                    console.log('Redirecting to OAuth for', platform, ':', data.authUrl);
-                    
-                    // Redirect to OAuth
-                    window.location.href = data.authUrl;
+
+                // Check if user is family member
+                userIsFamilyMember = await isFamilyMember();
+                console.log('User is family member:', userIsFamilyMember);
+
+                if (userIsFamilyMember) {
+                    // Family member - show family badge and skip payment checks
+                    document.getElementById('familyBadge').classList.remove('hidden');
+                    console.log('👑 Family member detected - bypassing payment checks');
                 } else {
-                    console.error('No auth URL received for', platform, 'Response:', data);
-                    alert(`Failed to connect to ${platform}. Please try again.`);
+                    // Regular user - check subscription status
+                    const hasValidSubscription = await checkSubscriptionStatus();
+                    if (!hasValidSubscription) {
+                        console.log('No valid subscription, redirecting to signup...');
+                        window.location.href = '/signup.html';
+                        return;
+                    }
                 }
+
+                // Show main content
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+                
+                console.log('Onboarding initialized successfully');
+                
             } catch (error) {
-                console.error('Failed to connect', platform, error);
-                alert(`Failed to connect to ${platform}. Please try again.`);
+                console.error('Error initializing app:', error);
+                if (!userIsFamilyMember) {
+                    window.location.href = '/signup.html';
+                }
             }
         }
-        
-        function markPlatformConnected(platform) {
-            console.log('Marking platform connected:', platform);
-            
-            const btn = document.getElementById(`${platform}-btn`);
-            if (btn) {
-                btn.textContent = 'Connected ✓';
-                btn.classList.add('connected');
-                btn.onclick = null;
-                btn.disabled = false;
+
+        // Check subscription status for regular users
+        async function checkSubscriptionStatus() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return false;
+
+                const { data: profile } = await supabase
+                    .from('user_profiles')
+                    .select('subscription_status, subscription_plan, is_family_member')
+                    .eq('user_id', session.user.id)
+                    .single();
+
+                if (!profile) return false;
+
+                // Check if user has active subscription or is family member
+                return profile.subscription_status === 'active' || 
+                       profile.is_family_member === true ||
+                       profile.subscription_plan === 'pro';
+                       
+            } catch (error) {
+                console.error('Error checking subscription:', error);
+                return false;
             }
+        }
+
+        // Connect platform function
+        async function connectPlatform(platform) {
+            const card = document.querySelector(`[data-platform="${platform}"]`);
+            const button = card.querySelector('.connect-btn');
+            const status = card.querySelector('.platform-status');
             
-            connectedPlatforms.add(platform);
+            // Simulate connection process
+            button.disabled = true;
+            button.textContent = 'Connecting...';
+            status.textContent = 'Connecting...';
+            
+            // Simulate API call delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Mark as connected
+            card.classList.add('connected');
+            button.classList.add('connected-btn');
+            button.textContent = '✓ Connected';
+            status.textContent = 'Connected successfully';
+            connectedPlatforms.push(platform);
+            
+            // Show credentials form
+            showCredentialsForm(platform);
+            
+            // Update progress
             updateProgress();
         }
-        
-        function updateProgress() {
-            const totalSteps = 4;
-            const completedSteps = Math.min(currentStep - 1 + (connectedPlatforms.size / 2), totalSteps);
-            const progress = (completedSteps / totalSteps) * 100;
+
+        // Show credentials form for platform
+        function showCredentialsForm(platform) {
+            const credentialsSection = document.getElementById('credentialsSection');
+            const credentialsForms = document.getElementById('credentialsForms');
             
-            const progressFill = document.getElementById('progress-fill');
-            const progressText = document.getElementById('progress-text');
+            credentialsSection.classList.remove('hidden');
             
-            if (progressFill) progressFill.style.width = progress + '%';
-            if (progressText) progressText.textContent = `${Math.ceil(progress/25)} of 4`;
+            const formHTML = `
+                <div class="credentials-form" id="${platform}-credentials">
+                    <h4>${platform.charAt(0).toUpperCase() + platform.slice(1)} Credentials</h4>
+                    <div class="form-group">
+                        <label for="${platform}-username">Username/Channel Name:</label>
+                        <input type="text" id="${platform}-username" placeholder="Enter your ${platform} username">
+                    </div>
+                    <div class="form-group">
+                        <label for="${platform}-token">API Token/Key:</label>
+                        <input type="password" id="${platform}-token" placeholder="Enter your ${platform} API token">
+                    </div>
+                    <button class="save-btn" onclick="saveCredentials('${platform}')">Save ${platform} Credentials</button>
+                </div>
+            `;
             
-            console.log('Progress updated:', progress + '%', 'Connected platforms:', connectedPlatforms.size);
-            
-            // Enable next steps when requirements are met
-            if (currentStep === 1 && connectedPlatforms.size >= 1) {
-                enableStep(2);
-            } else if (currentStep === 2 && connectedPlatforms.size >= 2) {
-                enableStep(3);
-            } else if (currentStep === 3) {
-                enableStep(4);
-            }
+            credentialsForms.innerHTML += formHTML;
         }
-        
-        function enableStep(step) {
-            console.log('Enabling step:', step);
+
+        // Save credentials for platform
+        async function saveCredentials(platform) {
+            const username = document.getElementById(`${platform}-username`).value;
+            const token = document.getElementById(`${platform}-token`).value;
             
-            const stepCard = document.getElementById(`step-${step}`);
-            const stepIndicator = document.getElementById(`step${step}-indicator`);
-            
-            if (stepCard) stepCard.style.opacity = '1';
-            if (stepIndicator) stepIndicator.classList.remove('inactive');
-            
-            // Enable form elements in this step
-            if (stepCard) {
-                const inputs = stepCard.querySelectorAll('input, select, button');
-                inputs.forEach(input => {
-                    if (!input.id || !input.id.includes('-btn')) {
-                        input.disabled = false;
-                    }
-                });
-                
-                // Enable specific platform buttons for step 2
-                if (step === 2) {
-                    const socialButtons = ['twitter-btn', 'instagram-btn', 'tiktok-btn'];
-                    socialButtons.forEach(btnId => {
-                        const btn = document.getElementById(btnId);
-                        if (btn) btn.disabled = false;
-                    });
-                }
+            if (!username || !token) {
+                alert('Please fill in all fields');
+                return;
             }
-            
-            const nextBtn = document.getElementById('next-btn');
-            if (nextBtn && step >= 2) nextBtn.disabled = false;
-        }
-        
-        function goToNext() {
-            if (currentStep < 4) {
-                currentStep++;
-                console.log('Moving to step:', currentStep);
-                
-                const nextBtn = document.getElementById('next-btn');
-                if (currentStep === 4 && nextBtn) {
-                    nextBtn.innerHTML = 'Complete Setup <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
-                    nextBtn.onclick = completeSetup;
-                }
-                
-                updateProgress();
-            }
-        }
-        
-        function goBack() {
-            if (currentStep > 1) {
-                currentStep--;
-                console.log('Moving back to step:', currentStep);
-                
-                const nextBtn = document.getElementById('next-btn');
-                if (currentStep < 4 && nextBtn) {
-                    nextBtn.innerHTML = 'Next Step <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>';
-                    nextBtn.onclick = goToNext;
-                }
-                
-                updateProgress();
-            }
-        }
-        
-        async function completeSetup() {
-            console.log('Completing setup...');
-            
-            const primaryGames = document.getElementById('primary-games').value;
-            const contentStyle = document.getElementById('content-style').value;
-            const postingFrequency = document.getElementById('posting-frequency').value;
-            const postingTime = document.getElementById('posting-time').value;
-            
-            const preferences = {
-                primaryGames,
-                contentStyle,
-                postingFrequency,
-                postingTime,
-                connectedPlatforms: [...connectedPlatforms],
-                setupCompleted: true
-            };
             
             try {
-                console.log('Saving preferences:', preferences);
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return;
                 
-                const response = await fetch('/.netlify/functions/dashboard-api', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${user.access_token || 'supabase-user'}`
-                    },
-                    body: JSON.stringify({
-                        action: 'savePreferences',
-                        userId: user.id,
-                        preferences: preferences
-                    })
-                });
-                
-                if (response.ok) {
-                    console.log('Setup completed successfully');
-                    
-                    // Update Supabase user metadata
-                    await supabase.auth.updateUser({
-                        data: { 
-                            onboarding_completed: true,
-                            preferences: preferences
-                        }
+                // Save credentials to database (in a real app, encrypt these!)
+                const { error } = await supabase
+                    .from('user_platform_credentials')
+                    .upsert({
+                        user_id: session.user.id,
+                        platform: platform,
+                        username: username,
+                        encrypted_token: token, // Should be encrypted in production
+                        updated_at: new Date().toISOString()
                     });
-                    
-                    // Redirect to dashboard
-                    window.location.href = 'dashboard.html';
-                } else {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Failed to save preferences');
-                }
+                
+                if (error) throw error;
+                
+                // Show success message
+                const form = document.getElementById(`${platform}-credentials`);
+                form.innerHTML = `
+                    <div class="success-message">
+                        ✅ ${platform.charAt(0).toUpperCase() + platform.slice(1)} credentials saved successfully!
+                    </div>
+                `;
+                
             } catch (error) {
-                console.error('Setup completion failed:', error);
-                alert('Setup failed. Please try again.');
+                console.error('Error saving credentials:', error);
+                alert('Failed to save credentials. Please try again.');
             }
         }
-        
-        // Check for OAuth callback
-        function checkOAuthCallback() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const platform = urlParams.get('platform');
-            const success = urlParams.get('success');
+
+        // Update progress bar
+        function updateProgress() {
+            const totalSteps = 4;
+            const completedPlatforms = connectedPlatforms.length;
+            const progressPercent = Math.min(25 + (completedPlatforms * 15), 100);
             
-            console.log('Checking OAuth callback - platform:', platform, 'success:', success);
-            
-            if (platform && success === 'true') {
-                markPlatformConnected(platform);
-                // Clean up URL
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-            
-            // Restore state from sessionStorage
-            const savedStep = sessionStorage.getItem('onboardingStep');
-            const savedPlatforms = sessionStorage.getItem('connectedPlatforms');
-            const savedUserId = sessionStorage.getItem('supabaseUserId');
-            
-            if (savedStep) {
-                currentStep = parseInt(savedStep);
-                console.log('Restored current step:', currentStep);
-            }
-            
-            if (savedPlatforms) {
-                const platforms = JSON.parse(savedPlatforms);
-                platforms.forEach(platform => {
-                    markPlatformConnected(platform);
-                });
-                console.log('Restored connected platforms:', platforms);
-            }
-            
-            if (savedUserId && user && savedUserId !== user.id) {
-                console.warn('User ID mismatch - clearing session storage');
-                sessionStorage.clear();
-            }
+            document.getElementById('progressFill').style.width = progressPercent + '%';
         }
-        
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Onboarding page loaded');
+
+        // Next step function
+        function nextStep() {
+            // In a real implementation, this would navigate to the next configuration step
+            alert('This feature is coming soon! Your platform connections are being saved.');
+        }
+
+        // Launch platform function
+        function launchPlatform() {
+            if (connectedPlatforms.length === 0) {
+                alert('Please connect at least one platform before launching.');
+                return;
+            }
             
-            // Fade in animations
-            setTimeout(() => {
-                document.querySelectorAll('.fade-in').forEach(el => {
-                    el.classList.add('visible');
-                });
-            }, 100);
-            
-            // Initialize Supabase and check auth
-            initSupabase().then(() => {
-                checkOAuthCallback();
-                updateProgress();
-            }).catch(error => {
-                console.error('Failed to initialize onboarding:', error);
-                redirectToSignup();
-            });
+            // Redirect to main dashboard
+            window.location.href = '/dashboard.html';
+        }
+
+        // Initialize the app when page loads
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        // Handle auth state changes
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT') {
+                window.location.href = '/signup.html';
+            }
         });
     </script>
 </body>
