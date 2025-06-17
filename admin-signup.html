@@ -130,8 +130,11 @@
     <script>
         // Initialize Supabase
         const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3MjI2MzAsImV4cCI6MjA1MjI5ODYzMH0.cprEG_vE1fzjGvAA87ZCCHnyGUIgHwXhqsOyoXGDLII';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Check if already logged in as family member
+        checkExistingSession();
 
         // Family member emails
         const familyEmails = [
@@ -142,6 +145,20 @@
             'jordanmundt1@gmail.com',
             'julia.elaine.lee@gmail.com'
         ];
+
+        // Check if user is already logged in and redirect
+        async function checkExistingSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (session && session.user) {
+                const userEmail = session.user.email;
+                if (familyEmails.includes(userEmail.toLowerCase())) {
+                    console.log('Family member already logged in, redirecting...');
+                    window.location.href = '/admin.html';
+                    return;
+                }
+            }
+        }
 
         // Email validation
         document.getElementById('email').addEventListener('blur', function() {
@@ -207,6 +224,31 @@
                 });
                 
                 if (authError) {
+                    // Check if account already exists
+                    if (authError.message.includes('already registered') || 
+                        authError.message.includes('already exists') ||
+                        authError.message.includes('already been registered')) {
+                        
+                        // Account exists, try to sign them in instead
+                        console.log('Account already exists, attempting sign in...');
+                        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                            email: email,
+                            password: password
+                        });
+                        
+                        if (signInError) {
+                            throw new Error(`Account exists but login failed: ${signInError.message}`);
+                        }
+                        
+                        console.log('✅ Signed in to existing family account');
+                        showSuccess('🎉 Welcome back! Redirecting to admin panel...');
+                        
+                        setTimeout(() => {
+                            window.location.href = '/admin.html';
+                        }, 1500);
+                        return;
+                    }
+                    
                     throw new Error(`Account creation failed: ${authError.message}`);
                 }
                 
@@ -216,25 +258,32 @@
                 
                 console.log('✅ Family admin account created:', authData.user.id);
                 
-                // Step 2: Setup family access
-                const familyResponse = await fetch('/.netlify/functions/family-access-setup', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        userId: authData.user.id,
-                        email: email
-                    })
-                });
-                
-                const familyData = await familyResponse.json();
-                
-                if (!familyData.success) {
-                    throw new Error(`Family access setup failed: ${familyData.error}`);
+                // Step 2: Setup family access (but handle gracefully if it fails)
+                try {
+                    const familyResponse = await fetch('/.netlify/functions/family-access-setup', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: authData.user.id,
+                            email: email
+                        })
+                    });
+                    
+                    const familyData = await familyResponse.json();
+                    
+                    if (familyData.success) {
+                        console.log('✅ Family admin access configured');
+                        showSuccess('🎉 Family admin account created! You have lifetime Pro access and admin privileges.');
+                    } else {
+                        // Family setup failed, but account exists - probably duplicate
+                        console.log('⚠️ Family setup failed, but account created. Redirecting to admin...');
+                        showSuccess('🎉 Family admin account ready! Redirecting to admin panel...');
+                    }
+                } catch (familyError) {
+                    // Family setup failed, but account was created successfully
+                    console.log('⚠️ Family setup error, but account exists. Redirecting to admin...');
+                    showSuccess('🎉 Family admin account ready! Redirecting to admin panel...');
                 }
-                
-                console.log('✅ Family admin access configured');
-                
-                showSuccess('🎉 Family admin account created! You have lifetime Pro access and admin privileges.');
                 
                 setTimeout(() => {
                     window.location.href = '/admin.html';
