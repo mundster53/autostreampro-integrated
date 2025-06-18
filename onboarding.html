@@ -294,6 +294,256 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
         }
+
+        /* AI Configuration Styles */
+        .ai-config-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+
+        .ai-status-bar {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .ai-status {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 193, 7, 0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 1px solid #FFC107;
+            color: #FFC107;
+            font-weight: 600;
+        }
+
+        .ai-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .ai-tab {
+            flex: 1;
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .ai-tab.active {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(255, 107, 53, 0.3);
+        }
+
+        .ai-content {
+            display: none;
+        }
+
+        .ai-content.active {
+            display: block;
+        }
+
+        .game-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .game-option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .game-option.selected {
+            border-color: #ff6b35;
+            background: rgba(255, 107, 53, 0.2);
+        }
+
+        .game-option:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 107, 53, 0.5);
+        }
+
+        .game-icon {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .game-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .ai-detection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .detection-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detection-card h4 {
+            color: #ff6b35;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .detection-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .detection-option label {
+            font-weight: 600;
+            color: #f0f0f0;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(26px);
+        }
+
+        .range-slider {
+            width: 150px;
+        }
+
+        .range-slider input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .range-slider input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            cursor: pointer;
+        }
+
+        .range-value {
+            font-size: 0.8rem;
+            text-align: center;
+            margin-top: 5px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .ai-select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: white;
+            min-width: 150px;
+        }
+
+        .ai-select option {
+            background: #667eea;
+            color: white;
+        }
+
+        .ai-learning-notice {
+            display: flex;
+            align-items: center;
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .learning-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+        }
+
+        .learning-text h4 {
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+
+        .learning-text p {
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .ai-tabs {
+                flex-direction: column;
+            }
+            
+            .ai-detection-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .game-selector {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+            
+            .detection-option {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .range-slider {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -362,14 +612,230 @@
                 </div>
             </div>
 
-            <!-- Step 2: AI Configuration -->
+            <!-- Step 2: AI Configuration - REPLACED WITH FULL AI INTERFACE -->
             <div class="step-container">
                 <div class="step-header">
                     <div class="step-number">2</div>
-                    <div class="step-title">Configure AI Settings</div>
+                    <div class="step-title">🤖 Configure Your AI</div>
                 </div>
-                <p>Set up your AI preferences for automated content creation and engagement.</p>
-                <button class="next-btn" data-action="next-step">Configure AI Settings</button>
+
+                <!-- AI Configuration Interface -->
+                <div class="ai-config-container">
+                    <!-- AI Status -->
+                    <div class="ai-status-bar">
+                        <div class="ai-status learning">
+                            <span>🧠 AI Learning Mode: Ready to Start</span>
+                        </div>
+                    </div>
+
+                    <!-- AI Configuration Tabs -->
+                    <div class="ai-tabs">
+                        <button class="ai-tab active" data-tab="games">Games & Detection</button>
+                        <button class="ai-tab" data-tab="content">Content Settings</button>
+                        <button class="ai-tab" data-tab="platforms">Platform Optimization</button>
+                    </div>
+
+                    <!-- Games & Detection Tab -->
+                    <div class="ai-content active" id="games">
+                        <div class="ai-section">
+                            <h3>🎮 Select Your Primary Games</h3>
+                            <p style="margin-bottom: 15px;">AI will use specialized models for each game type</p>
+                            <div class="game-selector">
+                                <div class="game-option" data-game="valorant">
+                                    <div class="game-icon">🔫</div>
+                                    <div class="game-name">Valorant</div>
+                                </div>
+                                <div class="game-option" data-game="fortnite">
+                                    <div class="game-icon">🏗️</div>
+                                    <div class="game-name">Fortnite</div>
+                                </div>
+                                <div class="game-option" data-game="apex">
+                                    <div class="game-icon">⚡</div>
+                                    <div class="game-name">Apex Legends</div>
+                                </div>
+                                <div class="game-option" data-game="csgo">
+                                    <div class="game-icon">💥</div>
+                                    <div class="game-name">CS:GO</div>
+                                </div>
+                                <div class="game-option" data-game="lol">
+                                    <div class="game-icon">⚔️</div>
+                                    <div class="game-name">League of Legends</div>
+                                </div>
+                                <div class="game-option" data-game="rocket">
+                                    <div class="game-icon">🚗</div>
+                                    <div class="game-name">Rocket League</div>
+                                </div>
+                                <div class="game-option" data-game="overwatch">
+                                    <div class="game-icon">🦸</div>
+                                    <div class="game-name">Overwatch 2</div>
+                                </div>
+                                <div class="game-option" data-game="minecraft">
+                                    <div class="game-icon">🧱</div>
+                                    <div class="game-name">Minecraft</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ai-detection-grid">
+                            <div class="detection-card">
+                                <h4>🎯 Moment Detection</h4>
+                                <div class="detection-option">
+                                    <label>Kill Streaks</label>
+                                    <div class="toggle-switch active" data-setting="killstreaks"></div>
+                                </div>
+                                <div class="detection-option">
+                                    <label>Clutch Plays</label>
+                                    <div class="toggle-switch active" data-setting="clutchplays"></div>
+                                </div>
+                                <div class="detection-option">
+                                    <label>Epic Fails</label>
+                                    <div class="toggle-switch active" data-setting="epicfails"></div>
+                                </div>
+                                <div class="detection-option">
+                                    <label>Comeback Victories</label>
+                                    <div class="toggle-switch active" data-setting="comebacks"></div>
+                                </div>
+                            </div>
+
+                            <div class="detection-card">
+                                <h4>🎙️ Voice Analysis</h4>
+                                <div class="detection-option">
+                                    <label>Excitement Level</label>
+                                    <div class="range-slider">
+                                        <input type="range" min="1" max="10" value="7" data-setting="excitement">
+                                        <div class="range-value">Sensitivity: <span id="excitement-value">7</span>/10</div>
+                                    </div>
+                                </div>
+                                <div class="detection-option">
+                                    <label>Celebration Clips</label>
+                                    <div class="toggle-switch active" data-setting="celebrations"></div>
+                                </div>
+                                <div class="detection-option">
+                                    <label>Rage Moments</label>
+                                    <div class="toggle-switch" data-setting="ragemoments"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content Settings Tab -->
+                    <div class="ai-content" id="content">
+                        <div class="ai-detection-grid">
+                            <div class="detection-card">
+                                <h4>📏 Clip Settings</h4>
+                                <div class="detection-option">
+                                    <label>Default Clip Length</label>
+                                    <select data-setting="cliplength" class="ai-select">
+                                        <option value="15">15 seconds</option>
+                                        <option value="30" selected>30 seconds</option>
+                                        <option value="45">45 seconds</option>
+                                        <option value="60">60 seconds</option>
+                                        <option value="auto">AI Decides</option>
+                                    </select>
+                                </div>
+                                <div class="detection-option">
+                                    <label>Your Gaming Style</label>
+                                    <select data-setting="personality" class="ai-select">
+                                        <option value="hype">Hype/Energetic</option>
+                                        <option value="chill" selected>Chill/Laid-back</option>
+                                        <option value="competitive">Competitive/Intense</option>
+                                        <option value="funny">Funny/Entertaining</option>
+                                        <option value="educational">Educational/Pro Tips</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="detection-card">
+                                <h4>🎨 Enhancement Features</h4>
+                                <div class="detection-option">
+                                    <label>Auto-Generated Titles</label>
+                                    <div class="toggle-switch active" data-setting="autotitles"></div>
+                                </div>
+                                <div class="detection-option">
+                                    <label>Smart Thumbnails</label>
+                                    <div class="toggle-switch active" data-setting="autothumbnails"></div>
+                                </div>
+                                <div class="detection-option">
+                                    <label>Auto-Captions</label>
+                                    <div class="toggle-switch active" data-setting="autocaptions"></div>
+                                </div>
+                                <div class="detection-option">
+                                    <label>Trending Music</label>
+                                    <div class="toggle-switch active" data-setting="trendingmusic"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Platform Optimization Tab -->
+                    <div class="ai-content" id="platforms">
+                        <div class="ai-detection-grid">
+                            <div class="detection-card">
+                                <h4>📱 TikTok Optimization</h4>
+                                <div class="detection-option">
+                                    <label>Vertical Format (9:16)</label>
+                                    <div class="toggle-switch active" data-setting="tiktok-vertical"></div>
+                                </div>
+                                <div class="detection-option">
+                                    <label>Hook First 3 Seconds</label>
+                                    <div class="toggle-switch active" data-setting="tiktok-hook"></div>
+                                </div>
+                                <div class="detection-option">
+                                    <label>Max Length</label>
+                                    <select data-setting="tiktok-length" class="ai-select">
+                                        <option value="15">15 seconds</option>
+                                        <option value="30" selected>30 seconds</option>
+                                        <option value="60">60 seconds</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="detection-card">
+                                <h4>🎬 YouTube Optimization</h4>
+                                <div class="detection-option">
+                                    <label>YouTube Shorts</label>
+                                    <div class="toggle-switch active" data-setting="youtube-shorts"></div>
+                                </div>
+                                <div class="detection-option">
+                                    <label>SEO-Optimized Titles</label>
+                                    <div class="toggle-switch active" data-setting="youtube-seo"></div>
+                                </div>
+                                <div class="detection-option">
+                                    <label>Auto-Descriptions</label>
+                                    <div class="toggle-switch active" data-setting="youtube-descriptions"></div>
+                                </div>
+                            </div>
+
+                            <div class="detection-card">
+                                <h4>📸 Instagram & Twitch</h4>
+                                <div class="detection-option">
+                                    <label>Instagram Reels</label>
+                                    <div class="toggle-switch active" data-setting="instagram-reels"></div>
+                                </div>
+                                <div class="detection-option">
+                                    <label>Gaming Hashtags</label>
+                                    <div class="toggle-switch active" data-setting="instagram-hashtags"></div>
+                                </div>
+                                <div class="detection-option">
+                                    <label>Twitch Highlights</label>
+                                    <div class="toggle-switch active" data-setting="twitch-highlights"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Learning Notice -->
+                    <div class="ai-learning-notice">
+                        <div class="learning-icon">🧠</div>
+                        <div class="learning-text">
+                            <h4>Continuous Learning Enabled</h4>
+                            <p>Your AI will analyze performance and automatically optimize settings to maximize your clip success rate.</p>
+                        </div>
+                    </div>
+
+                    <!-- AI Save Button -->
+                    <button class="next-btn" data-action="save-ai-config">🤖 Save AI Configuration & Continue</button>
+                </div>
             </div>
 
             <!-- Step 3: Content Strategy -->
@@ -442,6 +908,7 @@
                         document.getElementById('mainContent').classList.remove('hidden');
                         userIsFamilyMember = true;
                         console.log('🎉 IMMEDIATE FAMILY ACCESS GRANTED');
+                        initializeAIConfig(); // Initialize AI config
                     }, 100);
                     return;
                 }
@@ -607,6 +1074,9 @@
             document.getElementById('loadingScreen').classList.add('hidden');
             document.getElementById('mainContent').classList.remove('hidden');
             
+            // Initialize AI configuration
+            initializeAIConfig();
+            
             console.log('🎉 Family member onboarding completed successfully!');
         }
 
@@ -628,6 +1098,9 @@
             // Show main content
             document.getElementById('loadingScreen').classList.add('hidden');
             document.getElementById('mainContent').classList.remove('hidden');
+            
+            // Initialize AI configuration
+            initializeAIConfig();
             
             console.log('🎉 Regular user onboarding completed successfully!');
         }
@@ -913,6 +1386,152 @@
             document.getElementById('progressFill').style.width = progressPercent + '%';
         }
 
+        // Initialize AI Configuration
+        function initializeAIConfig() {
+            console.log('🤖 Initializing AI Configuration...');
+            
+            // Tab switching
+            document.querySelectorAll('.ai-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs and content
+                    document.querySelectorAll('.ai-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.ai-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    tab.classList.add('active');
+                    
+                    // Show corresponding content
+                    const targetContent = document.getElementById(tab.dataset.tab);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                    }
+                });
+            });
+
+            // Toggle switches
+            document.querySelectorAll('.toggle-switch').forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    toggle.classList.toggle('active');
+                });
+            });
+
+            // Game selection
+            document.querySelectorAll('.game-option').forEach(game => {
+                game.addEventListener('click', () => {
+                    game.classList.toggle('selected');
+                });
+            });
+
+            // Range sliders
+            document.querySelectorAll('input[type="range"]').forEach(slider => {
+                const updateValue = () => {
+                    const valueSpan = document.getElementById(slider.dataset.setting + '-value');
+                    if (valueSpan) {
+                        valueSpan.textContent = slider.value;
+                    }
+                };
+                
+                slider.addEventListener('input', updateValue);
+                updateValue(); // Set initial value
+            });
+
+            // Set default selections
+            ['valorant', 'fortnite', 'apex'].forEach(game => {
+                const gameElement = document.querySelector(`[data-game="${game}"]`);
+                if (gameElement) {
+                    gameElement.classList.add('selected');
+                }
+            });
+
+            console.log('✅ AI Configuration initialized successfully');
+        }
+
+        // Save AI Configuration
+        async function saveAIConfiguration() {
+            try {
+                console.log('🤖 Saving AI configuration...');
+                
+                const config = {
+                    // Collect selected games
+                    games: Array.from(document.querySelectorAll('.game-option.selected')).map(g => g.dataset.game),
+                    detection: {},
+                    optimization: {},
+                    platforms: {},
+                    updated_at: new Date().toISOString()
+                };
+
+                // Collect toggle settings
+                document.querySelectorAll('.toggle-switch').forEach(toggle => {
+                    const setting = toggle.dataset.setting;
+                    if (setting) {
+                        if (setting.includes('tiktok') || setting.includes('youtube') || setting.includes('instagram') || setting.includes('twitch')) {
+                            config.platforms[setting] = toggle.classList.contains('active');
+                        } else if (setting.includes('auto') || setting.includes('trending') || setting.includes('clip')) {
+                            config.optimization[setting] = toggle.classList.contains('active');
+                        } else {
+                            config.detection[setting] = toggle.classList.contains('active');
+                        }
+                    }
+                });
+
+                // Collect range settings
+                document.querySelectorAll('input[type="range"]').forEach(range => {
+                    const setting = range.dataset.setting;
+                    if (setting) {
+                        config.detection[setting] = parseInt(range.value);
+                    }
+                });
+
+                // Collect select settings
+                document.querySelectorAll('select').forEach(select => {
+                    const setting = select.dataset.setting;
+                    if (setting) {
+                        config.optimization[setting] = select.value;
+                    }
+                });
+
+                console.log('AI Configuration:', config);
+
+                // Save to sessionStorage for now (you can integrate with your database later)
+                sessionStorage.setItem('aiConfiguration', JSON.stringify(config));
+
+                // Here you would save to your Supabase database
+                /*
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    const { error } = await supabase
+                        .from('user_ai_configurations')
+                        .upsert({
+                            user_id: session.user.id,
+                            configuration: config
+                        });
+                    
+                    if (error) throw error;
+                }
+                */
+
+                console.log('✅ AI configuration saved successfully!');
+                
+                // Update AI status
+                const statusElement = document.querySelector('.ai-status');
+                if (statusElement) {
+                    statusElement.innerHTML = '<span>🎉 AI Configuration Complete - Ready to Create Clips!</span>';
+                    statusElement.style.background = 'rgba(76, 175, 80, 0.2)';
+                    statusElement.style.borderColor = '#4CAF50';
+                    statusElement.style.color = '#4CAF50';
+                }
+
+                // Update progress
+                updateProgress();
+
+                alert('🎉 AI Configuration saved successfully! Your AI is now ready to create amazing clips.');
+
+            } catch (error) {
+                console.error('❌ Error saving AI configuration:', error);
+                alert('Error saving AI configuration. Please try again.');
+            }
+        }
+
         // Next step function
         function nextStep() {
             // In a real implementation, this would navigate to the next configuration step
@@ -1006,6 +1625,9 @@
                             const username = target.dataset.username;
                             cancelEdit(platform, username);
                         }
+                        break;
+                    case 'save-ai-config':
+                        saveAIConfiguration();
                         break;
                 }
             });
