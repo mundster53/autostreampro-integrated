@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - AutoStreamPro</title>
+    <!-- signup.html Version 2.3: Matching Light Blue Design (Color Scheme Only) -->
     <meta name="description" content="Start your free trial with AutoStreamPro - Turn gaming into your career">
     
     <!-- Favicon -->
@@ -27,9 +28,24 @@
             line-height: 1.6;
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%);
+            background: linear-gradient(135deg, #f0f8ff 0%, #e0f2fe 50%, #bfdbfe 100%);
             min-height: 100vh;
-            color: white;
+            color: #1e293b;
+            position: relative;
+        }
+
+        /* Add subtle pattern overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 75% 75%, rgba(147, 197, 253, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
         
         .container {
@@ -40,6 +56,8 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            position: relative;
+            z-index: 1;
         }
         
         .header {
@@ -54,20 +72,22 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            text-shadow: 0 2px 4px rgba(30, 64, 175, 0.1);
         }
         
         .header p {
             font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.8);
+            color: #64748b;
         }
         
         .signup-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: white;
             color: #374151;
             border-radius: 20px;
             padding: 40px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             backdrop-filter: blur(20px);
+            border: 1px solid rgba(59, 130, 246, 0.1);
         }
         
         .trial-badge {
@@ -91,11 +111,11 @@
             font-weight: 700;
             text-align: center;
             margin-bottom: 20px;
-            color: #1f2937;
+            color: #1e40af;
         }
         
         .plan-card {
-            border: 2px solid #e5e7eb;
+            border: 2px solid #e5f3ff;
             border-radius: 12px;
             padding: 20px;
             margin: 10px 0;
@@ -143,12 +163,12 @@
         .plan-name {
             font-size: 1.2rem;
             font-weight: 700;
-            color: #1f2937;
+            color: #1e40af;
             margin-bottom: 4px;
         }
         
         .plan-description {
-            color: #6b7280;
+            color: #64748b;
             font-size: 14px;
         }
         
@@ -159,11 +179,11 @@
         .price-amount {
             font-size: 2rem;
             font-weight: 800;
-            color: #1f2937;
+            color: #1e40af;
         }
         
         .price-period {
-            color: #6b7280;
+            color: #64748b;
             font-size: 14px;
         }
         
@@ -185,7 +205,7 @@
         .form-input {
             width: 100%;
             padding: 12px 16px;
-            border: 2px solid #d1d5db;
+            border: 2px solid #e5f3ff;
             border-radius: 8px;
             font-size: 16px;
             transition: border-color 0.3s ease;
@@ -199,7 +219,7 @@
         }
         
         .trial-info {
-            background: #eff6ff;
+            background: #f0f9ff;
             border: 1px solid #bfdbfe;
             border-radius: 10px;
             padding: 16px;
@@ -279,7 +299,7 @@
         .legal {
             text-align: center;
             font-size: 14px;
-            color: #6b7280;
+            color: #64748b;
             margin-top: 20px;
         }
         
@@ -293,11 +313,14 @@
         }
         
         .nav {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             padding: 15px 0;
             margin-bottom: 20px;
             border-radius: 15px;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            position: relative;
+            z-index: 100;
         }
         
         .nav-content {
@@ -313,7 +336,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            color: white;
+            color: #1e40af;
             text-decoration: none;
             font-weight: 700;
             font-size: 1.2rem;
@@ -325,13 +348,69 @@
         }
         
         .nav-link {
-            color: rgba(255, 255, 255, 0.8);
+            color: #64748b;
             text-decoration: none;
             transition: color 0.3s ease;
         }
         
         .nav-link:hover {
-            color: white;
+            color: #3b82f6;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .signup-card {
+                padding: 25px;
+            }
+
+            .nav-content {
+                padding: 0 15px;
+            }
+
+            .nav-links {
+                gap: 15px;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .signup-card {
+                box-shadow: none;
+                border: 1px solid #ccc;
+            }
+        }
+
+        /* High Contrast Mode Support */
+        @media (prefers-contrast: high) {
+            .plan-card,
+            .signup-card {
+                border-width: 3px;
+            }
+            
+            .signup-btn {
+                border: 2px solid currentColor;
+            }
+        }
+
+        /* Reduced Motion Support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
