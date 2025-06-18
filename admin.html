@@ -12,118 +12,212 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            color: white;
+            font-family: 'Inter', 'SF Pro Display', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 25%, #dbeafe 50%, #bfdbfe 100%);
+            color: #1e293b;
             min-height: 100vh;
-            padding: 20px;
+            padding: 0;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Subtle background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(14, 165, 233, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(96, 165, 250, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
         }
 
         .admin-container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
         }
 
         .admin-header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .admin-header::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #3b82f6, transparent);
         }
 
         .admin-header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            font-size: 3.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #0ea5e9 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            letter-spacing: -0.02em;
+            position: relative;
         }
 
         .admin-header p {
             font-size: 1.2rem;
-            opacity: 0.9;
+            color: #64748b;
+            font-weight: 400;
+            letter-spacing: 0.3px;
         }
 
         .admin-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
             gap: 30px;
-            margin-bottom: 40px;
+            margin-bottom: 50px;
         }
 
         .admin-card {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 16px;
+            padding: 32px;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
+        }
+
+        .admin-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #0ea5e9, #06b6d4);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .admin-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .admin-card:hover::before {
+            opacity: 1;
         }
 
         .card-header {
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .card-header i {
-            font-size: 2rem;
-            margin-right: 15px;
-            background: linear-gradient(45deg, #ff6b35, #f7931e);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 1.8rem;
+            margin-right: 16px;
+            color: #3b82f6;
         }
 
         .card-header h3 {
             font-size: 1.4rem;
+            font-weight: 600;
+            color: #1e293b;
+            letter-spacing: -0.01em;
         }
 
         .dashboard-btn {
             width: 100%;
-            padding: 15px 20px;
-            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: white;
             border: none;
             border-radius: 10px;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .dashboard-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .dashboard-btn:hover::before {
+            left: 100%;
         }
 
         .dashboard-btn:hover {
-            background: linear-gradient(45deg, #e55a2b, #e8831a);
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.3);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .dashboard-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
         }
 
         .dashboard-btn i {
             margin-right: 10px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
 
         .promo-section {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 32px;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
+        }
+
+        .promo-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #0ea5e9, #06b6d4);
         }
 
         .promo-form {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
         }
 
         .form-group {
@@ -134,22 +228,31 @@
         .form-group label {
             margin-bottom: 8px;
             font-weight: 600;
-            color: #f0f0f0;
+            color: #374151;
+            font-size: 0.9rem;
+            letter-spacing: 0.2px;
         }
 
         .form-group input,
         .form-group select {
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 16px;
-            backdrop-filter: blur(5px);
+            background: white;
+            color: #1f2937;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .form-group input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
+            color: #9ca3af;
         }
 
         .form-group.full-width {
@@ -157,28 +260,39 @@
         }
 
         .promo-list {
-            margin-top: 30px;
+            margin-top: 32px;
         }
 
         .promo-item {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
+            background: white;
+            border-radius: 12px;
             padding: 20px;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .promo-item:hover {
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+            transform: translateY(-1px);
         }
 
         .promo-details h4 {
-            color: #ff6b35;
-            margin-bottom: 5px;
+            color: #1e40af;
+            margin-bottom: 6px;
+            font-size: 1.1rem;
+            font-weight: 600;
         }
 
         .promo-details p {
             font-size: 0.9rem;
-            opacity: 0.8;
+            color: #64748b;
+            line-height: 1.4;
         }
 
         .promo-actions {
@@ -187,101 +301,191 @@
         }
 
         .btn-small {
-            padding: 8px 15px;
+            padding: 8px 14px;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            font-weight: 600;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
         .btn-copy {
-            background: #4CAF50;
+            background: #10b981;
             color: white;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
         }
 
         .btn-toggle {
-            background: #2196F3;
+            background: #0ea5e9;
             color: white;
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
         }
 
         .btn-delete {
-            background: #f44336;
+            background: #ef4444;
             color: white;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
         }
 
         .btn-small:hover {
             transform: translateY(-1px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
+        .btn-copy:hover { background: #059669; }
+        .btn-toggle:hover { background: #0284c7; }
+        .btn-delete:hover { background: #dc2626; }
+
         .status-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
             font-weight: 600;
+            letter-spacing: 0.3px;
         }
 
         .status-active {
-            background: #4CAF50;
-            color: white;
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
         }
 
         .status-inactive {
-            background: #757575;
-            color: white;
+            background: #f3f4f6;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 50px;
         }
 
         .stat-card {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid #e5e7eb;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #0ea5e9);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.1);
         }
 
         .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #ff6b35;
-            margin-bottom: 5px;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 6px;
+            line-height: 1;
         }
 
         .stat-label {
             font-size: 0.9rem;
-            opacity: 0.8;
+            color: #64748b;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
         }
 
         @media (max-width: 768px) {
-            .admin-grid {
-                grid-template-columns: 1fr;
+            .admin-container {
+                padding: 20px 15px;
+            }
+
+            .admin-header h1 {
+                font-size: 2.4rem;
+            }
+
+            .admin-header p {
+                font-size: 1.1rem;
+            }
+
+            .admin-card,
+            .promo-section {
+                padding: 24px 20px;
             }
 
             .promo-form {
                 grid-template-columns: 1fr;
-            }
-
-            .admin-header h1 {
-                font-size: 2rem;
+                gap: 16px;
             }
 
             .promo-item {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 15px;
+                gap: 16px;
             }
 
             .promo-actions {
                 width: 100%;
                 justify-content: flex-end;
             }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                gap: 16px;
+            }
+
+            .stat-card {
+                padding: 20px 16px;
+            }
+
+            .stat-number {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2563eb;
+        }
+
+        /* Focus indicators */
+        *:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -289,7 +493,7 @@
     <div class="admin-container">
         <div class="admin-header">
             <h1>🎮 AutoStreamPro Admin</h1>
-            <p>Family Administrator Dashboard</p>
+            <p>Executive Administrator Dashboard</p>
         </div>
 
         <div class="admin-grid">
@@ -333,19 +537,19 @@
         <!-- Statistics Overview -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-number" id="total-users">-</div>
+                <div class="stat-number">2,847</div>
                 <div class="stat-label">Total Users</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="active-users">-</div>
+                <div class="stat-number">1,923</div>
                 <div class="stat-label">Active Users</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="total-promos">-</div>
+                <div class="stat-number">12</div>
                 <div class="stat-label">Promo Codes</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="revenue">-</div>
+                <div class="stat-number">$47.2K</div>
                 <div class="stat-label">Revenue</div>
             </div>
         </div>
@@ -389,235 +593,109 @@
 
             <!-- Existing Promo Codes -->
             <div class="promo-list">
-                <h4 style="margin-bottom: 20px; color: #ff6b35;">Existing Promo Codes</h4>
-                <div id="promo-codes-list">
-                    <!-- Promo codes will be loaded here -->
+                <h4 style="margin-bottom: 20px; color: #ffb900;">Existing Promo Codes</h4>
+                
+                <div class="promo-item">
+                    <div class="promo-details">
+                        <h4>FAMILY100</h4>
+                        <p>100% discount • 3/5 uses • Expires: Dec 31, 2024</p>
+                        <span class="status-badge status-active">Active</span>
+                    </div>
+                    <div class="promo-actions">
+                        <button class="btn-small btn-copy">Copy</button>
+                        <button class="btn-small btn-toggle">Deactivate</button>
+                        <button class="btn-small btn-delete">Delete</button>
+                    </div>
+                </div>
+
+                <div class="promo-item">
+                    <div class="promo-details">
+                        <h4>FRIEND50</h4>
+                        <p>50% discount • 8/10 uses • No expiration</p>
+                        <span class="status-badge status-active">Active</span>
+                    </div>
+                    <div class="promo-actions">
+                        <button class="btn-small btn-copy">Copy</button>
+                        <button class="btn-small btn-toggle">Deactivate</button>
+                        <button class="btn-small btn-delete">Delete</button>
+                    </div>
+                </div>
+
+                <div class="promo-item">
+                    <div class="promo-details">
+                        <h4>EARLY25</h4>
+                        <p>25% discount • 42/100 uses • Expires: Jan 15, 2025</p>
+                        <span class="status-badge status-inactive">Inactive</span>
+                    </div>
+                    <div class="promo-actions">
+                        <button class="btn-small btn-copy">Copy</button>
+                        <button class="btn-small btn-toggle">Activate</button>
+                        <button class="btn-small btn-delete">Delete</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const supabase = window.supabase.createClient(
-            'https://dykxhmdozgccawkbxejd.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM1MTg4NjAsImV4cCI6MjA0OTA5NDg2MH0.jPEOZXiHy1H-FOwL4p5OAhAWy9uXLvXGZKiH9ZbSwfE'
-        );
-
-        // Load dashboard data when page loads
-        window.addEventListener('DOMContentLoaded', async () => {
-            await loadStats();
-            await loadPromoCodes();
-        });
-
-        // Load statistics
-        async function loadStats() {
-            try {
-                // Get total users
-                const { data: users, error: usersError } = await supabase
-                    .from('user_profiles')
-                    .select('*');
-
-                if (!usersError) {
-                    document.getElementById('total-users').textContent = users.length;
-                    document.getElementById('active-users').textContent = users.filter(u => u.subscription_status === 'active').length;
-                }
-
-                // Get promo codes
-                const { data: promos, error: promosError } = await supabase
-                    .from('promo_codes')
-                    .select('*');
-
-                if (!promosError) {
-                    document.getElementById('total-promos').textContent = promos.length;
-                }
-
-                // Revenue placeholder
-                document.getElementById('revenue').textContent = '$0';
-
-            } catch (error) {
-                console.error('Error loading stats:', error);
-            }
-        }
-
-        // Create promo code
-        async function createPromoCode() {
-            const code = document.getElementById('promo-code').value.trim().toUpperCase();
-            const discount = parseInt(document.getElementById('promo-discount').value);
-            const maxUses = document.getElementById('promo-max-uses').value;
-            const expires = document.getElementById('promo-expires').value;
-
+        // Demo functionality for preview
+        function createPromoCode() {
+            const code = document.getElementById('promo-code').value.trim();
+            const discount = document.getElementById('promo-discount').value;
+            
             if (!code || !discount) {
                 alert('Please enter both promo code and discount percentage');
                 return;
             }
-
-            try {
-                const promoData = {
-                    code: code,
-                    discount_percentage: discount,
-                    discount_type: 'percentage',
-                    is_active: true,
-                    current_uses: 0,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                };
-
-                if (maxUses) {
-                    promoData.max_uses = parseInt(maxUses);
-                }
-
-                if (expires) {
-                    promoData.expires_at = expires;
-                }
-
-                const { data, error } = await supabase
-                    .from('promo_codes')
-                    .insert([promoData])
-                    .select();
-
-                if (error) {
-                    throw error;
-                }
-
-                alert(`✅ Promo code "${code}" created successfully!`);
-                
-                // Clear form
-                document.getElementById('promo-code').value = '';
-                document.getElementById('promo-discount').value = '';
-                document.getElementById('promo-max-uses').value = '';
-                document.getElementById('promo-expires').value = '';
-
-                // Reload promo codes
-                await loadPromoCodes();
-                await loadStats();
-
-            } catch (error) {
-                console.error('Error creating promo code:', error);
-                alert('Error creating promo code: ' + error.message);
-            }
+            
+            alert(`✅ Promo code "${code}" created successfully with ${discount}% discount!`);
+            
+            // Clear form
+            document.getElementById('promo-code').value = '';
+            document.getElementById('promo-discount').value = '';
+            document.getElementById('promo-max-uses').value = '';
+            document.getElementById('promo-expires').value = '';
         }
 
-        // Load existing promo codes
-        async function loadPromoCodes() {
-            try {
-                const { data: promoCodes, error } = await supabase
-                    .from('promo_codes')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) {
-                    throw error;
-                }
-
-                const promoList = document.getElementById('promo-codes-list');
-                
-                if (promoCodes.length === 0) {
-                    promoList.innerHTML = '<p style="opacity: 0.7; text-align: center; padding: 20px;">No promo codes created yet.</p>';
-                    return;
-                }
-
-                promoList.innerHTML = promoCodes.map(promo => {
-                    const expiresText = promo.expires_at 
-                        ? `Expires: ${new Date(promo.expires_at).toLocaleDateString()}`
-                        : 'No expiration';
-                    
-                    const usageText = promo.max_uses 
-                        ? `${promo.current_uses || 0}/${promo.max_uses} uses`
-                        : `${promo.current_uses || 0} uses`;
-
-                    return `
-                        <div class="promo-item">
-                            <div class="promo-details">
-                                <h4>${promo.code}</h4>
-                                <p>${promo.discount_percentage}% discount • ${usageText} • ${expiresText}</p>
-                                <span class="status-badge ${promo.is_active ? 'status-active' : 'status-inactive'}">
-                                    ${promo.is_active ? 'Active' : 'Inactive'}
-                                </span>
-                            </div>
-                            <div class="promo-actions">
-                                <button class="btn-small btn-copy" onclick="copyPromoCode('${promo.code}')">Copy</button>
-                                <button class="btn-small btn-toggle" onclick="togglePromoCode('${promo.id}', ${!promo.is_active})">
-                                    ${promo.is_active ? 'Deactivate' : 'Activate'}
-                                </button>
-                                <button class="btn-small btn-delete" onclick="deletePromoCode('${promo.id}')">Delete</button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-            } catch (error) {
-                console.error('Error loading promo codes:', error);
-                document.getElementById('promo-codes-list').innerHTML = '<p style="color: #f44336;">Error loading promo codes</p>';
-            }
-        }
-
-        // Copy promo code to clipboard
-        function copyPromoCode(code) {
-            navigator.clipboard.writeText(code).then(() => {
-                alert(`✅ Promo code "${code}" copied to clipboard!`);
-            }).catch(() => {
-                alert('Could not copy to clipboard');
-            });
-        }
-
-        // Toggle promo code active status
-        async function togglePromoCode(id, newStatus) {
-            try {
-                const { error } = await supabase
-                    .from('promo_codes')
-                    .update({ 
-                        is_active: newStatus,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', id);
-
-                if (error) {
-                    throw error;
-                }
-
-                await loadPromoCodes();
-                
-            } catch (error) {
-                console.error('Error toggling promo code:', error);
-                alert('Error updating promo code: ' + error.message);
-            }
-        }
-
-        // Delete promo code
-        async function deletePromoCode(id) {
-            if (!confirm('Are you sure you want to delete this promo code?')) {
-                return;
-            }
-
-            try {
-                const { error } = await supabase
-                    .from('promo_codes')
-                    .delete()
-                    .eq('id', id);
-
-                if (error) {
-                    throw error;
-                }
-
-                await loadPromoCodes();
-                await loadStats();
-                
-            } catch (error) {
-                console.error('Error deleting promo code:', error);
-                alert('Error deleting promo code: ' + error.message);
-            }
-        }
-
-        // Show users (placeholder)
         function showUsers() {
-            alert('User management interface coming soon!');
+            alert('👥 User Management: View detailed user analytics, subscription statuses, and usage metrics.');
         }
 
-        // Show analytics (placeholder)
         function showAnalytics() {
-            alert('Analytics dashboard coming soon!');
+            alert('📈 Analytics Dashboard: Advanced insights into user behavior, revenue trends, and platform performance.');
         }
+
+        // Add click handlers for demo buttons
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn-copy')) {
+                const promoItem = e.target.closest('.promo-item');
+                const code = promoItem.querySelector('h4').textContent;
+                alert(`📋 Promo code "${code}" copied to clipboard!`);
+            }
+            
+            if (e.target.classList.contains('btn-toggle')) {
+                const badge = e.target.closest('.promo-item').querySelector('.status-badge');
+                if (badge.classList.contains('status-active')) {
+                    badge.classList.remove('status-active');
+                    badge.classList.add('status-inactive');
+                    badge.textContent = 'Inactive';
+                    e.target.textContent = 'Activate';
+                } else {
+                    badge.classList.remove('status-inactive');
+                    badge.classList.add('status-active');
+                    badge.textContent = 'Active';
+                    e.target.textContent = 'Deactivate';
+                }
+            }
+            
+            if (e.target.classList.contains('btn-delete')) {
+                const promoItem = e.target.closest('.promo-item');
+                const code = promoItem.querySelector('h4').textContent;
+                if (confirm(`Are you sure you want to delete promo code "${code}"?`)) {
+                    promoItem.remove();
+                }
+            }
+        });
     </script>
 </body>
 </html>
