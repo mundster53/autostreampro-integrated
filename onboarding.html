@@ -724,6 +724,144 @@
             box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
         }
 
+        /* PREVENTATIVE MEASURES - Mobile & Browser Compatibility */
+        
+        /* Improved Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .ai-tabs {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .ai-tab {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .ai-detection-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .game-selector {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 10px;
+            }
+            
+            .detection-option {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .range-slider {
+                width: 100%;
+            }
+            
+            .custom-game-input {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .suggest-game-input {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .analysis-recommendations {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            /* Ensure touch targets are large enough */
+            .game-option, .custom-game-option {
+                min-height: 44px;
+                padding: 12px;
+            }
+            
+            .toggle-switch {
+                min-width: 44px;
+                min-height: 44px;
+            }
+            
+            /* Better text sizing for mobile */
+            .ai-config-container {
+                padding: 20px 15px;
+            }
+            
+            .detection-card {
+                padding: 20px 15px;
+            }
+        }
+
+        /* Extra small screens (phones in portrait) */
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .step-container {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .game-selector {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 8px;
+            }
+            
+            .game-option {
+                padding: 10px 8px;
+            }
+            
+            .game-icon {
+                font-size: 1.2rem;
+            }
+            
+            .game-name {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Accessibility Improvements */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            .ai-section {
+                border: 2px solid white;
+            }
+            
+            .game-option.selected {
+                border-color: yellow;
+                background: rgba(255, 255, 0, 0.3);
+            }
+            
+            .toggle-switch.active {
+                background: yellow;
+            }
+        }
+
+        /* Print styles (in case someone tries to print) */
+        @media print {
+            .nav-links, .next-btn, .add-game-btn, .suggest-game-btn {
+                display: none;
+            }
+            
+            .ai-config-container {
+                break-inside: avoid;
+            }
+        }
+
         @media (max-width: 768px) {
             .ai-tabs {
                 flex-direction: column;
@@ -2057,11 +2195,370 @@
         }
 
         // Handle auth state changes
-        supabase.auth.onAuthStateChange((event, session) => {
+        supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log('🔄 Auth state changed:', event, !!session);
+            
             if (event === 'SIGNED_OUT') {
-                window.location.href = '/signup.html';
+                // IMPROVED: Only redirect if it's an actual user sign-out, not an expired session
+                const storedEmail = localStorage.getItem('userEmail');
+                if (!storedEmail) {
+                    console.log('➡️ User signed out - redirecting to signup');
+                    window.location.href = '/signup.html';
+                } else {
+                    console.log('🔄 Session expired but user data exists - attempting refresh');
+                    try {
+                        // Try to refresh the session
+                        const { data, error } = await supabase.auth.refreshSession();
+                        if (error) {
+                            console.log('❌ Session refresh failed - checking family status');
+                            // Check if it's a family member before redirecting
+                            if (familyEmails.includes(storedEmail.toLowerCase())) {
+                                console.log('👑 Family member - allowing continued access despite session expiry');
+                                return; // Don't redirect family members
+                            } else {
+                                console.log('💳 Regular user - redirecting to signup');
+                                localStorage.removeItem('userEmail');
+                                window.location.href = '/signup.html';
+                            }
+                        } else {
+                            console.log('✅ Session refreshed successfully');
+                        }
+                    } catch (refreshError) {
+                        console.error('❌ Session refresh error:', refreshError);
+                        // Fallback: check family status
+                        if (familyEmails.includes(storedEmail.toLowerCase())) {
+                            console.log('👑 Family member - allowing access despite refresh error');
+                        } else {
+                            window.location.href = '/signup.html';
+                        }
+                    }
+                }
+            } else if (event === 'TOKEN_REFRESHED') {
+                console.log('✅ Token refreshed automatically');
+            } else if (event === 'SIGNED_IN') {
+                console.log('✅ User signed in');
+                // Store email for family detection
+                if (session?.user?.email) {
+                    localStorage.setItem('userEmail', session.user.email);
+                    // Also backup to sessionStorage
+                    sessionStorage.setItem('backupEmail', session.user.email);
+                }
             }
         });
+
+        // PREVENTATIVE MEASURES - Add these at the end
+
+        // 1. SESSION PERSISTENCE AND RECOVERY
+        function initializeSessionPersistence() {
+            console.log('🛡️ Initializing session persistence measures...');
+            
+            // Backup family detection on page unload
+            window.addEventListener('beforeunload', () => {
+                const userEmail = localStorage.getItem('userEmail');
+                if (userEmail) {
+                    sessionStorage.setItem('backupEmail', userEmail);
+                    console.log('💾 Backed up user email before page unload');
+                }
+            });
+
+            // Restore family detection on page load
+            const userEmail = localStorage.getItem('userEmail') || sessionStorage.getItem('backupEmail');
+            if (userEmail && !localStorage.getItem('userEmail')) {
+                localStorage.setItem('userEmail', userEmail);
+                console.log('🔄 Restored user email from backup');
+            }
+
+            // Proactive session refresh every 50 minutes
+            setInterval(async () => {
+                try {
+                    console.log('🔄 Proactive session refresh check...');
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session) {
+                        const expiresAt = session.expires_at;
+                        const now = Math.floor(Date.now() / 1000);
+                        const timeLeft = expiresAt - now;
+                        
+                        if (timeLeft < 600) { // Less than 10 minutes
+                            console.log('⏰ Session expires soon - refreshing proactively');
+                            const { error } = await supabase.auth.refreshSession();
+                            if (error) {
+                                console.error('❌ Proactive refresh failed:', error);
+                            } else {
+                                console.log('✅ Session refreshed proactively');
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('❌ Proactive session check failed:', error);
+                }
+            }, 50 * 60 * 1000); // 50 minutes
+        }
+
+        // 2. ERROR BOUNDARIES AND GRACEFUL DEGRADATION
+        function initializeErrorHandling() {
+            console.log('🛡️ Initializing error handling measures...');
+            
+            // Global error handler - log but don't crash
+            window.addEventListener('error', (e) => {
+                console.error('💥 Global error caught:', e.error);
+                // Don't redirect on every error - just log it
+                if (e.error?.message?.includes('auth') || e.error?.message?.includes('session')) {
+                    console.log('🔍 Auth-related error detected, checking session status...');
+                    checkSessionHealth();
+                } else {
+                    console.log('🔧 Non-auth error, continuing normally...');
+                }
+            });
+
+            // Unhandled promise rejection handler
+            window.addEventListener('unhandledrejection', (e) => {
+                console.error('💥 Unhandled promise rejection:', e.reason);
+                // Handle auth-related promise rejections gracefully
+                if (e.reason?.message?.includes('auth') || e.reason?.message?.includes('JWT')) {
+                    console.log('🔍 Auth-related promise rejection, checking session...');
+                    checkSessionHealth();
+                }
+                // Prevent the default behavior (which would show an error in console)
+                e.preventDefault();
+            });
+
+            // Network error detection
+            window.addEventListener('online', () => {
+                console.log('🌐 Network connection restored');
+                // Refresh session when coming back online
+                setTimeout(async () => {
+                    try {
+                        const { error } = await supabase.auth.refreshSession();
+                        if (!error) {
+                            console.log('✅ Session refreshed after network restore');
+                        }
+                    } catch (refreshError) {
+                        console.log('⚠️ Session refresh failed after network restore');
+                    }
+                }, 1000);
+            });
+
+            window.addEventListener('offline', () => {
+                console.log('📴 Network connection lost - entering offline mode');
+                // Store offline state to handle gracefully
+                sessionStorage.setItem('offlineMode', 'true');
+            });
+        }
+
+        // 3. SESSION HEALTH MONITORING
+        async function checkSessionHealth() {
+            try {
+                console.log('🏥 Checking session health...');
+                const { data: { session }, error } = await supabase.auth.getSession();
+                
+                if (error) {
+                    console.warn('⚠️ Session health check error:', error);
+                    return false;
+                }
+                
+                if (!session) {
+                    console.log('❌ No active session found');
+                    // Check if family member can continue without session
+                    const storedEmail = localStorage.getItem('userEmail');
+                    if (storedEmail && familyEmails.includes(storedEmail.toLowerCase())) {
+                        console.log('👑 Family member - allowing continued access');
+                        return true;
+                    }
+                    return false;
+                }
+                
+                console.log('✅ Session is healthy');
+                return true;
+            } catch (error) {
+                console.error('❌ Session health check failed:', error);
+                return false;
+            }
+        }
+
+        // 4. BROWSER COMPATIBILITY FIXES
+        function initializeBrowserCompatibility() {
+            console.log('🛡️ Initializing browser compatibility measures...');
+            
+            // Polyfill for older browsers
+            if (!Array.prototype.includes) {
+                Array.prototype.includes = function(searchElement) {
+                    return this.indexOf(searchElement) !== -1;
+                };
+            }
+
+            // Fix for Safari/iOS localStorage issues
+            function testLocalStorage() {
+                try {
+                    const test = 'localStorage-test';
+                    localStorage.setItem(test, test);
+                    localStorage.removeItem(test);
+                    return true;
+                } catch (e) {
+                    console.warn('⚠️ localStorage not available, using sessionStorage fallback');
+                    return false;
+                }
+            }
+
+            if (!testLocalStorage()) {
+                // Fallback to sessionStorage for browsers that block localStorage
+                window.localStorageFallback = {
+                    getItem: (key) => sessionStorage.getItem(key),
+                    setItem: (key, value) => sessionStorage.setItem(key, value),
+                    removeItem: (key) => sessionStorage.removeItem(key)
+                };
+            }
+
+            // Fix for touch events on mobile
+            if ('ontouchstart' in window) {
+                console.log('📱 Touch device detected - enabling touch optimizations');
+                document.body.classList.add('touch-device');
+                
+                // Improve button touch responsiveness
+                document.addEventListener('touchstart', function() {}, { passive: true });
+            }
+
+            // Fix for iOS viewport issues
+            if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                console.log('🍎 iOS device detected - applying iOS fixes');
+                // Prevent zoom on input focus
+                document.addEventListener('touchstart', function(e) {
+                    if (e.target.tagName === 'INPUT') {
+                        const viewport = document.querySelector('meta[name="viewport"]');
+                        if (viewport) {
+                            viewport.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no');
+                            setTimeout(() => {
+                                viewport.setAttribute('content', 'width=device-width, initial-scale=1');
+                            }, 500);
+                        }
+                    }
+                });
+            }
+        }
+
+        // 5. DATA BACKUP AND RECOVERY
+        function initializeDataBackup() {
+            console.log('🛡️ Initializing data backup measures...');
+            
+            // Backup AI configuration periodically
+            setInterval(() => {
+                try {
+                    const aiConfig = sessionStorage.getItem('aiConfiguration');
+                    if (aiConfig) {
+                        localStorage.setItem('aiConfigBackup', aiConfig);
+                        console.log('💾 AI configuration backed up');
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Could not backup AI configuration:', error);
+                }
+            }, 5 * 60 * 1000); // Every 5 minutes
+
+            // Backup custom games
+            const backupCustomGames = () => {
+                try {
+                    if (customGames.length > 0) {
+                        localStorage.setItem('customGamesBackup', JSON.stringify(customGames));
+                        localStorage.setItem('aiAnalysisBackup', JSON.stringify(aiAnalysisResults));
+                        console.log('💾 Custom games and AI analysis backed up');
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Could not backup custom games:', error);
+                }
+            };
+
+            // Backup when games are added/removed
+            const originalAddGame = addCustomGame;
+            const originalRemoveGame = removeCustomGame;
+            
+            // Override functions to include backup
+            window.addCustomGame = async function() {
+                await originalAddGame();
+                backupCustomGames();
+            };
+            
+            window.removeCustomGame = function(gameName) {
+                originalRemoveGame(gameName);
+                backupCustomGames();
+            };
+
+            // Restore from backup on page load
+            try {
+                const customGamesBackup = localStorage.getItem('customGamesBackup');
+                const aiAnalysisBackup = localStorage.getItem('aiAnalysisBackup');
+                
+                if (customGamesBackup && customGames.length === 0) {
+                    customGames = JSON.parse(customGamesBackup);
+                    console.log('🔄 Restored custom games from backup');
+                }
+                
+                if (aiAnalysisBackup && Object.keys(aiAnalysisResults).length === 0) {
+                    aiAnalysisResults = JSON.parse(aiAnalysisBackup);
+                    console.log('🔄 Restored AI analysis from backup');
+                }
+                
+                if (customGames.length > 0) {
+                    updateCustomGamesDisplay();
+                }
+            } catch (error) {
+                console.warn('⚠️ Could not restore from backup:', error);
+            }
+        }
+
+        // 6. PERFORMANCE MONITORING
+        function initializePerformanceMonitoring() {
+            console.log('🛡️ Initializing performance monitoring...');
+            
+            // Monitor page load performance
+            window.addEventListener('load', () => {
+                if (window.performance && window.performance.timing) {
+                    const loadTime = window.performance.timing.loadEventEnd - window.performance.timing.navigationStart;
+                    console.log(`📊 Page load time: ${loadTime}ms`);
+                    
+                    if (loadTime > 5000) {
+                        console.warn('⚠️ Slow page load detected - this may affect user experience');
+                    }
+                }
+            });
+
+            // Monitor memory usage (if available)
+            if (window.performance && window.performance.memory) {
+                setInterval(() => {
+                    const memory = window.performance.memory;
+                    const usedMB = Math.round(memory.usedJSHeapSize / 1048576);
+                    if (usedMB > 100) {
+                        console.warn(`⚠️ High memory usage: ${usedMB}MB`);
+                    }
+                }, 60000); // Check every minute
+            }
+        }
+
+        // 7. INITIALIZE ALL PREVENTATIVE MEASURES
+        function initializePreventativeMeasures() {
+            console.log('🛡️ Starting preventative measures initialization...');
+            
+            try {
+                initializeSessionPersistence();
+                initializeErrorHandling();
+                initializeBrowserCompatibility();
+                initializeDataBackup();
+                initializePerformanceMonitoring();
+                
+                console.log('✅ All preventative measures initialized successfully');
+                
+                // Set flag to indicate measures are active
+                sessionStorage.setItem('preventativeMeasuresActive', 'true');
+                
+            } catch (error) {
+                console.error('❌ Error initializing preventative measures:', error);
+                // Continue anyway - don't let preventative measures break the app
+            }
+        }
+
+        // Initialize preventative measures when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializePreventativeMeasures);
+        } else {
+            initializePreventativeMeasures();
+        }
     </script>
 </body>
 </html>
