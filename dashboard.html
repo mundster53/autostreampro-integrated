@@ -3,849 +3,1149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - AutoStreamPro</title>
-    <meta name="description" content="Manage your gaming stream automation and analytics">
-    
-    <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Supabase -->
+    <title>AutoStreamPro - Dashboard v2.3</title>
+    <!-- dashboard.html Version 2.3: User Dashboard with Matching Light Blue Design -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <style>
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
-        .sidebar-item {
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e0f2fe 50%, #bfdbfe 100%);
+            min-height: 100vh;
+            color: #1e293b;
+            position: relative;
+        }
+
+        /* Add subtle pattern overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 75% 75%, rgba(147, 197, 253, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+            position: relative;
+            z-index: 100;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: #1e40af;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .nav-menu {
             display: flex;
             align-items: center;
-            padding: 12px 16px;
-            border-radius: 8px;
-            color: #6b7280;
+            gap: 30px;
+        }
+
+        .nav-link {
+            color: #64748b;
             text-decoration: none;
-            transition: all 0.2s ease;
             font-weight: 500;
+            transition: color 0.2s ease;
         }
-        
-        .sidebar-item:hover {
-            background: #f3f4f6;
-            color: #374151;
+
+        .nav-link:hover {
+            color: #3b82f6;
         }
-        
-        .sidebar-item.active {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            color: white;
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        
-        .sidebar-item svg {
-            width: 20px;
-            height: 20px;
-            margin-right: 12px;
-        }
-        
-        .metric-card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            border: 1px solid #e5e7eb;
-            transition: all 0.3s ease;
-        }
-        
-        .metric-card:hover {
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 50%;
+            display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.3);
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-        }
-        
-        .btn-secondary {
-            background: white;
-            color: #374151;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 500;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            border: 1px solid #d1d5db;
-            cursor: pointer;
+            color: white;
+            font-weight: bold;
             font-size: 14px;
         }
-        
-        .btn-secondary:hover {
-            background: #f9fafb;
-            border-color: #9ca3af;
-        }
-        
-        .toggle-switch {
+
+        .dropdown {
             position: relative;
-            display: inline-block;
-            width: 48px;
-            height: 24px;
         }
-        
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .toggle-slider {
+
+        .dropdown-content {
+            display: none;
             position: absolute;
-            cursor: pointer;
+            right: 0;
+            background: white;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            padding: 10px 0;
+            min-width: 160px;
+            z-index: 1000;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 10px 20px;
+            color: #64748b;
+            text-decoration: none;
+            display: block;
+            transition: background 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: #f0f9ff;
+            color: #3b82f6;
+        }
+
+        /* Main Container */
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .dashboard-header h1 {
+            color: #1e40af;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(30, 64, 175, 0.1);
+        }
+
+        .dashboard-header p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        .welcome-message {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            margin-bottom: 30px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .welcome-message h2 {
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-size: 1.4rem;
+        }
+
+        .welcome-message p {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            bottom: 0;
-            background-color: #cbd5e1;
-            transition: .4s;
-            border-radius: 24px;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
         }
-        
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
         }
-        
-        input:checked + .toggle-slider {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
         }
-        
-        input:checked + .toggle-slider:before {
-            transform: translateX(24px);
+
+        .stat-card h3 {
+            color: #1e40af;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
         }
-        
-        .status-live {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+
+        .stat-card p {
+            color: #64748b;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .stat-trend {
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .trend-up {
+            color: #10b981;
+        }
+
+        .trend-down {
+            color: #ef4444;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .action-card {
+            background: white;
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            border-top: 4px solid #3b82f6;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-card h3 {
+            color: #1e40af;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .action-card p {
+            color: #64748b;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #64748b;
+            border: 2px solid #e5f3ff;
+        }
+
+        .btn-secondary:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
             color: white;
         }
-        
-        .status-offline {
-            background: #f3f4f6;
-            color: #6b7280;
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-1px);
+        }
+
+        .btn-live {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* Streaming Status */
+        .streaming-status {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .status-offline .status-dot {
+            background: #64748b;
+        }
+
+        .status-live .status-dot {
+            background: #ef4444;
+            animation: pulse 2s infinite;
+        }
+
+        .platforms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .platform-status {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #e5f3ff;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .platform-status.connected {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .platform-status:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.1);
+        }
+
+        .platform-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .twitch { background: #9146ff; }
+        .youtube { background: #ff0000; }
+        .instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        .tiktok { background: #000000; }
+
+        .platform-name {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 5px;
+        }
+
+        .platform-status-text {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .platform-status.connected .platform-status-text {
+            color: #059669;
+        }
+
+        /* Recent Activity */
+        .recent-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .recent-card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .recent-card h3 {
+            color: #1e40af;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .clip-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .clip-item:last-child {
+            border-bottom: none;
+        }
+
+        .clip-thumbnail {
+            width: 60px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .clip-info h4 {
+            color: #1e40af;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .clip-meta {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .clip-stats {
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .clip-views {
+            color: #10b981;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .notification-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-icon {
+            width: 32px;
+            height: 32px;
+            background: #dbeafe;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3b82f6;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-text {
+            color: #374151;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .notification-time {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 20px 15px;
+            }
+
+            .nav-container {
+                padding: 0 15px;
+            }
+
+            .nav-menu {
+                gap: 15px;
+            }
+
+            .dashboard-header h1 {
+                font-size: 2rem;
+            }
+
+            .stats-grid,
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .recent-section {
+                grid-template-columns: 1fr;
+            }
+
+            .platforms-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .stat-card,
+            .action-card,
+            .recent-card {
+                box-shadow: none;
+                border: 1px solid #ccc;
+            }
+        }
+
+        /* High Contrast Mode Support */
+        @media (prefers-contrast: high) {
+            .stat-card,
+            .action-card,
+            .recent-card {
+                border-width: 3px;
+            }
+            
+            .btn {
+                border: 2px solid currentColor;
+            }
+        }
+
+        /* Reduced Motion Support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
-
-<body class="bg-gray-50">
-    
-    <!-- Sidebar -->
-    <div class="fixed inset-y-0 left-0 w-64 bg-white shadow-lg z-50">
-        <!-- Logo -->
-        <div class="flex items-center space-x-3 p-6 border-b border-gray-200">
-            <span class="text-2xl">⚡</span>
-            <span class="text-xl font-bold text-gray-900">AutoStreamPro</span>
-        </div>
-        
-        <!-- Navigation -->
-        <nav class="p-4 space-y-2">
-            <a href="#" class="sidebar-item active">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"/>
-                </svg>
-                Dashboard
-            </a>
-            
-            <a href="#" class="sidebar-item">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                </svg>
-                Clips
-            </a>
-            
-            <a href="#" class="sidebar-item">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                </svg>
-                Analytics
-            </a>
-            
-            <a href="#" class="sidebar-item">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                </svg>
-                Settings
-            </a>
-        </nav>
-        
-        <!-- User Profile -->
-        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                    </svg>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">🚀 AutoStreamPro</a>
+            <div class="nav-menu">
+                <a href="/dashboard.html" class="nav-link">Dashboard</a>
+                <a href="/onboarding.html" class="nav-link">Setup</a>
+                <a href="#" class="nav-link">Analytics</a>
+                <div class="dropdown">
+                    <div class="user-menu">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <span id="userEmail">user@example.com</span>
+                    </div>
+                    <div class="dropdown-content">
+                        <a href="/onboarding.html" class="dropdown-item">Settings</a>
+                        <a href="#" class="dropdown-item" onclick="signOut()">Sign Out</a>
+                    </div>
                 </div>
-                <div class="flex-1 min-w-0">
-                    <div class="font-medium text-gray-900 text-sm truncate user-name">Gamer</div>
-                    <div class="text-xs text-gray-500 truncate user-email">user@example.com</div>
-                </div>
-                <button onclick="logout()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                    </svg>
-                </button>
             </div>
         </div>
-    </div>
+    </nav>
 
-    <!-- Main Content -->
-    <div class="ml-64">
-        
-        <!-- Header -->
-        <header class="bg-white shadow-sm">
-            <div class="px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-                        <p class="text-gray-600">Monitor your gaming stream automation</p>
-                    </div>
-                    
-                    <div class="flex items-center space-x-4">
-                        <!-- Stream Status -->
-                        <div class="flex items-center space-x-2">
-                            <span class="text-sm text-gray-500">Stream Status:</span>
-                            <span class="stream-status inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                Offline
-                            </span>
-                        </div>
-                        
-                        <!-- Generate Clip Button -->
-                        <button id="generate-clip-btn" class="btn-primary">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            Generate Clip
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </header>
+    <!-- Main Dashboard -->
+    <div class="dashboard-container">
+        <!-- Welcome Message -->
+        <div class="welcome-message">
+            <h2>👋 Welcome back!</h2>
+            <p>Your streaming empire is ready to create viral clips. Check your stats below and start streaming to see the magic happen!</p>
+        </div>
 
-        <!-- Dashboard Content -->
-        <main class="p-6">
-            
-            <!-- Metrics Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <!-- Total Views -->
-                <div class="metric-card">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Total Views</p>
-                            <p class="text-2xl font-bold text-gray-900" id="total-views">127,500</p>
-                        </div>
-                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="mt-4 flex items-center">
-                        <span class="text-sm text-green-600 font-medium">+12.5%</span>
-                        <span class="text-sm text-gray-500 ml-1">from last month</span>
-                    </div>
-                </div>
-                
-                <!-- Clips Generated -->
-                <div class="metric-card">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Clips Generated</p>
-                            <p class="text-2xl font-bold text-gray-900" id="clips-generated">47</p>
-                        </div>
-                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="mt-4 flex items-center">
-                        <span class="text-sm text-green-600 font-medium">+23</span>
-                        <span class="text-sm text-gray-500 ml-1">this week</span>
-                    </div>
-                </div>
-                
-                <!-- Engagement Rate -->
-                <div class="metric-card">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Engagement Rate</p>
-                            <p class="text-2xl font-bold text-gray-900" id="engagement-rate">8.2%</p>
-                        </div>
-                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="mt-4 flex items-center">
-                        <span class="text-sm text-green-600 font-medium">+15.7%</span>
-                        <span class="text-sm text-gray-500 ml-1">improvement</span>
-                    </div>
-                </div>
-                
-                <!-- Revenue -->
-                <div class="metric-card">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Revenue</p>
-                            <p class="text-2xl font-bold text-gray-900" id="revenue">$2,847</p>
-                        </div>
-                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="mt-4 flex items-center">
-                        <span class="text-sm text-green-600 font-medium">+$420</span>
-                        <span class="text-sm text-gray-500 ml-1">this month</span>
-                    </div>
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🎬</div>
+                <h3 id="totalClips">0</h3>
+                <p>Total Clips Created</p>
+                <div class="stat-trend trend-up">📈 +0 this week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👀</div>
+                <h3 id="totalViews">0</h3>
+                <p>Total Views</p>
+                <div class="stat-trend trend-up">📈 +0 this week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏱️</div>
+                <h3 id="streamTime">0h</h3>
+                <p>Stream Time</p>
+                <div class="stat-trend trend-up">📈 +0h this week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🚀</div>
+                <h3 id="viralClips">0</h3>
+                <p>Viral Clips</p>
+                <div class="stat-trend trend-up">📈 +0 this week</div>
+            </div>
+        </div>
+
+        <!-- Streaming Status -->
+        <div class="streaming-status">
+            <div class="status-header">
+                <h3>🎮 Streaming Status</h3>
+                <div class="status-indicator status-offline" id="streamingStatus">
+                    <div class="status-dot"></div>
+                    <span>Offline</span>
                 </div>
             </div>
             
-            <!-- Main Dashboard Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
-                <!-- Left Column - Recent Clips -->
-                <div class="lg:col-span-2">
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-lg font-semibold text-gray-900">Recent Clips</h2>
-                            <a href="#" class="btn-secondary">View All</a>
-                        </div>
-                        
-                        <div class="space-y-4" id="recent-clips-list">
-                            <!-- Clips will be loaded here dynamically -->
-                            <div class="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                                <div class="w-16 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.5a2.5 2.5 0 010 5H9m4.5-5H15a2.5 2.5 0 010 5h-1.5m-4-5v5m4-5v5"/>
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="font-medium text-gray-900">INSANE 1v4 Clutch in Valorant!</div>
-                                    <div class="text-sm text-gray-500">Valorant • 45s • Virality: 89/100</div>
-                                </div>
-                                <button class="btn-secondary">Share</button>
-                            </div>
-                            
-                            <div class="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                                <div class="w-16 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.5a2.5 2.5 0 010 5H9m4.5-5H15a2.5 2.5 0 010 5h-1.5m-4-5v5m4-5v5"/>
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="font-medium text-gray-900">Epic Building Win in Fortnite</div>
-                                    <div class="text-sm text-gray-500">Fortnite • 32s • Virality: 76/100</div>
-                                </div>
-                                <button class="btn-secondary">Share</button>
-                            </div>
-                        </div>
-                    </div>
+            <div class="platforms-grid">
+                <div class="platform-status" id="twitchStatus">
+                    <div class="platform-icon twitch">T</div>
+                    <div class="platform-name">Twitch</div>
+                    <div class="platform-status-text">Not Connected</div>
                 </div>
-                
-                <!-- Right Column - Stream Info & Automation -->
-                <div class="space-y-6">
-                    
-                    <!-- Stream Information -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Stream Information</h2>
-                        
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600">Current Viewers</span>
-                                <span class="font-semibold text-gray-900" id="current-viewers">0</span>
-                            </div>
-                            
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600">Stream Duration</span>
-                                <span class="font-semibold text-gray-900" id="stream-duration">0m</span>
-                            </div>
-                            
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600">Peak Viewers</span>
-                                <span class="font-semibold text-gray-900">1,247</span>
-                            </div>
-                            
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600">Last Stream</span>
-                                <span class="font-semibold text-gray-900">2 hours ago</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Automation Settings -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Automation Settings</h2>
-                        
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <div class="font-medium text-gray-900">Clip Detection</div>
-                                    <div class="text-sm text-gray-500">Auto-detect epic moments</div>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="clip-detection" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                            
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <div class="font-medium text-gray-900">Auto-posting</div>
-                                    <div class="text-sm text-gray-500">Share clips automatically</div>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="auto-posting" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                            
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <div class="font-medium text-gray-900">AI Titles</div>
-                                    <div class="text-sm text-gray-500">Generate engaging titles</div>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="ai-titles" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                            
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <div class="font-medium text-gray-900">Sentiment Analysis</div>
-                                    <div class="text-sm text-gray-500">Analyze audience reaction</div>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="sentiment-analysis">
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    
+                <div class="platform-status" id="youtubeStatus">
+                    <div class="platform-icon youtube">Y</div>
+                    <div class="platform-name">YouTube</div>
+                    <div class="platform-status-text">Not Connected</div>
+                </div>
+                <div class="platform-status" id="instagramStatus">
+                    <div class="platform-icon instagram">I</div>
+                    <div class="platform-name">Instagram</div>
+                    <div class="platform-status-text">Not Connected</div>
+                </div>
+                <div class="platform-status" id="tiktokStatus">
+                    <div class="platform-icon tiktok">T</div>
+                    <div class="platform-name">TikTok</div>
+                    <div class="platform-status-text">Not Connected</div>
                 </div>
             </div>
-            
-        </main>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <div class="action-card">
+                <h3>🎮 Start Streaming</h3>
+                <p>Begin streaming and let AI create amazing clips automatically from your gameplay</p>
+                <div class="action-buttons">
+                    <button class="btn btn-live" onclick="startStream()">
+                        🔴 Go Live
+                    </button>
+                    <button class="btn btn-secondary" onclick="testAI()">
+                        🧪 Test AI
+                    </button>
+                </div>
+            </div>
+
+            <div class="action-card">
+                <h3>⚙️ Configure AI</h3>
+                <p>Fine-tune your AI settings for optimal clip creation and viral potential</p>
+                <div class="action-buttons">
+                    <a href="/onboarding.html" class="btn btn-primary">
+                        🤖 AI Settings
+                    </a>
+                    <button class="btn btn-secondary" onclick="viewAnalytics()">
+                        📊 Analytics
+                    </button>
+                </div>
+            </div>
+
+            <div class="action-card">
+                <h3>📱 Connect Platforms</h3>
+                <p>Link your social media accounts to automatically share clips across all platforms</p>
+                <div class="action-buttons">
+                    <a href="/onboarding.html" class="btn btn-primary">
+                        🔗 Connect Now
+                    </a>
+                    <button class="btn btn-secondary" onclick="manageConnections()">
+                        ⚙️ Manage
+                    </button>
+                </div>
+            </div>
+
+            <div class="action-card">
+                <h3>🎯 Growth Tools</h3>
+                <p>Use advanced tools to maximize your reach and grow your audience</p>
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="optimizeContent()">
+                        🚀 Optimize
+                    </button>
+                    <button class="btn btn-secondary" onclick="scheduleContent()">
+                        📅 Schedule
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="recent-section">
+            <div class="recent-card">
+                <h3>🎬 Recent Clips</h3>
+                <div id="recentClips">
+                    <div style="text-align: center; padding: 40px; color: #64748b;">
+                        <h4>No clips yet</h4>
+                        <p>Start streaming to see your clips here!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recent-card">
+                <h3>🔔 Notifications</h3>
+                <div id="notifications">
+                    <div class="notification-item">
+                        <div class="notification-icon">🎉</div>
+                        <div class="notification-content">
+                            <div class="notification-text">Welcome to AutoStreamPro! Set up your platforms to get started.</div>
+                            <div class="notification-time">Just now</div>
+                        </div>
+                    </div>
+                    <div class="notification-item">
+                        <div class="notification-icon">⚙️</div>
+                        <div class="notification-content">
+                            <div class="notification-text">AI configuration ready. Start streaming to begin clip creation.</div>
+                            <div class="notification-time">2 minutes ago</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Supabase Configuration
-        const SUPABASE_URL = 'https://dykxhmdozgccawkbxejd.supabase.co'; 
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        let user = null;
-        let dashboardData = null;
-        
-        // Initialize Supabase and check authentication
-        async function initSupabase() {
+        // Initialize Supabase
+        const supabaseUrl = 'YOUR_SUPABASE_URL';
+        const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+        const supabase = window.supabase?.createClient ? window.supabase.createClient(supabaseUrl, supabaseKey) : null;
+
+        // User data
+        let currentUser = null;
+        let userStats = {
+            totalClips: 0,
+            totalViews: 0,
+            streamTime: 0,
+            viralClips: 0
+        };
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            loadDashboardStats();
+            checkPlatformConnections();
+            loadRecentActivity();
+        });
+
+        // User authentication and data
+        async function loadUserData() {
             try {
-                console.log('Initializing dashboard...');
-                
-                // Get current session
-                const { data: { session }, error } = await supabase.auth.getSession();
-                
-                if (error) {
-                    console.error('Session error:', error);
-                    redirectToSignup();
-                    return;
-                }
-                
-                if (!session || !session.user) {
-                    console.log('No authenticated user found');
-                    redirectToSignup();
-                    return;
-                }
-                
-                user = session.user;
-                console.log('User authenticated:', user);
-                
-                // Update user info in sidebar
-                updateUserInfo();
-                
-                // Load dashboard data
-                await loadDashboardData();
-                
-            } catch (error) {
-                console.error('Supabase initialization failed:', error);
-                redirectToSignup();
-            }
-        }
-        
-        // Redirect to signup if not authenticated
-        function redirectToSignup() {
-            window.location.href = 'signup.html';
-        }
-        
-        // Update user info in sidebar
-        function updateUserInfo() {
-            const userNameEl = document.querySelector('.user-name');
-            const userEmailEl = document.querySelector('.user-email');
-            
-            if (userNameEl && user.email) {
-                userNameEl.textContent = user.email.split('@')[0];
-            }
-            
-            if (userEmailEl && user.email) {
-                userEmailEl.textContent = user.email;
-            }
-        }
-        
-        // Load dashboard data
-        async function loadDashboardData() {
-            try {
-                console.log('Loading dashboard data...');
-                
-                const response = await fetch('/.netlify/functions/dashboard-api', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${user.access_token}`
-                    },
-                    body: JSON.stringify({
-                        action: 'getDashboardData',
-                        userId: user.id
-                    })
-                });
-                
-                if (response.ok) {
-                    dashboardData = await response.json();
-                    updateDashboard(dashboardData);
-                } else {
-                    console.error('Failed to load dashboard data');
-                    // Use demo data if API fails
-                    updateDashboard(getDemoData());
-                }
-            } catch (error) {
-                console.error('Error loading dashboard data:', error);
-                // Use demo data if API fails
-                updateDashboard(getDemoData());
-            }
-        }
-        
-        // Update dashboard with data
-        function updateDashboard(data) {
-            console.log('Updating dashboard with data:', data);
-            
-            // Update metrics
-            updateMetrics(data.metrics || {});
-            
-            // Update stream status
-            updateStreamStatus(data.streamStatus || {});
-            
-            // Update recent clips
-            updateRecentClips(data.recentClips || []);
-            
-            // Update automation status
-            updateAutomationStatus(data.automationStatus || {});
-        }
-        
-        // Update metrics cards
-        function updateMetrics(metrics) {
-            const elements = {
-                'total-views': metrics.totalViews || 127500,
-                'clips-generated': metrics.clipsGenerated || 47,
-                'engagement-rate': metrics.engagementRate || 8.2,
-                'revenue': metrics.revenue || 2847
-            };
-            
-            Object.entries(elements).forEach(([id, value]) => {
-                const el = document.getElementById(id);
-                if (el) {
-                    if (id === 'engagement-rate') {
-                        el.textContent = value + '%';
-                    } else if (id === 'revenue') {
-                        el.textContent = '$' + value.toLocaleString();
+                if (supabase) {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session) {
+                        currentUser = session.user;
+                        updateUserDisplay();
                     } else {
-                        el.textContent = value.toLocaleString();
+                        // Handle non-authenticated users or family members
+                        handleGuestUser();
                     }
+                } else {
+                    // Supabase not available, use fallback
+                    handleGuestUser();
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                handleGuestUser();
+            }
+        }
+
+        function updateUserDisplay() {
+            if (currentUser) {
+                document.getElementById('userEmail').textContent = currentUser.email;
+                document.getElementById('userAvatar').textContent = currentUser.email.charAt(0).toUpperCase();
+            }
+        }
+
+        function handleGuestUser() {
+            // Check for family member or demo user
+            const userEmail = localStorage.getItem('userEmail') || 
+                             sessionStorage.getItem('userEmail') ||
+                             'demo@autostreamcro.com';
+            
+            document.getElementById('userEmail').textContent = userEmail;
+            document.getElementById('userAvatar').textContent = userEmail.charAt(0).toUpperCase();
+        }
+
+        // Dashboard stats
+        async function loadDashboardStats() {
+            try {
+                if (supabase && currentUser) {
+                    // Load real stats from database
+                    const [clipsResult, viewsResult, streamResult] = await Promise.allSettled([
+                        supabase.from('clips').select('*').eq('user_id', currentUser.id),
+                        supabase.from('clip_analytics').select('views').eq('user_id', currentUser.id),
+                        supabase.from('stream_sessions').select('duration').eq('user_id', currentUser.id)
+                    ]);
+
+                    const clips = clipsResult.status === 'fulfilled' ? clipsResult.value.data || [] : [];
+                    const views = viewsResult.status === 'fulfilled' ? 
+                        (viewsResult.value.data || []).reduce((sum, item) => sum + (item.views || 0), 0) : 0;
+                    const streamTime = streamResult.status === 'fulfilled' ? 
+                        (streamResult.value.data || []).reduce((sum, item) => sum + (item.duration || 0), 0) : 0;
+
+                    userStats = {
+                        totalClips: clips.length,
+                        totalViews: views,
+                        streamTime: Math.round(streamTime / 3600), // Convert to hours
+                        viralClips: clips.filter(clip => clip.viral_score > 80).length
+                    };
+                } else {
+                    // Use default stats for demo/new users
+                    userStats = {
+                        totalClips: 0,
+                        totalViews: 0,
+                        streamTime: 0,
+                        viralClips: 0
+                    };
+                }
+
+                updateStatsDisplay();
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+                // Use fallback stats
+                updateStatsDisplay();
+            }
+        }
+
+        function updateStatsDisplay() {
+            document.getElementById('totalClips').textContent = userStats.totalClips;
+            document.getElementById('totalViews').textContent = userStats.totalViews.toLocaleString();
+            document.getElementById('streamTime').textContent = userStats.streamTime + 'h';
+            document.getElementById('viralClips').textContent = userStats.viralClips;
+        }
+
+        // Platform connections
+        async function checkPlatformConnections() {
+            try {
+                if (supabase && currentUser) {
+                    const { data: connections } = await supabase
+                        .from('platform_connections')
+                        .select('platform_name')
+                        .eq('user_id', currentUser.id);
+
+                    const connectedPlatforms = connections ? connections.map(c => c.platform_name) : [];
+                    updatePlatformStatus(connectedPlatforms);
+                } else {
+                    // Check localStorage for demo connections
+                    const demoConnections = JSON.parse(localStorage.getItem('connectedPlatforms') || '[]');
+                    updatePlatformStatus(demoConnections);
+                }
+            } catch (error) {
+                console.error('Error checking platform connections:', error);
+                updatePlatformStatus([]);
+            }
+        }
+
+        function updatePlatformStatus(connectedPlatforms) {
+            const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
+            
+            platforms.forEach(platform => {
+                const element = document.getElementById(platform + 'Status');
+                if (connectedPlatforms.includes(platform)) {
+                    element.classList.add('connected');
+                    element.querySelector('.platform-status-text').textContent = 'Connected';
+                } else {
+                    element.classList.remove('connected');
+                    element.querySelector('.platform-status-text').textContent = 'Not Connected';
                 }
             });
         }
-        
-        // Update stream status
-        function updateStreamStatus(streamStatus) {
-            const statusEl = document.querySelector('.stream-status');
-            const viewersEl = document.getElementById('current-viewers');
-            const durationEl = document.getElementById('stream-duration');
-            
-            if (streamStatus.isLive) {
-                if (statusEl) {
-                    statusEl.innerHTML = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"><span class="w-2 h-2 bg-red-400 rounded-full mr-1.5 animate-pulse"></span>Live</span>';
+
+        // Recent activity
+        async function loadRecentActivity() {
+            try {
+                if (supabase && currentUser) {
+                    const { data: clips } = await supabase
+                        .from('clips')
+                        .select('*')
+                        .eq('user_id', currentUser.id)
+                        .order('created_at', { ascending: false })
+                        .limit(5);
+
+                    if (clips && clips.length > 0) {
+                        displayRecentClips(clips);
+                    }
                 }
-                if (viewersEl) viewersEl.textContent = streamStatus.viewers || 0;
-                if (durationEl) durationEl.textContent = streamStatus.duration || '0m';
-            } else {
-                if (statusEl) {
-                    statusEl.innerHTML = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Offline</span>';
-                }
-                if (viewersEl) viewersEl.textContent = '0';
-                if (durationEl) durationEl.textContent = '0m';
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
             }
         }
-        
-        // Update recent clips
-        function updateRecentClips(clips) {
-            const clipsList = document.getElementById('recent-clips-list');
-            if (!clipsList) return;
+
+        function displayRecentClips(clips) {
+            const container = document.getElementById('recentClips');
             
             if (clips.length === 0) {
-                clipsList.innerHTML = '<p class="text-gray-500 text-center py-4">No clips generated yet. Start streaming to create clips!</p>';
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #64748b;">
+                        <h4>No clips yet</h4>
+                        <p>Start streaming to see your clips here!</p>
+                    </div>
+                `;
                 return;
             }
-            
-            clipsList.innerHTML = clips.map(clip => `
-                <div class="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                    <div class="w-16 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.5a2.5 2.5 0 010 5H9m4.5-5H15a2.5 2.5 0 010 5h-1.5m-4-5v5m4-5v5"/>
-                        </svg>
+
+            container.innerHTML = clips.map(clip => `
+                <div class="clip-item">
+                    <div class="clip-thumbnail">🎬</div>
+                    <div class="clip-info">
+                        <h4>${clip.title || 'Gaming Clip'}</h4>
+                        <div class="clip-meta">${clip.game || 'Unknown Game'} • ${formatDate(clip.created_at)}</div>
                     </div>
-                    <div class="flex-1">
-                        <div class="font-medium text-gray-900">${clip.title || 'Epic Gaming Moment'}</div>
-                        <div class="text-sm text-gray-500">${clip.game || 'Gaming'} • ${clip.duration || 30}s • Virality: ${clip.viralityScore || Math.floor(Math.random() * 100)}/100</div>
+                    <div class="clip-stats">
+                        <div class="clip-views">${clip.views || 0} views</div>
                     </div>
-                    <button class="btn-secondary">Share</button>
                 </div>
             `).join('');
         }
-        
-        // Update automation status
-        function updateAutomationStatus(automation) {
-            const toggles = {
-                'clip-detection': automation.clipDetection !== false,
-                'auto-posting': automation.autoPosting !== false,
-                'ai-titles': automation.aiTitles !== false,
-                'sentiment-analysis': automation.sentimentAnalysis === true
-            };
+
+        // Action functions
+        function startStream() {
+            // Check if platforms are connected
+            const connectedCount = document.querySelectorAll('.platform-status.connected').length;
             
-            Object.entries(toggles).forEach(([id, enabled]) => {
-                const toggle = document.getElementById(id);
-                if (toggle) {
-                    toggle.checked = enabled;
-                }
-            });
-        }
-        
-        // Demo data fallback
-        function getDemoData() {
-            return {
-                metrics: {
-                    totalViews: 127500,
-                    clipsGenerated: 47,
-                    engagementRate: 8.2,
-                    revenue: 2847
-                },
-                streamStatus: {
-                    isLive: false,
-                    viewers: 0,
-                    duration: '0m'
-                },
-                recentClips: [
-                    {
-                        title: 'INSANE 1v4 Clutch in Valorant!',
-                        game: 'Valorant',
-                        duration: 45,
-                        viralityScore: 89
-                    },
-                    {
-                        title: 'Epic Building Win in Fortnite',
-                        game: 'Fortnite',
-                        duration: 32,
-                        viralityScore: 76
-                    }
-                ],
-                automationStatus: {
-                    clipDetection: true,
-                    autoPosting: true,
-                    aiTitles: true,
-                    sentimentAnalysis: false
-                }
-            };
-        }
-        
-        // Toggle automation feature
-        async function toggleAutomation(feature, enabled) {
-            try {
-                console.log('Toggling automation:', feature, enabled);
-                
-                const response = await fetch('/.netlify/functions/dashboard-api', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${user.access_token}`
-                    },
-                    body: JSON.stringify({
-                        action: 'toggleAutomation',
-                        userId: user.id,
-                        feature: feature,
-                        enabled: enabled
-                    })
-                });
-                
-                if (response.ok) {
-                    console.log('Automation toggled successfully');
-                } else {
-                    console.error('Failed to toggle automation');
-                }
-            } catch (error) {
-                console.error('Error toggling automation:', error);
+            if (connectedCount === 0) {
+                alert('Please connect at least one platform before starting to stream!');
+                window.location.href = '/onboarding.html';
+                return;
             }
+
+            // Update streaming status
+            const statusIndicator = document.getElementById('streamingStatus');
+            statusIndicator.className = 'status-indicator status-live';
+            statusIndicator.innerHTML = '<div class="status-dot"></div><span>Live</span>';
+
+            showToast('🔴 Stream started! AI is now monitoring for clip-worthy moments.', 'success');
         }
-        
-        // Generate new clip
-        async function generateClip() {
-            const btn = document.getElementById('generate-clip-btn');
-            if (!btn) return;
+
+        function testAI() {
+            showToast('🧪 AI test initiated. Check your recent clips in a few moments!', 'info');
             
-            const originalText = btn.textContent;
-            btn.textContent = 'Generating...';
-            btn.disabled = true;
-            
-            try {
-                const response = await fetch('/.netlify/functions/dashboard-api', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${user.access_token}`
-                    },
-                    body: JSON.stringify({
-                        action: 'generateClip',
-                        userId: user.id,
-                        streamData: {
-                            game: 'Valorant',
-                            action: 'clutch',
-                            duration: 30
-                        }
-                    })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Clip generated:', data);
-                    
-                    // Reload clips
-                    await loadDashboardData();
-                    
-                    // Show success message
-                    showNotification('Clip generated successfully!', 'success');
-                } else {
-                    throw new Error('Failed to generate clip');
-                }
-            } catch (error) {
-                console.error('Error generating clip:', error);
-                showNotification('Failed to generate clip. Please try again.', 'error');
-            } finally {
-                btn.textContent = originalText;
-                btn.disabled = false;
-            }
-        }
-        
-        // Show notification
-        function showNotification(message, type = 'info') {
-            // Simple notification - you could enhance this
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 p-4 rounded-lg text-white z-50 ${
-                type === 'success' ? 'bg-green-500' : 
-                type === 'error' ? 'bg-red-500' : 'bg-blue-500'
-            }`;
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
+            // Simulate AI creating a test clip
             setTimeout(() => {
-                notification.remove();
+                addTestClip();
+                showToast('✅ Test clip created successfully!', 'success');
             }, 3000);
         }
-        
-        // Logout function
-        async function logout() {
-            try {
-                await supabase.auth.signOut();
-                window.location.href = 'index.html';
-            } catch (error) {
-                console.error('Logout failed:', error);
+
+        function addTestClip() {
+            const container = document.getElementById('recentClips');
+            const testClip = `
+                <div class="clip-item">
+                    <div class="clip-thumbnail">🎬</div>
+                    <div class="clip-info">
+                        <h4>AI Test Clip</h4>
+                        <div class="clip-meta">Test Game • Just now</div>
+                    </div>
+                    <div class="clip-stats">
+                        <div class="clip-views">0 views</div>
+                    </div>
+                </div>
+            `;
+            
+            // Remove "no clips" message if it exists
+            if (container.innerHTML.includes('No clips yet')) {
+                container.innerHTML = '';
+            }
+            
+            container.insertAdjacentHTML('afterbegin', testClip);
+            
+            // Update stats
+            userStats.totalClips++;
+            updateStatsDisplay();
+        }
+
+        function viewAnalytics() {
+            showToast('📊 Analytics dashboard coming soon!', 'info');
+        }
+
+        function manageConnections() {
+            window.location.href = '/onboarding.html';
+        }
+
+        function optimizeContent() {
+            showToast('🚀 Content optimization initiated!', 'success');
+        }
+
+        function scheduleContent() {
+            showToast('📅 Content scheduler coming soon!', 'info');
+        }
+
+        function signOut() {
+            if (confirm('Are you sure you want to sign out?')) {
+                if (supabase) {
+                    supabase.auth.signOut();
+                }
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = '/';
             }
         }
-        
-        // Initialize dashboard when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Dashboard page loaded');
+
+        // Utility functions
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
             
-            // Initialize Supabase
-            initSupabase();
+            return date.toLocaleDateString();
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
             
-            // Add event listeners for automation toggles
-            document.querySelectorAll('input[type="checkbox"]').forEach(toggle => {
-                toggle.addEventListener('change', function() {
-                    const feature = this.id;
-                    const enabled = this.checked;
-                    toggleAutomation(feature, enabled);
-                });
-            });
+            const bgColor = type === 'info' ? '#0ea5e9' : 
+                           type === 'warning' ? '#f59e0b' : 
+                           type === 'error' ? '#ef4444' : '#10b981';
             
-            // Add event listener for generate clip button
-            const generateBtn = document.getElementById('generate-clip-btn');
-            if (generateBtn) {
-                generateBtn.addEventListener('click', generateClip);
-            }
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${bgColor};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                z-index: 10000;
+                font-size: 14px;
+                opacity: 0;
+                transition: opacity 0.3s;
+                max-width: 300px;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
             
-            // Add event listener for logout
-            const logoutBtn = document.querySelector('[onclick="logout()"]');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', logout);
-            }
-        });
+            setTimeout(() => toast.style.opacity = '1', 100);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 4000);
+        }
+
+        // Auto-refresh stats every 30 seconds
+        setInterval(loadDashboardStats, 30000);
     </script>
 </body>
 </html>
