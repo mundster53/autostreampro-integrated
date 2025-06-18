@@ -1,11 +1,855 @@
-<div class="action-card">
-                        <h3>👥 User Management</h3>
-                        <p>Manage user accounts and permissions</p>
-                        <div class="card-actions">
-                            <button class="btn btn-primary" onclick="showUserManagement()">
-                                Manage Users
-                            </button>
-                        </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoStreamPro - Admin Panel v2.4</title>
+    <!-- admin.html Version 2.4: COMPLETE FIXED VERSION - Full Admin Panel -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e0f2fe 50%, #bfdbfe 100%);
+            min-height: 100vh;
+            color: #1e293b;
+            position: relative;
+        }
+
+        /* Add subtle pattern overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 75% 75%, rgba(147, 197, 253, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .admin-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .admin-header h1 {
+            color: #1e40af;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(30, 64, 175, 0.1);
+        }
+
+        .admin-header p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card h3 {
+            color: #1e40af;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            color: #64748b;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .action-card {
+            background: white;
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            border-top: 4px solid #3b82f6;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-card h3 {
+            color: #1e40af;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .action-card p {
+            color: #64748b;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #64748b;
+            border: 2px solid #e5f3ff;
+        }
+
+        .btn-secondary:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-1px);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-1px);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            transform: translateY(-1px);
+        }
+
+        /* Promo Code Styles */
+        .promo-section {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .promo-section h3 {
+            color: #1e40af;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .promo-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            color: #374151;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px 16px;
+            border: 2px solid #e5f3ff;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .promo-codes {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .promo-code {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e5f3ff;
+            transition: transform 0.2s ease;
+        }
+
+        .promo-code:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.1);
+        }
+
+        .promo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .promo-code-text {
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: #1e40af;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .copy-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            background: #059669;
+        }
+
+        .promo-details {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .promo-details div {
+            margin-bottom: 5px;
+        }
+
+        .loading-state,
+        .empty-state,
+        .error-state {
+            padding: 40px 20px;
+            text-align: center;
+            font-size: 16px;
+            color: #64748b;
+        }
+
+        .empty-state h3,
+        .error-state h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+
+        .empty-state p,
+        .error-state p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .error-state {
+            color: #ef4444;
+        }
+
+        /* User Management Styles */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .search-bar input {
+            padding: 10px 15px;
+            border: 2px solid #e5f3ff;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-bar select {
+            padding: 10px 15px;
+            border: 2px solid #e5f3ff;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .users-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .users-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e5f3ff;
+        }
+
+        .users-table {
+            overflow-x: auto;
+        }
+
+        .table-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr 1.5fr;
+            gap: 20px;
+            padding: 15px 20px;
+            background: #f1f9ff;
+            font-weight: 600;
+            color: #1e40af;
+            border-bottom: 1px solid #e5f3ff;
+        }
+
+        .table-body {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .user-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr 1.5fr;
+            gap: 20px;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f8ff;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .user-row:hover {
+            background: #f8fafc;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .user-details h4 {
+            margin: 0;
+            color: #1e40af;
+            font-size: 14px;
+        }
+
+        .user-details p {
+            margin: 2px 0 0 0;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-inactive {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .status-family {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-premium {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-view {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: #2563eb;
+        }
+
+        .btn-edit {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #059669;
+        }
+
+        .btn-disable {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-disable:hover {
+            background: #d97706;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #e5f3ff;
+            background: #f8fafc;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #1e40af;
+        }
+
+        .close {
+            font-size: 24px;
+            color: #64748b;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close:hover {
+            color: #1e40af;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .user-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .user-info-section,
+        .user-stats-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .user-info-section h4,
+        .user-stats-section h4 {
+            margin: 0 0 15px 0;
+            color: #1e40af;
+            font-size: 16px;
+        }
+
+        .info-row,
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5f3ff;
+        }
+
+        .info-row:last-child,
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-row label,
+        .stat-item label {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .platforms-list {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .platform-badge {
+            padding: 4px 8px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .user-actions-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .user-actions-section h4 {
+            margin: 0 0 15px 0;
+            color: #1e40af;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 20px 15px;
+            }
+
+            .admin-header h1 {
+                font-size: 2rem;
+            }
+
+            .stats-grid,
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .promo-form {
+                grid-template-columns: 1fr;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .search-bar input {
+                min-width: auto;
+            }
+
+            .table-header,
+            .user-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .user-details-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .action-card,
+            .stat-card {
+                box-shadow: none;
+                border: 1px solid #ccc;
+            }
+        }
+
+        /* High Contrast Mode Support */
+        @media (prefers-contrast: high) {
+            .action-card,
+            .stat-card {
+                border-width: 3px;
+            }
+            
+            .btn {
+                border: 2px solid currentColor;
+            }
+        }
+
+        /* Reduced Motion Support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Dashboard Section -->
+        <div id="dashboard">
+            <div class="admin-header">
+                <h1>🚀 AutoStreamPro Admin</h1>
+                <p>Manage your streaming empire from one powerful dashboard</p>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="dashboardTotalUsers">0</h3>
+                    <p>Total Users</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="dashboardRevenue">$0</h3>
+                    <p>Revenue</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="dashboardActiveStreams">0</h3>
+                    <p>Active Streams</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="dashboardTotalClips">0</h3>
+                    <p>Total Clips</p>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="actions-grid">
+                <div class="action-card">
+                    <h3>🎮 Set Up Streaming</h3>
+                    <p>Configure platforms and AI settings for optimal clip creation</p>
+                    <div class="card-actions">
+                        <a href="/onboarding.html" class="btn btn-primary">
+                            Set Up My Streaming Accounts
+                        </a>
+                    </div>
+                </div>
+
+                <div class="action-card">
+                    <h3>👥 User Management</h3>
+                    <p>Manage user accounts and permissions</p>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" onclick="showUserManagement()">
+                            Manage Users
+                        </button>
+                    </div>
+                </div>
+
+                <div class="action-card">
+                    <h3>📊 Analytics Dashboard</h3>
+                    <p>View detailed performance metrics and insights</p>
+                    <div class="card-actions">
+                        <button class="btn btn-secondary" onclick="alert('Analytics dashboard coming soon!')">
+                            View Analytics
+                        </button>
+                    </div>
+                </div>
+
+                <div class="action-card">
+                    <h3>⚙️ System Settings</h3>
+                    <p>Configure platform settings and preferences</p>
+                    <div class="card-actions">
+                        <button class="btn btn-secondary" onclick="alert('System settings coming soon!')">
+                            Manage Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Promo Code Management -->
+            <div class="promo-section">
+                <h3>🎟️ Promo Code Management</h3>
+                
+                <div class="promo-form">
+                    <div class="form-group">
+                        <label for="promoCode">Promo Code</label>
+                        <input type="text" id="promoCode" placeholder="Enter code (e.g., STREAM50)">
+                    </div>
+                    <div class="form-group">
+                        <label for="discountType">Discount Type</label>
+                        <select id="discountType">
+                            <option value="percentage">Percentage</option>
+                            <option value="fixed">Fixed Amount</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="createPromoCode()">
+                        Create Code
+                    </button>
+                </div>
+
+                <div class="promo-codes" id="promoCodes">
+                    <!-- Promo codes will be displayed here -->
+                </div>
+            </div>
+        </div>
 
         <!-- User Management Section -->
         <div id="userManagement" class="section" style="display: none;">
@@ -145,4 +989,582 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const supabaseUrl = 'YOUR_SUPABASE_URL';
+        const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+        const supabase = window.supabase?.createClient ? window.supabase.createClient(supabaseUrl, supabaseKey) : null;
+
+        // Dashboard Stats Functions
+        async function loadDashboardStats() {
+            try {
+                // Initialize Supabase if not already done
+                if (typeof supabase === 'undefined') {
+                    console.log('Supabase not initialized, showing default stats');
+                    updateDashboardStats({
+                        totalUsers: 0,
+                        revenue: 0,
+                        activeStreams: 0,
+                        totalClips: 0
+                    });
+                    return;
+                }
+
+                // Get real data from database
+                const [usersResult, clipsResult, subscriptionsResult] = await Promise.allSettled([
+                    supabase.from('profiles').select('*'),
+                    supabase.from('clips').select('*'),
+                    supabase.from('subscriptions').select('amount').eq('status', 'active')
+                ]);
+
+                // Calculate stats from real data
+                const totalUsers = usersResult.status === 'fulfilled' && usersResult.value.data 
+                    ? usersResult.value.data.length 
+                    : 0;
+
+                const totalClips = clipsResult.status === 'fulfilled' && clipsResult.value.data 
+                    ? clipsResult.value.data.length 
+                    : 0;
+
+                const revenue = subscriptionsResult.status === 'fulfilled' && subscriptionsResult.value.data 
+                    ? subscriptionsResult.value.data.reduce((sum, sub) => sum + (sub.amount || 0), 0)
+                    : 0;
+
+                // Get active streams (users who have streamed in last 24 hours)
+                const oneDayAgo = new Date();
+                oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+                
+                const activeStreamsResult = await supabase
+                    .from('user_activity')
+                    .select('user_id')
+                    .gte('last_stream_at', oneDayAgo.toISOString())
+                    .or('status.eq.streaming,status.eq.online');
+
+                const activeStreams = activeStreamsResult.data ? activeStreamsResult.data.length : 0;
+
+                updateDashboardStats({
+                    totalUsers,
+                    revenue,
+                    activeStreams,
+                    totalClips
+                });
+
+                console.log('✅ Dashboard stats loaded from database:', {
+                    totalUsers,
+                    revenue,
+                    activeStreams,
+                    totalClips
+                });
+
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+                
+                // Graceful fallback - don't crash the admin panel
+                updateDashboardStats({
+                    totalUsers: 0,
+                    revenue: 0,
+                    activeStreams: 0,
+                    totalClips: 0
+                });
+
+                // Show user-friendly message
+                showToast('Dashboard stats temporarily unavailable', 'warning');
+            }
+        }
+
+        function updateDashboardStats(stats) {
+            document.getElementById('dashboardTotalUsers').textContent = stats.totalUsers;
+            document.getElementById('dashboardRevenue').textContent = `$${stats.revenue.toLocaleString()}`;
+            document.getElementById('dashboardActiveStreams').textContent = stats.activeStreams;
+            document.getElementById('dashboardTotalClips').textContent = stats.totalClips.toLocaleString();
+        }
+
+        // Refresh dashboard stats every 30 seconds
+        function startDashboardStatsRefresh() {
+            loadDashboardStats(); // Load immediately
+            setInterval(loadDashboardStats, 30000); // Refresh every 30 seconds
+        }
+
+        // Load dashboard stats when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            startDashboardStatsRefresh();
+        });
+
+        // User Management Functions
+        let allUsers = [];
+        let currentUser = null;
+
+        function showUserManagement() {
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('userManagement').style.display = 'block';
+            loadUsers();
+        }
+
+        function showDashboard() {
+            document.getElementById('userManagement').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+        }
+
+        async function loadUsers() {
+            try {
+                // Show loading state
+                document.getElementById('usersTableBody').innerHTML = '<div class="loading-state">Loading users...</div>';
+                
+                // Get real users from database
+                const { data: users, error } = await supabase
+                    .from('profiles')
+                    .select(`
+                        *,
+                        user_clips:clips(count),
+                        user_platforms:platform_connections(platform_name),
+                        user_ai_configs:ai_configurations(count)
+                    `)
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('Database error:', error);
+                    throw error;
+                }
+
+                // Transform database data to match our display format
+                allUsers = users ? users.map(user => ({
+                    id: user.id,
+                    email: user.email,
+                    created_at: user.created_at,
+                    last_sign_in_at: user.last_sign_in_at || user.updated_at,
+                    user_type: user.user_type || 'regular',
+                    status: user.status || 'active',
+                    total_clips: user.user_clips?.[0]?.count || 0,
+                    platforms: user.user_platforms?.map(p => p.platform_name) || [],
+                    ai_configs: user.user_ai_configs?.[0]?.count || 0,
+                    games_count: user.configured_games?.length || 0
+                })) : [];
+
+                // If no real users yet, show empty state
+                if (allUsers.length === 0) {
+                    document.getElementById('usersTableBody').innerHTML = `
+                        <div class="empty-state" style="text-align: center; padding: 40px; color: #64748b;">
+                            <h3>No Users Yet</h3>
+                            <p>Users will appear here as they sign up for AutoStreamPro</p>
+                        </div>
+                    `;
+                    
+                    updateUserStats();
+                    return;
+                }
+
+                updateUserStats();
+                displayUsers(allUsers);
+                
+                console.log(`✅ Loaded ${allUsers.length} users from database`);
+
+            } catch (error) {
+                console.error('Error loading users:', error);
+                
+                // Graceful fallback - show empty state instead of crashing
+                document.getElementById('usersTableBody').innerHTML = `
+                    <div class="error-state" style="text-align: center; padding: 40px; color: #ef4444;">
+                        <h3>Unable to Load Users</h3>
+                        <p>Database connection issue. Please check your connection and try again.</p>
+                        <button class="btn btn-primary" onclick="loadUsers()" style="margin-top: 15px;">
+                            Retry
+                        </button>
                     </div>
+                `;
+
+                // Set empty stats
+                allUsers = [];
+                updateUserStats();
+
+                showToast('Error loading users from database', 'error');
+            }
+        }
+
+        function updateUserStats() {
+            const total = allUsers.length;
+            const active = allUsers.filter(user => user.status === 'active' && isRecentlyActive(user.last_sign_in_at)).length;
+            const family = allUsers.filter(user => user.user_type === 'family').length;
+            const premium = allUsers.filter(user => user.user_type === 'premium').length;
+
+            document.getElementById('totalUsers').textContent = total;
+            document.getElementById('activeUsers').textContent = active;
+            document.getElementById('familyMembers').textContent = family;
+            document.getElementById('premiumUsers').textContent = premium;
+        }
+
+        function isRecentlyActive(lastSignIn) {
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return new Date(lastSignIn) > weekAgo;
+        }
+
+        function displayUsers(users) {
+            const tbody = document.getElementById('usersTableBody');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = '<div class="no-users">No users found matching your criteria.</div>';
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => `
+                <div class="user-row">
+                    <div class="user-info">
+                        <div class="user-avatar">${user.email.charAt(0).toUpperCase()}</div>
+                        <div class="user-details">
+                            <h4>${user.email}</h4>
+                            <p>Joined ${formatDate(user.created_at)}</p>
+                        </div>
+                    </div>
+                    <div class="status-badge status-${user.status}">${user.status}</div>
+                    <div class="status-badge status-${user.user_type}">${user.user_type}</div>
+                    <div>${formatDate(user.last_sign_in_at)}</div>
+                    <div>${user.total_clips}</div>
+                    <div class="user-actions">
+                        <button class="btn-small btn-view" onclick="viewUser('${user.id}')">View</button>
+                        <button class="btn-small btn-edit" onclick="editUser('${user.id}')">Edit</button>
+                        <button class="btn-small btn-disable" onclick="toggleUser('${user.id}')">${user.status === 'active' ? 'Disable' : 'Enable'}</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterUsers() {
+            const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+            const filterType = document.getElementById('userFilter').value;
+
+            let filteredUsers = allUsers;
+
+            // Apply search filter
+            if (searchTerm) {
+                filteredUsers = filteredUsers.filter(user => 
+                    user.email.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            // Apply type filter
+            if (filterType !== 'all') {
+                if (filterType === 'active') {
+                    filteredUsers = filteredUsers.filter(user => user.status === 'active');
+                } else if (filterType === 'inactive') {
+                    filteredUsers = filteredUsers.filter(user => user.status === 'inactive');
+                } else {
+                    filteredUsers = filteredUsers.filter(user => user.user_type === filterType);
+                }
+            }
+
+            displayUsers(filteredUsers);
+        }
+
+        function viewUser(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            currentUser = user;
+
+            // Populate modal with user data
+            document.getElementById('modalUserName').textContent = user.email;
+            document.getElementById('modalUserEmail').textContent = user.email;
+            document.getElementById('modalUserType').textContent = user.user_type;
+            document.getElementById('modalSignupDate').textContent = formatDate(user.created_at);
+            document.getElementById('modalLastActive').textContent = formatDate(user.last_sign_in_at);
+            document.getElementById('modalUserStatus').textContent = user.status;
+            document.getElementById('modalTotalClips').textContent = user.total_clips;
+            document.getElementById('modalAIConfigs').textContent = user.ai_configs;
+            document.getElementById('modalGamesCount').textContent = user.games_count;
+
+            // Display connected platforms
+            const platformsContainer = document.getElementById('modalPlatforms');
+            if (user.platforms && user.platforms.length > 0) {
+                platformsContainer.innerHTML = user.platforms.map(platform => 
+                    `<span class="platform-badge">${platform}</span>`
+                ).join('');
+            } else {
+                platformsContainer.textContent = 'None';
+            }
+
+            // Update toggle button text
+            document.getElementById('toggleStatusText').textContent = 
+                user.status === 'active' ? 'Disable Account' : 'Enable Account';
+
+            // Show modal
+            document.getElementById('userModal').style.display = 'flex';
+        }
+
+        function editUser(userId) {
+            // This would open an edit form - for now, just show the view modal
+            viewUser(userId);
+        }
+
+        function toggleUser(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            const newStatus = user.status === 'active' ? 'inactive' : 'active';
+            
+            if (confirm(`Are you sure you want to ${newStatus === 'active' ? 'enable' : 'disable'} this user?`)) {
+                // Update in database
+                updateUserInDatabase(userId, { status: newStatus })
+                    .then(() => {
+                        // Update local array
+                        user.status = newStatus;
+                        
+                        // Refresh display
+                        filterUsers();
+                        updateUserStats();
+                        
+                        // If modal is open for this user, update it
+                        if (currentUser && currentUser.id === userId) {
+                            document.getElementById('modalUserStatus').textContent = newStatus;
+                            document.getElementById('toggleStatusText').textContent = 
+                                newStatus === 'active' ? 'Disable Account' : 'Enable Account';
+                        }
+
+                        showToast(`User ${newStatus === 'active' ? 'enabled' : 'disabled'} successfully`);
+                    })
+                    .catch(error => {
+                        console.error('Error updating user:', error);
+                        showToast('Error updating user status', 'error');
+                    });
+            }
+        }
+
+        async function updateUserInDatabase(userId, updates) {
+            const { error } = await supabase
+                .from('profiles')
+                .update(updates)
+                .eq('id', userId);
+            
+            if (error) throw error;
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').style.display = 'none';
+            currentUser = null;
+        }
+
+        function toggleUserStatus() {
+            if (currentUser) {
+                toggleUser(currentUser.id);
+            }
+        }
+
+        function resetUserPassword() {
+            if (currentUser) {
+                if (confirm(`Send password reset email to ${currentUser.email}?`)) {
+                    // Use Supabase auth to send password reset
+                    supabase.auth.resetPasswordForEmail(currentUser.email)
+                        .then(() => {
+                            showToast(`Password reset email sent to ${currentUser.email}`);
+                        })
+                        .catch(error => {
+                            console.error('Error sending password reset:', error);
+                            showToast('Error sending password reset email', 'error');
+                        });
+                }
+            }
+        }
+
+        function viewUserActivity() {
+            if (currentUser) {
+                // This would show activity log - for now just an alert
+                alert(`Activity log for ${currentUser.email} would be shown here.`);
+            }
+        }
+
+        function deleteUser() {
+            if (currentUser) {
+                if (confirm(`Are you sure you want to permanently delete ${currentUser.email}? This action cannot be undone.`)) {
+                    // Delete from database
+                    supabase.from('profiles')
+                        .delete()
+                        .eq('id', currentUser.id)
+                        .then(({ error }) => {
+                            if (error) throw error;
+                            
+                            // Remove user from local array
+                            allUsers = allUsers.filter(u => u.id !== currentUser.id);
+                            
+                            // Close modal
+                            closeUserModal();
+                            
+                            // Refresh display
+                            filterUsers();
+                            updateUserStats();
+                            
+                            showToast('User deleted successfully');
+                        })
+                        .catch(error => {
+                            console.error('Error deleting user:', error);
+                            showToast('Error deleting user', 'error');
+                        });
+                }
+            }
+        }
+
+        function exportUsers() {
+            if (allUsers.length === 0) {
+                showToast('No users to export', 'warning');
+                return;
+            }
+
+            const csvContent = "data:text/csv;charset=utf-8," + 
+                "Email,Type,Status,Signup Date,Last Active,Total Clips,Platforms,AI Configs,Games\n" +
+                allUsers.map(user => 
+                    `"${user.email}","${user.user_type}","${user.status}","${user.created_at}","${user.last_sign_in_at}","${user.total_clips}","${user.platforms.join(';')}","${user.ai_configs}","${user.games_count}"`
+                ).join("\n");
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `autostreamcro-users-${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showToast(`Exported ${allUsers.length} users successfully`);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            // Simple toast notification with different types
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'warning' ? '#f59e0b' : 
+                           type === 'error' ? '#ef4444' : '#10b981';
+            
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${bgColor};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                z-index: 10000;
+                font-size: 14px;
+                opacity: 0;
+                transition: opacity 0.3s;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.style.opacity = '1', 100);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('userModal');
+            if (event.target === modal) {
+                closeUserModal();
+            }
+        }
+
+        // Promo Code Management
+        function createPromoCode() {
+            const code = document.getElementById('promoCode').value.trim();
+            const discountType = document.getElementById('discountType').value;
+            
+            if (!code) {
+                alert('Please enter a promo code');
+                return;
+            }
+            
+            // Create promo code object
+            const promoCode = {
+                code: code.toUpperCase(),
+                type: discountType,
+                discount: discountType === 'percentage' ? 20 : 10, // Default values
+                created: new Date().toISOString(),
+                used: 0,
+                maxUses: 100
+            };
+            
+            // Add to display
+            addPromoCodeToDisplay(promoCode);
+            
+            // Clear form
+            document.getElementById('promoCode').value = '';
+            
+            // Show success
+            showToast(`Promo code "${promoCode.code}" created successfully!`);
+        }
+
+        function addPromoCodeToDisplay(promoCode) {
+            const container = document.getElementById('promoCodes');
+            const promoElement = document.createElement('div');
+            promoElement.className = 'promo-code';
+            
+            promoElement.innerHTML = `
+                <div class="promo-header">
+                    <span class="promo-code-text">${promoCode.code}</span>
+                    <button class="copy-btn" onclick="copyPromoCode('${promoCode.code}')">
+                        Copy
+                    </button>
+                </div>
+                <div class="promo-details">
+                    <div><strong>Type:</strong> ${promoCode.type === 'percentage' ? 'Percentage' : 'Fixed Amount'}</div>
+                    <div><strong>Discount:</strong> ${promoCode.type === 'percentage' ? promoCode.discount + '%' : '$' + promoCode.discount}</div>
+                    <div><strong>Used:</strong> ${promoCode.used}/${promoCode.maxUses}</div>
+                    <div><strong>Created:</strong> ${new Date(promoCode.created).toLocaleDateString()}</div>
+                </div>
+            `;
+            
+            container.appendChild(promoElement);
+        }
+
+        function copyPromoCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                showToast(`Promo code "${code}" copied to clipboard!`);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = code;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast(`Promo code "${code}" copied to clipboard!`);
+            });
+        }
+
+        // Initialize some sample promo codes
+        document.addEventListener('DOMContentLoaded', function() {
+            const sampleCodes = [
+                {
+                    code: 'WELCOME50',
+                    type: 'percentage',
+                    discount: 50,
+                    created: new Date().toISOString(),
+                    used: 15,
+                    maxUses: 100
+                },
+                {
+                    code: 'NEWUSER10',
+                    type: 'fixed',
+                    discount: 10,
+                    created: new Date().toISOString(),
+                    used: 8,
+                    maxUses: 50
+                }
+            ];
+            
+            sampleCodes.forEach(addPromoCodeToDisplay);
+        });
+    </script>
+</body>
+</html>
