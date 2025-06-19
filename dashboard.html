@@ -1,178 +1,909 @@
-/* 
-        SETUP REQUIRED:
-        
-        1. Replace the following client IDs with your actual app credentials:
-           - your_twitch_client_id
-           - your_youtube_client_id  
-           - your_instagram_client_id
-           - your_tiktok_client_id
-        
-        2. Create OAuth apps for each platform:
-           - Twitch: https://dev.twitch.tv/console/apps
-           - YouTube: https://console.developers.google.com/
-           - Instagram: https://developers.facebook.com/apps/
-           - TikTok: https://developers.tiktok.com/
-        
-        3. Set up redirect URIs for each platform:
-           - https://autostreampro.com/auth/twitch
-           - https://autostreampro.com/auth/youtube
-           - https://autostreampro.com/auth/instagram
-           - https://autostreampro.com/auth/tiktok
-        
-        4. Create backend endpoints to handle OAuth token exchange:
-           - /api/auth/callback (for exchanging codes for tokens)
-        
-        5. Set up database table 'platform_connections' with columns:
-           - user_id, platform_name, access_token, refresh_token, 
-           - platform_user_id, status, connected_at
-        */
-        window.connectTwitch = async function() {
-            const button = document.querySelector('[onclick="connectTwitch()"]');
-            const originalText = button.innerHTML;
-            
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AutoStreamPro</title>
+    <meta name="description" content="Your AutoStreamPro dashboard - Monitor your streaming performance">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e0f2fe 50%, #bfdbfe 100%);
+            min-height: 100vh;
+            color: #1e293b;
+            position: relative;
+        }
+
+        /* Background Pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(147, 197, 253, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e40af;
+            text-decoration: none;
+        }
+
+        .logo span {
+            margin-left: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #64748b;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #3b82f6;
+        }
+
+        .nav-links a.active {
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        .user-menu {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .user-menu:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .user-email {
+            color: #64748b;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            min-width: 160px;
+            z-index: 1001;
+        }
+
+        .user-menu:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: #374151;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: background 0.3s ease;
+        }
+
+        .dropdown-menu a:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: #1e40af;
+        }
+
+        /* Main Content */
+        .main-container {
+            padding-top: 100px;
+            padding-bottom: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+
+        .welcome-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .welcome-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border-radius: 16px 16px 0 0;
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-subtitle {
+            color: #64748b;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat-title {
+            color: #64748b;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+            opacity: 0.7;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.875rem;
+            color: #10b981;
+            font-weight: 500;
+        }
+
+        /* Streaming Status */
+        .streaming-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .streaming-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border-radius: 16px 16px 0 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+        }
+
+        .status-dot.online {
+            background: #10b981;
+        }
+
+        .platforms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .platform-card {
+            background: #f8fafc;
+            border: 2px solid #e5f3ff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .platform-card:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .platform-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+
+        .platform-icon.twitch {
+            background: #9146ff;
+        }
+
+        .platform-icon.youtube {
+            background: #ff0000;
+        }
+
+        .platform-icon.instagram {
+            background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+        }
+
+        .platform-icon.tiktok {
+            background: #000000;
+        }
+
+        .platform-name {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .platform-status {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .platform-status.connected {
+            color: #10b981;
+            font-weight: 500;
+        }
+
+        /* Quick Actions */
+        .actions-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            position: relative;
+        }
+
+        .actions-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border-radius: 16px 16px 0 0;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .action-btn.secondary {
+            background: white;
+            color: #3b82f6;
+            border: 2px solid #3b82f6;
+        }
+
+        .action-btn.secondary:hover {
+            background: #3b82f6;
+            color: white;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 0 1rem;
+            }
+
+            .main-container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .platforms-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .user-email {
+                display: none;
+            }
+
+            .welcome-title {
+                font-size: 1.5rem;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                🚀 <span>AutoStreamPro</span>
+            </a>
+            <div class="nav-links">
+                <a href="/dashboard.html" class="active">Dashboard</a>
+                <a href="/onboarding.html">Setup</a>
+                <a href="#" onclick="showAnalytics()">Analytics</a>
+            </div>
+            <div class="user-menu">
+                <div class="user-avatar">U</div>
+                <span class="user-email">Loading...</span>
+                <div class="dropdown-menu">
+                    <a href="/onboarding.html">Settings</a>
+                    <a href="#" onclick="signOut()">Sign Out</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1 class="welcome-title">👋 Welcome back!</h1>
+            <p class="welcome-subtitle">Your streaming empire is ready to create viral clips. Check your stats below and start streaming to see the magic happen!</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Total Clips Created</span>
+                    <span class="stat-icon">🎬</span>
+                </div>
+                <div class="stat-number">0</div>
+                <div class="stat-change">
+                    📈 +0 this week
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Total Views</span>
+                    <span class="stat-icon">👀</span>
+                </div>
+                <div class="stat-number">0</div>
+                <div class="stat-change">
+                    📈 +0 this week
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Stream Time</span>
+                    <span class="stat-icon">⏱️</span>
+                </div>
+                <div class="stat-number">0h</div>
+                <div class="stat-change">
+                    📈 +0h this week
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Viral Clips</span>
+                    <span class="stat-icon">🚀</span>
+                </div>
+                <div class="stat-number">0</div>
+                <div class="stat-change">
+                    📈 +0 this week
+                </div>
+            </div>
+        </div>
+
+        <!-- Streaming Status -->
+        <div class="streaming-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    🎮 Streaming Status
+                </h2>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    Offline
+                </div>
+            </div>
+
+            <div class="platforms-grid">
+                <div class="platform-card">
+                    <div class="platform-icon twitch">T</div>
+                    <div class="platform-name">Twitch</div>
+                    <div class="platform-status">Not Connected</div>
+                </div>
+
+                <div class="platform-card">
+                    <div class="platform-icon youtube">Y</div>
+                    <div class="platform-name">YouTube</div>
+                    <div class="platform-status">Not Connected</div>
+                </div>
+
+                <div class="platform-card">
+                    <div class="platform-icon instagram">I</div>
+                    <div class="platform-name">Instagram</div>
+                    <div class="platform-status">Not Connected</div>
+                </div>
+
+                <div class="platform-card">
+                    <div class="platform-icon tiktok">T</div>
+                    <div class="platform-name">TikTok</div>
+                    <div class="platform-status">Not Connected</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="actions-section">
+            <div class="section-header">
+                <h2 class="section-title">⚡ Quick Actions</h2>
+            </div>
+
+            <div class="actions-grid">
+                <a href="/onboarding.html" class="action-btn">
+                    🔗 Connect Platforms
+                </a>
+                <button class="action-btn secondary" onclick="startStreaming()">
+                    🎥 Go Live
+                </button>
+                <a href="/onboarding.html" class="action-btn secondary">
+                    🤖 AI Settings
+                </a>
+                <button class="action-btn secondary" onclick="showAnalytics()">
+                    📊 View Analytics
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase with YOUR actual credentials
+        const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co'; // Your working Supabase URL
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg'; // Your actual anon key
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Check authentication and load user data
+        async function initializeDashboard() {
             try {
-                button.innerHTML = '<div class="loading-spinner"></div> Connecting...';
-                button.disabled = true;
+                // Check if user is authenticated
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
                 
-                // Twitch OAuth URL
-                const twitchClientId = 'your_twitch_client_id'; // Replace with actual client ID
-                const redirectUri = encodeURIComponent(window.location.origin + '/auth/twitch');
-                const scope = encodeURIComponent('user:read:email channel:read:stream_key');
-                const state = Math.random().toString(36).substring(7);
+                if (sessionError) {
+                    console.error('Session error:', sessionError);
+                    redirectToLogin();
+                    return;
+                }
                 
-                // Store state for verification
-                sessionStorage.setItem('twitch_state', state);
+                if (!session) {
+                    console.log('No active session, redirecting to login');
+                    redirectToLogin();
+                    return;
+                }
                 
-                const twitchAuthUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=${state}`;
+                // User is authenticated, load their data
+                const user = session.user;
+                console.log('Authenticated user:', user);
                 
-                // Open in popup or redirect
-                const popup = window.open(twitchAuthUrl, 'twitchAuth', 'width=600,height=700');
+                // Update UI with user info
+                updateUserProfile(user);
                 
-                // Listen for popup completion
-                const checkClosed = setInterval(() => {
-                    if (popup.closed) {
-                        clearInterval(checkClosed);
-                        button.innerHTML = originalText;
-                        button.disabled = false;
-                        checkConnectionStatus();
-                    }
-                }, 1000);
+                // Load dashboard data
+                await loadDashboardStats(user.id);
+                await loadStreamingStatus(user.id);
+                
+                // Start periodic updates
+                startPeriodicUpdates(user.id);
                 
             } catch (error) {
-                console.error('Twitch connection error:', error);
-                showToast('Failed to connect to Twitch', 'error');
-                button.innerHTML = originalText;
-                button.disabled = false;
+                console.error('Dashboard initialization error:', error);
+                showError('Failed to load dashboard. Please try refreshing the page.');
             }
-        };
+        }
         
-        window.connectYouTube = async function() {
-            const button = document.querySelector('[onclick="connectYouTube()"]');
-            const originalText = button.innerHTML;
+        function redirectToLogin() {
+            window.location.href = '/login.html';
+        }
+        
+        function updateUserProfile(user) {
+            // Update user email in UI
+            const userEmailElement = document.querySelector('.user-email, .user-info');
+            if (userEmailElement) {
+                userEmailElement.textContent = user.email;
+            }
             
+            // Update any other user-specific UI elements
+            document.title = `Dashboard - ${user.email} - AutoStreamPro`;
+        }
+        
+        function showError(message) {
+            // Create or update error message
+            let errorContainer = document.getElementById('error-container');
+            if (!errorContainer) {
+                errorContainer = document.createElement('div');
+                errorContainer.id = 'error-container';
+                errorContainer.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #fee2e2;
+                    color: #dc2626;
+                    padding: 1rem;
+                    border-radius: 8px;
+                    border: 1px solid #fecaca;
+                    z-index: 1000;
+                    max-width: 400px;
+                `;
+                document.body.appendChild(errorContainer);
+            }
+            
+            errorContainer.innerHTML = `
+                <strong>Error:</strong> ${message}
+                <button onclick="this.parentElement.remove()" style="margin-left: 10px; background: none; border: none; color: #dc2626; cursor: pointer;">×</button>
+            `;
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (errorContainer.parentElement) {
+                    errorContainer.remove();
+                }
+            }, 5000);
+        }
+
+        // Load dashboard statistics with better error handling
+        async function loadDashboardStats(userId) {
             try {
-                button.innerHTML = '<div class="loading-spinner"></div> Connecting...';
-                button.disabled = true;
+                // Initialize with default values
+                let totalClips = 0;
+                let totalViews = 0;
+                let streamTime = '0h';
+                let viralClips = 0;
                 
-                // YouTube OAuth URL
-                const youtubeClientId = 'your_youtube_client_id'; // Replace with actual client ID
-                const redirectUri = encodeURIComponent(window.location.origin + '/auth/youtube');
-                const scope = encodeURIComponent('https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.upload');
-                const state = Math.random().toString(36).substring(7);
-                
-                sessionStorage.setItem('youtube_state', state);
-                
-                const youtubeAuthUrl = `https://accounts.google.com/oauth/authorize?client_id=${youtubeClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline&state=${state}`;
-                
-                const popup = window.open(youtubeAuthUrl, 'youtubeAuth', 'width=600,height=700');
-                
-                const checkClosed = setInterval(() => {
-                    if (popup.closed) {
-                        clearInterval(checkClosed);
-                        button.innerHTML = originalText;
-                        button.disabled = false;
-                        checkConnectionStatus();
+                // Try to load real data from database
+                if (window.supabase && userId) {
+                    try {
+                        // Load clips data
+                        const { data: clips, error: clipsError } = await supabase
+                            .from('clips')
+                            .select('*')
+                            .eq('user_id', userId);
+                        
+                        if (!clipsError && clips) {
+                            totalClips = clips.length;
+                            totalViews = clips.reduce((sum, clip) => sum + (clip.views || 0), 0);
+                            viralClips = clips.filter(clip => (clip.views || 0) > 10000).length;
+                        }
+                        
+                        // Load stream time data
+                        const { data: streamData, error: streamError } = await supabase
+                            .from('user_activity')
+                            .select('total_stream_time')
+                            .eq('user_id', userId)
+                            .single();
+                        
+                        if (!streamError && streamData && streamData.total_stream_time) {
+                            streamTime = formatStreamTime(streamData.total_stream_time);
+                        }
+                        
+                    } catch (dbError) {
+                        console.log('Database not fully configured yet, using default values');
                     }
-                }, 1000);
+                }
+                
+                // Update UI with data (real or default)
+                updateStatsUI({
+                    totalClips,
+                    totalViews, 
+                    streamTime,
+                    viralClips
+                });
                 
             } catch (error) {
-                console.error('YouTube connection error:', error);
-                showToast('Failed to connect to YouTube', 'error');
-                button.innerHTML = originalText;
-                button.disabled = false;
+                console.error('Error loading dashboard stats:', error);
+                // Still show UI with default values
+                updateStatsUI({
+                    totalClips: 0,
+                    totalViews: 0,
+                    streamTime: '0h',
+                    viralClips: 0
+                });
             }
-        };
+        }
         
-        window.connectInstagram = async function() {
-            const button = document.querySelector('[onclick="connectInstagram()"]');
-            const originalText = button.innerHTML;
+        function updateStatsUI(stats) {
+            // Update total clips
+            const clipsElement = document.querySelector('.stat-card:nth-child(1) .stat-number');
+            if (clipsElement) clipsElement.textContent = stats.totalClips;
             
+            // Update total views  
+            const viewsElement = document.querySelector('.stat-card:nth-child(2) .stat-number');
+            if (viewsElement) viewsElement.textContent = stats.totalViews.toLocaleString();
+            
+            // Update stream time
+            const timeElement = document.querySelector('.stat-card:nth-child(3) .stat-number');
+            if (timeElement) timeElement.textContent = stats.streamTime;
+            
+            // Update viral clips
+            const viralElement = document.querySelector('.stat-card:nth-child(4) .stat-number');
+            if (viralElement) viralElement.textContent = stats.viralClips;
+        }
+        
+        function formatStreamTime(minutes) {
+            if (!minutes || minutes < 60) return '0h';
+            const hours = Math.floor(minutes / 60);
+            return `${hours}h`;
+        }
+
+        // Load streaming status and platform connections
+        async function loadStreamingStatus(userId) {
             try {
-                button.innerHTML = '<div class="loading-spinner"></div> Connecting...';
-                button.disabled = true;
+                if (!window.supabase || !userId) return;
                 
-                // Instagram OAuth URL (Facebook App)
-                const instagramClientId = 'your_instagram_client_id'; // Replace with actual client ID
-                const redirectUri = encodeURIComponent(window.location.origin + '/auth/instagram');
-                const scope = encodeURIComponent('user_profile,user_media');
-                const state = Math.random().toString(36).substring(7);
+                // Load platform connections
+                const { data: connections, error } = await supabase
+                    .from('platform_connections')
+                    .select('platform_name, status')
+                    .eq('user_id', userId);
                 
-                sessionStorage.setItem('instagram_state', state);
-                
-                const instagramAuthUrl = `https://api.instagram.com/oauth/authorize?client_id=${instagramClientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code&state=${state}`;
-                
-                const popup = window.open(instagramAuthUrl, 'instagramAuth', 'width=600,height=700');
-                
-                const checkClosed = setInterval(() => {
-                    if (popup.closed) {
-                        clearInterval(checkClosed);
-                        button.innerHTML = originalText;
-                        button.disabled = false;
-                        checkConnectionStatus();
-                    }
-                }, 1000);
+                if (!error && connections) {
+                    updatePlatformStatus(connections);
+                }
                 
             } catch (error) {
-                console.error('Instagram connection error:', error);
-                showToast('Failed to connect to Instagram', 'error');
-                button.innerHTML = originalText;
-                button.disabled = false;
+                console.log('Platform connections not configured yet');
             }
-        };
-        
-        window.connectTikTok = async function() {
-            const button = document.querySelector('[onclick="connectTikTok()"]');
-            const originalText = button.innerHTML;
+        }
+
+        function updatePlatformStatus(connections) {
+            const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
             
+            platforms.forEach(platform => {
+                const connection = connections.find(c => c.platform_name === platform);
+                const statusElement = document.querySelector(`.platform-icon.${platform}`).parentElement.querySelector('.platform-status');
+                
+                if (connection && connection.status === 'connected') {
+                    statusElement.textContent = 'Connected';
+                    statusElement.classList.add('connected');
+                }
+            });
+        }
+
+        // Periodic updates
+        function startPeriodicUpdates(userId) {
+            // Update stats every 30 seconds
+            setInterval(() => {
+                loadDashboardStats(userId);
+                loadStreamingStatus(userId);
+            }, 30000);
+        }
+
+        // Action functions
+        function startStreaming() {
+            alert('Streaming feature coming soon! Connect your platforms first.');
+        }
+
+        function showAnalytics() {
+            alert('Analytics feature coming soon!');
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dashboard loading...');
+            initializeDashboard();
+        });
+        
+        // Handle auth state changes
+        if (window.supabase) {
+            supabase.auth.onAuthStateChange((event, session) => {
+                console.log('Auth state changed:', event, session);
+                
+                if (event === 'SIGNED_OUT' || !session) {
+                    console.log('User signed out, redirecting to login');
+                    window.location.href = '/login.html';
+                } else if (event === 'SIGNED_IN' && session) {
+                    console.log('User signed in, refreshing dashboard');
+                    initializeDashboard();
+                }
+            });
+        }
+        
+        // Sign out function
+        window.signOut = async function() {
             try {
-                button.innerHTML = '<div class="loading-spinner"></div> Connecting...';
-                button.disabled = true;
-                
-                // TikTok OAuth URL
-                const tiktokClientId = 'your_tiktok_client_id'; // Replace with actual client ID
-                const redirectUri = encodeURIComponent(window.location.origin + '/auth/tiktok');
-                const scope = encodeURIComponent('user.info.basic,video.list');
-                const state = Math.random().toString(36).substring(7);
-                
-                sessionStorage.setItem('tiktok_state', state);
-                
-                const tiktokAuthUrl = `https://www.tiktok.com/auth/authorize/?client_key=${tiktokClientId}&response_type=code&scope=${scope}&redirect_uri=${redirectUri}&state=${state}`;
-                
-                const popup = window.open(tiktokAuthUrl, 'tiktokAuth', 'width=600,height=700');
-                
-                const checkClosed = setInterval(() => {
-                    if (popup.closed) {
-                        clearInterval(checkClosed);
-                        button.innerHTML = originalText;
-                        button.disabled = false;
-                        checkConnectionStatus();
-                    }
-                }, 1000);
-                
+                const { error } = await supabase.auth.signOut();
+                if (error) throw error;
+                window.location.href = '/login.html';
             } catch (error) {
-                console.error('TikTok connection error:', error);
-                showToast('Failed to connect to TikTok', 'error');
-                button.innerHTML = originalText;
-                button.disabled = false;
+                console.error('Sign out error:', error);
+                // Force redirect anyway
+                window.location.href = '/login.html';
             }
         };
+    </script>
+</body>
+</html>
