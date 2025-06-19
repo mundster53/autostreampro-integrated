@@ -11,6 +11,18 @@ exports.handler = async (event, context) => {
         
         switch(platform) {
             case 'twitch':
+                // Check if Twitch credentials are configured
+                if (!process.env.TWITCH_CLIENT_ID || !process.env.TWITCH_CLIENT_SECRET) {
+                    return {
+                        statusCode: 400,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            success: false, 
+                            error: 'Twitch OAuth not configured. Please add TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET environment variables.'
+                        })
+                    };
+                }
+                
                 tokenResponse = await fetch('https://id.twitch.tv/oauth2/token', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -46,6 +58,18 @@ exports.handler = async (event, context) => {
                 };
                 
             case 'youtube':
+                // Check if YouTube credentials are configured
+                if (!process.env.YOUTUBE_CLIENT_ID || !process.env.YOUTUBE_CLIENT_SECRET) {
+                    return {
+                        statusCode: 400,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            success: false, 
+                            error: 'YouTube OAuth not configured. Please add YOUTUBE_CLIENT_ID and YOUTUBE_CLIENT_SECRET environment variables.'
+                        })
+                    };
+                }
+                
                 tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -76,6 +100,18 @@ exports.handler = async (event, context) => {
                 };
                 
             case 'instagram':
+                // Check if Instagram credentials are configured
+                if (!process.env.INSTAGRAM_CLIENT_ID || !process.env.INSTAGRAM_CLIENT_SECRET) {
+                    return {
+                        statusCode: 400,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            success: false, 
+                            error: 'Instagram OAuth not configured. Please add INSTAGRAM_CLIENT_ID and INSTAGRAM_CLIENT_SECRET environment variables.'
+                        })
+                    };
+                }
+                
                 tokenResponse = await fetch('https://api.instagram.com/oauth/access_token', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -99,14 +135,26 @@ exports.handler = async (event, context) => {
                     body: JSON.stringify({ 
                         success: true, 
                         access_token: tokenData.access_token,
-                        refresh_token: tokenData.refresh_token || null, // Instagram may not always provide refresh tokens
+                        refresh_token: tokenData.refresh_token || null,
                         platform_user_id: instagramUser.id,
                         platform_username: instagramUser.username
                     })
                 };
                 
             case 'tiktok':
-                // Note: TikTok uses 'client_key' instead of 'client_id'
+                // Check if TikTok credentials are configured (you don't have these yet)
+                if (!process.env.TIKTOK_CLIENT_KEY || !process.env.TIKTOK_CLIENT_SECRET) {
+                    return {
+                        statusCode: 400,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            success: false, 
+                            error: 'TikTok app is pending approval. OAuth will be available once TikTok approves your developer application. Please try again in a few days.'
+                        })
+                    };
+                }
+                
+                // TikTok OAuth code (will run once you get approved and add credentials)
                 tokenResponse = await fetch('https://open.tiktokapis.com/v2/oauth/token/', {
                     method: 'POST',
                     headers: { 
@@ -114,7 +162,7 @@ exports.handler = async (event, context) => {
                         'Cache-Control': 'no-cache'
                     },
                     body: new URLSearchParams({
-                        client_key: process.env.TIKTOK_CLIENT_KEY, // Note: client_key not client_id
+                        client_key: process.env.TIKTOK_CLIENT_KEY,
                         client_secret: process.env.TIKTOK_CLIENT_SECRET,
                         code,
                         grant_type: 'authorization_code',
@@ -161,7 +209,7 @@ exports.handler = async (event, context) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 success: false, 
-                error: error.message || 'OAuth exchange failed'
+                error: error.message || `OAuth exchange failed for ${platform}`
             })
         };
     }
