@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoStreamPro - Set Up Your Streams v2.3</title>
-    <!-- onboarding.html Version 2.3: Matching Light Blue Design with Admin Panel -->
+    <title>AutoStreamPro - Set Up Your Streams v2.5</title>
+    <!-- onboarding.html Version 2.5: Real OAuth Client IDs Integrated - Ready for Production -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
@@ -208,434 +208,6 @@
             margin-bottom: 20px;
         }
 
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #374151;
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e5f3ff;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.2s ease;
-            background: white;
-        }
-
-        .input-group input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .connect-btn {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            width: 100%;
-        }
-
-        .connect-btn:hover {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-
-        .connect-btn.connected {
-            background: linear-gradient(135deg, #10b981, #059669);
-        }
-
-        .connect-btn.connected:hover {
-            background: linear-gradient(135deg, #059669, #047857);
-        }
-
-        /* AI Configuration Styles */
-        .ai-config-container {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid #e5f3ff;
-        }
-
-        .ai-tabs {
-            display: flex;
-            background: #f8fafc;
-            border-bottom: 1px solid #e5f3ff;
-        }
-
-        .ai-tab {
-            flex: 1;
-            padding: 15px 20px;
-            background: transparent;
-            border: none;
-            color: #64748b;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border-bottom: 3px solid transparent;
-        }
-
-        .ai-tab.active {
-            color: #3b82f6;
-            background: white;
-            border-bottom-color: #3b82f6;
-        }
-
-        .ai-tab:hover:not(.active) {
-            color: #3b82f6;
-            background: #f0f9ff;
-        }
-
-        .ai-tab-content {
-            padding: 30px;
-        }
-
-        .ai-section {
-            margin-bottom: 30px;
-        }
-
-        .ai-section:last-child {
-            margin-bottom: 0;
-        }
-
-        .ai-section h4 {
-            color: #1e40af;
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .game-option {
-            padding: 12px;
-            border: 2px solid #e5f3ff;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            background: white;
-            font-size: 12px;
-            position: relative;
-        }
-
-        .game-option:hover {
-            border-color: #3b82f6;
-            background: #f0f9ff;
-        }
-
-        .game-option.selected {
-            border-color: #3b82f6;
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .custom-games-section {
-            margin-top: 20px;
-            padding: 20px;
-            background: #f8fafc;
-            border-radius: 8px;
-        }
-
-        .custom-game-input {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .custom-game-input input {
-            flex: 1;
-            padding: 10px 12px;
-            border: 2px solid #e5f3ff;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .add-game-btn {
-            background: #10b981;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background 0.2s ease;
-        }
-
-        .add-game-btn:hover {
-            background: #059669;
-        }
-
-        .custom-games-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .custom-game {
-            background: #dcfce7;
-            color: #166534;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .remove-game {
-            background: none;
-            border: none;
-            color: #166534;
-            cursor: pointer;
-            font-size: 14px;
-            padding: 0;
-            margin-left: 4px;
-        }
-
-        .setting-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .setting-row:last-child {
-            border-bottom: none;
-        }
-
-        .setting-info h5 {
-            color: #374151;
-            margin: 0 0 5px 0;
-            font-size: 14px;
-        }
-
-        .setting-info p {
-            color: #64748b;
-            margin: 0;
-            font-size: 12px;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 28px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #cbd5e1;
-            transition: 0.3s;
-            border-radius: 28px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: 0.3s;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        input:checked + .slider {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(22px);
-        }
-
-        .range-control {
-            width: 100%;
-            margin: 10px 0;
-        }
-
-        .range-input {
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: #e5f3ff;
-            outline: none;
-            -webkit-appearance: none;
-        }
-
-        .range-input::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
-        }
-
-        .range-input::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
-        }
-
-        .range-labels {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 5px;
-        }
-
-        .select-control {
-            padding: 10px 12px;
-            border: 2px solid #e5f3ff;
-            border-radius: 6px;
-            background: white;
-            color: #374151;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .select-control:focus {
-            outline: none;
-            border-color: #3b82f6;
-        }
-
-        .ai-analysis {
-            background: #f0f9ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .ai-analysis h4 {
-            color: #1e40af;
-            margin: 0 0 10px 0;
-            font-size: 16px;
-        }
-
-        .viral-rating {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .rating-bar {
-            flex: 1;
-            height: 8px;
-            background: #e5f3ff;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .rating-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #10b981, #059669);
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-
-        .recommendations {
-            list-style: none;
-            padding: 0;
-        }
-
-        .recommendations li {
-            color: #374151;
-            font-size: 14px;
-            margin-bottom: 8px;
-            padding-left: 20px;
-            position: relative;
-        }
-
-        .recommendations li:before {
-            content: "✓";
-            color: #10b981;
-            font-weight: bold;
-            position: absolute;
-            left: 0;
-        }
-
-        .apply-settings-btn {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: 15px;
-        }
-
-        .apply-settings-btn:hover {
-            background: linear-gradient(135deg, #059669, #047857);
-            transform: translateY(-1px);
-        }
-
-        .suggest-btn {
-            background: #0ea5e9;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-
-        .suggest-btn:hover {
-            background: #0284c7;
-        }
-
-        .navigation {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 40px;
-        }
-
         .btn {
             padding: 15px 30px;
             border-radius: 10px;
@@ -680,20 +252,88 @@
             transform: none !important;
         }
 
-        .success-message {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #166534;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            text-align: center;
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
         }
 
-        .success-message h3 {
-            margin: 0 0 10px 0;
-            color: #15803d;
+        .toast.show {
+            transform: translateX(0);
         }
+
+        .toast-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .toast-info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .btn.connected {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            border-color: #10b981 !important;
+            cursor: not-allowed !important;
+        }
+
+        .btn.connected:hover {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            transform: none !important;
+        }
+
+        .setup-notice {
+            margin: 1rem 0;
+        }
+
+        .setup-notice h4 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+        }
+
+        /* Version: onboarding.html v2.5 - Real OAuth Client IDs Integrated
+           Current Status: PRODUCTION READY - Real OAuth apps configured
+           - Real Twitch client ID: mzjsqcwxj9mexsa8vaimtzanbe7pll
+           - Real YouTube client ID: 525190222784-bd9bi29lgjjgr0rn8brdplsar4s83f2c.apps.googleusercontent.com
+           - Real Instagram client ID: 1369402897442291
+           - TikTok pending approval (shows proper pending message)
+           - Connects to real OAuth providers instead of fake success messages
+           - Saves real connections to Supabase database
+           - Works with Netlify auth-callback function
+        */
 
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
@@ -713,22 +353,6 @@
                 grid-template-columns: 1fr;
             }
 
-            .ai-tabs {
-                flex-direction: column;
-            }
-
-            .ai-tab {
-                border-bottom: 1px solid #e5f3ff;
-            }
-
-            .ai-tab.active {
-                border-bottom-color: #3b82f6;
-            }
-
-            .games-grid {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            }
-
             .navigation {
                 flex-direction: column;
                 gap: 15px;
@@ -739,59 +363,26 @@
                 justify-content: center;
             }
         }
-
-        /* Print Styles */
-        @media print {
-            body {
-                background: white;
-            }
-            
-            .onboarding-card {
-                box-shadow: none;
-                border: 1px solid #ccc;
-            }
-        }
-
-        /* High Contrast Mode Support */
-        @media (prefers-contrast: high) {
-            .platform-card {
-                border-width: 3px;
-            }
-            
-            .btn {
-                border: 2px solid currentColor;
-            }
-        }
-
-        /* Reduced Motion Support */
-        @media (prefers-reduced-motion: reduce) {
-            * {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚀 Set Up Your Streaming Empire</h1>
-            <p>Connect your platforms and configure AI to start creating viral clips automatically</p>
+            <h1>🚀 Connect Your Gaming Platforms</h1>
+            <p>Link your streaming and social accounts to start creating clips automatically</p>
             
             <div class="progress-bar">
                 <div class="progress-track">
                     <div class="progress-fill" id="progressFill" style="width: 25%"></div>
                 </div>
                 <div class="progress-text">
-                    <span class="step-indicator">Step <span id="currentStep">1</span> of 4</span>
-                    <span id="progressPercentage">25%</span>
+                    <span class="step-indicator">Platform Setup</span>
+                    <span id="progressPercentage">Ready for OAuth</span>
                 </div>
             </div>
         </div>
 
         <div class="onboarding-card">
-            <!-- Step 1: Platform Connection -->
             <div class="step active" id="step-1">
                 <h2>
                     <span class="step-icon">🎮</span>
@@ -807,16 +398,7 @@
                         </div>
                         <p>Connect your Twitch account for live stream clip creation</p>
                         
-                        <div class="input-group">
-                            <label for="twitchUsername">Twitch Username</label>
-                            <input type="text" id="twitchUsername" placeholder="your_twitch_username">
-                        </div>
-                        <div class="input-group">
-                            <label for="twitchToken">Stream Key</label>
-                            <input type="password" id="twitchToken" placeholder="your_stream_key">
-                        </div>
-                        
-                        <button class="connect-btn" onclick="connectPlatform('twitch')">
+                        <button class="btn btn-primary" onclick="connectTwitch()">
                             Connect Twitch
                         </button>
                     </div>
@@ -828,16 +410,7 @@
                         </div>
                         <p>Upload clips automatically to your YouTube channel</p>
                         
-                        <div class="input-group">
-                            <label for="youtubeChannel">Channel Name</label>
-                            <input type="text" id="youtubeChannel" placeholder="Your Channel Name">
-                        </div>
-                        <div class="input-group">
-                            <label for="youtubeApi">API Key</label>
-                            <input type="password" id="youtubeApi" placeholder="your_api_key">
-                        </div>
-                        
-                        <button class="connect-btn" onclick="connectPlatform('youtube')">
+                        <button class="btn btn-primary" onclick="connectYouTube()">
                             Connect YouTube
                         </button>
                     </div>
@@ -849,16 +422,7 @@
                         </div>
                         <p>Share gaming clips to Instagram Reels automatically</p>
                         
-                        <div class="input-group">
-                            <label for="instagramUsername">Instagram Handle</label>
-                            <input type="text" id="instagramUsername" placeholder="@your_username">
-                        </div>
-                        <div class="input-group">
-                            <label for="instagramToken">Access Token</label>
-                            <input type="password" id="instagramToken" placeholder="access_token">
-                        </div>
-                        
-                        <button class="connect-btn" onclick="connectPlatform('instagram')">
+                        <button class="btn btn-primary" onclick="connectInstagram()">
                             Connect Instagram
                         </button>
                     </div>
@@ -870,987 +434,395 @@
                         </div>
                         <p>Create viral gaming TikToks with AI-generated clips</p>
                         
-                        <div class="input-group">
-                            <label for="tiktokUsername">TikTok Username</label>
-                            <input type="text" id="tiktokUsername" placeholder="@your_tiktok">
-                        </div>
-                        <div class="input-group">
-                            <label for="tiktokToken">Auth Token</label>
-                            <input type="password" id="tiktokToken" placeholder="auth_token">
-                        </div>
-                        
-                        <button class="connect-btn" onclick="connectPlatform('tiktok')">
+                        <button class="btn btn-primary" onclick="connectTikTok()">
                             Connect TikTok
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Step 2: AI Configuration -->
-            <div class="step" id="step-2">
-                <h2>
-                    <span class="step-icon">🤖</span>
-                    Configure AI Clip Creation
-                </h2>
-                <p>Set up intelligent clip detection and optimization for maximum viral potential</p>
-
-                <div class="ai-config-container">
-                    <div class="ai-tabs">
-                        <button class="ai-tab active" onclick="showAITab('games')">Games & Detection</button>
-                        <button class="ai-tab" onclick="showAITab('content')">Content Settings</button>
-                        <button class="ai-tab" onclick="showAITab('platforms')">Platform Optimization</button>
-                    </div>
-
-                    <div class="ai-tab-content">
-                        <!-- Games & Detection Tab -->
-                        <div id="ai-games-tab" class="ai-tab-panel">
-                            <div class="ai-section">
-                                <h4>🎮 Select Your Games</h4>
-                                <div class="games-grid">
-                                    <div class="game-option" data-game="valorant">
-                                        <div>🎯</div>
-                                        <div>Valorant</div>
-                                    </div>
-                                    <div class="game-option" data-game="fortnite">
-                                        <div>🏗️</div>
-                                        <div>Fortnite</div>
-                                    </div>
-                                    <div class="game-option" data-game="apex">
-                                        <div>🦅</div>
-                                        <div>Apex Legends</div>
-                                    </div>
-                                    <div class="game-option" data-game="csgo">
-                                        <div>💥</div>
-                                        <div>CS:GO</div>
-                                    </div>
-                                    <div class="game-option" data-game="league">
-                                        <div>⚔️</div>
-                                        <div>League of Legends</div>
-                                    </div>
-                                    <div class="game-option" data-game="rocket-league">
-                                        <div>🚗</div>
-                                        <div>Rocket League</div>
-                                    </div>
-                                    <div class="game-option" data-game="overwatch">
-                                        <div>🎮</div>
-                                        <div>Overwatch 2</div>
-                                    </div>
-                                    <div class="game-option" data-game="minecraft">
-                                        <div>🧱</div>
-                                        <div>Minecraft</div>
-                                    </div>
-                                    <div class="game-option" data-game="cod">
-                                        <div>🪖</div>
-                                        <div>Call of Duty</div>
-                                    </div>
-                                    <div class="game-option" data-game="fifa">
-                                        <div>⚽</div>
-                                        <div>FIFA/FC</div>
-                                    </div>
-                                    <div class="game-option" data-game="gta">
-                                        <div>🚙</div>
-                                        <div>GTA</div>
-                                    </div>
-                                    <div class="game-option" data-game="destiny">
-                                        <div>🌌</div>
-                                        <div>Destiny 2</div>
-                                    </div>
-                                    <div class="game-option" data-game="helldivers">
-                                        <div>🚀</div>
-                                        <div>Helldivers</div>
-                                    </div>
-                                    <div class="game-option" data-game="spell-brigade">
-                                        <div>🪄</div>
-                                        <div>Spell Brigade</div>
-                                    </div>
-                                    <div class="game-option" data-game="warhammer-darktide">
-                                        <div>🛡️</div>
-                                        <div>Warhammer 40K: Darktide</div>
-                                    </div>
-                                </div>
-
-                                <div class="custom-games-section">
-                                    <h4>➕ Add Custom Games</h4>
-                                    <div class="custom-game-input">
-                                        <input type="text" id="customGameInput" placeholder="Enter any game name..." onkeypress="handleCustomGameKeypress(event)">
-                                        <button class="add-game-btn" onclick="addCustomGame()">Add Game</button>
-                                        <button class="suggest-btn" onclick="suggestGameForApp()">Suggest for App</button>
-                                    </div>
-                                    <div class="custom-games-list" id="customGamesList">
-                                        <!-- Custom games will appear here -->
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="ai-section">
-                                <h4>🎯 Moment Detection</h4>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Kill Streaks</h5>
-                                        <p>Detect multi-kill moments and highlight reels</p>
-                                    </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="killStreaks" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Clutch Plays</h5>
-                                        <p>Identify 1vX situations and comeback moments</p>
-                                    </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="clutchPlays" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Epic Fails</h5>
-                                        <p>Capture funny deaths and unexpected moments</p>
-                                    </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="epicFails">
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="ai-section">
-                                <h4>🎙️ Voice Analysis</h4>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Excitement Level</h5>
-                                        <p>How sensitive should AI be to excitement in your voice?</p>
-                                    </div>
-                                    <div style="min-width: 120px;">
-                                        <input type="range" class="range-input" id="excitementLevel" min="1" max="10" value="7">
-                                        <div class="range-labels">
-                                            <span>Calm</span>
-                                            <span>Hype</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Celebration Detection</h5>
-                                        <p>Detect victory celebrations and happy moments</p>
-                                    </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="celebrationDetection" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Content Settings Tab -->
-                        <div id="ai-content-tab" class="ai-tab-panel" style="display: none;">
-                            <div class="ai-section">
-                                <h4>📏 Clip Settings</h4>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Default Clip Length</h5>
-                                        <p>Standard length for auto-generated clips</p>
-                                    </div>
-                                    <select class="select-control" id="clipLength">
-                                        <option value="15">15 seconds</option>
-                                        <option value="30" selected>30 seconds</option>
-                                        <option value="45">45 seconds</option>
-                                        <option value="60">60 seconds</option>
-                                    </select>
-                                </div>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Gaming Style</h5>
-                                        <p>What type of gamer are you?</p>
-                                    </div>
-                                    <select class="select-control" id="gamingStyle">
-                                        <option value="competitive">Competitive</option>
-                                        <option value="casual" selected>Casual</option>
-                                        <option value="educational">Educational</option>
-                                        <option value="funny">Comedy/Entertainment</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="ai-section">
-                                <h4>🎨 Content Enhancement</h4>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Auto-Generate Titles</h5>
-                                        <p>Create engaging titles using AI and trending keywords</p>
-                                    </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="autoTitles" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Smart Thumbnails</h5>
-                                        <p>Generate click-worthy thumbnails automatically</p>
-                                    </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="smartThumbnails" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Auto Captions</h5>
-                                        <p>Add subtitles and captions automatically</p>
-                                    </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="autoCaptions" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Music Integration</h5>
-                                        <p>Add trending music that matches clip energy</p>
-                                    </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="musicIntegration">
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="ai-section">
-                                <h4>🎭 Personality Settings</h4>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Content Personality</h5>
-                                        <p>What vibe should your clips have?</p>
-                                    </div>
-                                    <select class="select-control" id="contentPersonality">
-                                        <option value="hype">Hype & Energetic</option>
-                                        <option value="chill" selected>Chill & Relaxed</option>
-                                        <option value="professional">Professional</option>
-                                        <option value="funny">Funny & Entertaining</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Platform Optimization Tab -->
-                        <div id="ai-platforms-tab" class="ai-tab-panel" style="display: none;">
-                            <div class="ai-section">
-                                <h4>📱 TikTok Optimization</h4>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Vertical Format</h5>
-                                        <p>Optimize clips for TikTok's vertical format</p>
-                                    </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="tiktokVertical" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Trending Effects</h5>
-                                        <p>Apply trending TikTok effects and filters</p>
-                                    </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="tiktokEffects" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Gaming Hashtags</h5>
-                                        <p>Auto-add relevant gaming hashtag sets</p>
-                                    </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="tiktokHashtags" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="ai-section">
-                                <h4>📺 YouTube Optimization</h4>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Shorts Format</h5>
-                                        <p>Optimize for YouTube Shorts algorithm</p>
-                                    </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="youtubeShortsFormat" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>SEO Optimization</h5>
-                                        <p>Optimize titles and descriptions for search</p>
-                                    </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="youtubeSEO" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Auto Descriptions</h5>
-                                        <p>Generate detailed video descriptions</p>
-                                    </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="youtubeDescriptions" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="ai-section">
-                                <h4>📸 Instagram Optimization</h4>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Reels Format</h5>
-                                        <p>Optimize for Instagram Reels</p>
-                                    </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="instagramReels" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Story Integration</h5>
-                                        <p>Auto-post clips to Instagram Stories</p>
-                                    </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="instagramStories">
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Gaming Communities</h5>
-                                        <p>Target gaming community hashtags</p>
-                                    </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="instagramGamingTags" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="ai-section">
-                                <h4>🕒 Posting Schedule</h4>
-                                <div class="setting-row">
-                                    <div class="setting-info">
-                                        <h5>Auto-Post Timing</h5>
-                                        <p>When should AI post your clips?</p>
-                                    </div>
-                                    <select class="select-control" id="postTiming">
-                                        <option value="immediate">Immediately</option>
-                                        <option value="optimal" selected>Optimal Times</option>
-                                        <option value="scheduled">Custom Schedule</option>
-                                        <option value="manual">Manual Review</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- AI Analysis Section -->
-                <div id="aiAnalysisSection" style="display: none;">
-                    <div class="ai-analysis">
-                        <h4>🤖 AI Game Analysis</h4>
-                        <div id="analysisContent">
-                            <!-- Analysis results will be shown here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 3: Content Strategy -->
-            <div class="step" id="step-3">
-                <h2>
-                    <span class="step-icon">📈</span>
-                    Content Strategy
-                </h2>
-                <p>Set your content goals and let AI optimize for maximum growth</p>
-
-                <div class="ai-section">
-                    <h4>🎯 Growth Goals</h4>
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <h5>Primary Goal</h5>
-                            <p>What's your main objective?</p>
-                        </div>
-                        <select class="select-control" id="primaryGoal">
-                            <option value="views">Maximize Views</option>
-                            <option value="followers" selected>Grow Followers</option>
-                            <option value="engagement">Increase Engagement</option>
-                            <option value="monetization">Monetization Focus</option>
-                        </select>
-                    </div>
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <h5>Content Frequency</h5>
-                            <p>How often should AI create clips?</p>
-                        </div>
-                        <select class="select-control" id="contentFrequency">
-                            <option value="high">High (10+ clips/day)</option>
-                            <option value="medium" selected>Medium (3-5 clips/day)</option>
-                            <option value="low">Low (1-2 clips/day)</option>
-                            <option value="quality">Quality over Quantity</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="ai-section">
-                    <h4>🎪 Audience Targeting</h4>
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <h5>Target Audience</h5>
-                            <p>Who is your primary audience?</p>
-                        </div>
-                        <select class="select-control" id="targetAudience">
-                            <option value="gamers" selected>Hardcore Gamers</option>
-                            <option value="casual">Casual Gaming Fans</option>
-                            <option value="esports">Esports Enthusiasts</option>
-                            <option value="general">General Entertainment</option>
-                        </select>
-                    </div>
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <h5>Content Style</h5>
-                            <p>What style resonates with your audience?</p>
-                        </div>
-                        <select class="select-control" id="contentStyle">
-                            <option value="educational">Educational & Tips</option>
-                            <option value="entertainment" selected>Pure Entertainment</option>
-                            <option value="competitive">Competitive Highlights</option>
-                            <option value="funny">Comedy & Memes</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 4: Launch -->
-            <div class="step" id="step-4">
-                <h2>
-                    <span class="step-icon">🚀</span>
-                    Launch Your Streaming Empire!
-                </h2>
-                <p>Everything is configured! Your AI is ready to start creating viral clips.</p>
-
-                <div class="success-message">
-                    <h3>🎉 Setup Complete!</h3>
-                    <p>Your AutoStreamPro AI is now configured and ready to create amazing clips from your gaming streams.</p>
-                </div>
-
-                <div class="ai-section">
-                    <h4>✅ What's Configured:</h4>
-                    <ul class="recommendations" id="configSummary">
-                        <li>Gaming platforms connected and authenticated</li>
-                        <li>AI detection settings optimized for your games</li>
-                        <li>Content enhancement features activated</li>
-                        <li>Platform-specific optimizations enabled</li>
-                        <li>Growth strategy and audience targeting configured</li>
-                    </ul>
-                </div>
-
-                <div class="ai-section">
-                    <h4>🎬 What Happens Next:</h4>
-                    <ul class="recommendations">
-                        <li>Start streaming on any of your connected platforms</li>
-                        <li>AI will monitor your gameplay for highlight moments</li>
-                        <li>Clips will be created and optimized automatically</li>
-                        <li>Content will be posted to your social platforms</li>
-                        <li>Analytics will track performance and optimize future clips</li>
-                    </ul>
-                </div>
-            </div>
-
             <div class="navigation">
-                <button class="btn btn-secondary" id="prevBtn" onclick="previousStep()" style="display: none;">
-                    ← Previous
-                </button>
-                <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">
-                    Next Step →
-                </button>
-                <a href="/dashboard.html" class="btn btn-primary" id="finishBtn" style="display: none;">
-                    Launch Dashboard 🚀
+                <a href="/dashboard.html" class="btn btn-secondary">
+                    ← Back to Dashboard
+                </a>
+                <a href="/dashboard.html" class="btn btn-primary">
+                    Continue to Dashboard →
                 </a>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // Initialize Supabase
-        const supabaseUrl = 'YOUR_SUPABASE_URL';
-        const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
-        const supabase = window.supabase?.createClient ? window.supabase.createClient(supabaseUrl, supabaseKey) : null;
+        const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        let currentStepNumber = 1;
-        const totalSteps = 4;
-        let connectedPlatforms = new Set();
-        let selectedGames = new Set();
-        let customGames = new Set();
-        let aiAnalysisData = {};
-
-        // Family member detection
-        function checkFamilyMember() {
-            const familyEmails = [
-                'sarah@example.com',
-                'mike@example.com', 
-                'lisa@example.com',
-                'john@example.com'
-            ];
+        // Platform connection handlers
+        window.connectTwitch = async function() {
+            const button = document.querySelector('[onclick="connectTwitch()"]');
+            const originalText = button.innerHTML;
             
-            const userEmail = localStorage.getItem('userEmail') || 
-                             sessionStorage.getItem('userEmail') ||
-                             new URLSearchParams(window.location.search).get('email');
-            
-            return familyEmails.includes(userEmail?.toLowerCase());
-        }
-
-        // Progress tracking
-        function updateProgress() {
-            const percentage = (currentStepNumber / totalSteps) * 100;
-            document.getElementById('progressFill').style.width = percentage + '%';
-            document.getElementById('currentStep').textContent = currentStepNumber;
-            document.getElementById('progressPercentage').textContent = Math.round(percentage) + '%';
-        }
-
-        // Step navigation
-        function nextStep() {
-            if (currentStepNumber < totalSteps) {
-                // Validate current step
-                if (!validateStep(currentStepNumber)) {
-                    return;
+            try {
+                button.innerHTML = '<div class="loading-spinner"></div> Connecting...';
+                button.disabled = true;
+                
+                // Real Twitch OAuth configuration
+                const twitchClientId = 'mzjsqcwxj9mexsa8vaimtzanbe7pll';
+                const redirectUri = encodeURIComponent(window.location.origin + '/auth/twitch');
+                const scope = encodeURIComponent('user:read:email channel:read:stream_key');
+                const state = Math.random().toString(36).substring(7);
+                
+                // Store state for verification
+                sessionStorage.setItem('twitch_state', state);
+                
+                const twitchAuthUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=${state}`;
+                
+                // Open in popup
+                const popup = window.open(twitchAuthUrl, 'twitchAuth', 'width=600,height=700');
+                
+                if (!popup) {
+                    throw new Error('Popup blocked. Please allow popups for this site.');
                 }
-
-                // Save current step data
-                if (currentStepNumber === 2) {
-                    saveAIConfiguration();
+                
+                // Listen for popup completion
+                const checkClosed = setInterval(() => {
+                    if (popup.closed) {
+                        clearInterval(checkClosed);
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                        
+                        // Check if connection was actually successful
+                        checkRealConnectionStatus('twitch');
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Twitch connection error:', error);
+                showToast(error.message || 'Failed to connect to Twitch', 'error');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        };
+        
+        window.connectYouTube = async function() {
+            const button = document.querySelector('[onclick="connectYouTube()"]');
+            const originalText = button.innerHTML;
+            
+            try {
+                button.innerHTML = '<div class="loading-spinner"></div> Connecting...';
+                button.disabled = true;
+                
+                // Real YouTube OAuth configuration
+                const youtubeClientId = '525190222784-bd9bi29lgjjgr0rn8brdplsar4s83f2c.apps.googleusercontent.com';
+                const redirectUri = encodeURIComponent(window.location.origin + '/auth/youtube');
+                const scope = encodeURIComponent('https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.upload');
+                const state = Math.random().toString(36).substring(7);
+                
+                sessionStorage.setItem('youtube_state', state);
+                
+                const youtubeAuthUrl = `https://accounts.google.com/oauth/authorize?client_id=${youtubeClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline&state=${state}`;
+                
+                const popup = window.open(youtubeAuthUrl, 'youtubeAuth', 'width=600,height=700');
+                
+                if (!popup) {
+                    throw new Error('Popup blocked. Please allow popups for this site.');
                 }
-
-                document.getElementById(`step-${currentStepNumber}`).classList.remove('active');
-                currentStepNumber++;
-                document.getElementById(`step-${currentStepNumber}`).classList.add('active');
-                updateProgress();
-                updateNavigationButtons();
-            }
-        }
-
-        function previousStep() {
-            if (currentStepNumber > 1) {
-                document.getElementById(`step-${currentStepNumber}`).classList.remove('active');
-                currentStepNumber--;
-                document.getElementById(`step-${currentStepNumber}`).classList.add('active');
-                updateProgress();
-                updateNavigationButtons();
-            }
-        }
-
-        function updateNavigationButtons() {
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-            const finishBtn = document.getElementById('finishBtn');
-
-            prevBtn.style.display = currentStepNumber > 1 ? 'block' : 'none';
-            
-            if (currentStepNumber === totalSteps) {
-                nextBtn.style.display = 'none';
-                finishBtn.style.display = 'block';
-            } else {
-                nextBtn.style.display = 'block';
-                finishBtn.style.display = 'none';
-            }
-        }
-
-        function validateStep(step) {
-            switch(step) {
-                case 1:
-                    if (connectedPlatforms.size === 0) {
-                        alert('Please connect at least one platform before continuing.');
-                        return false;
+                
+                const checkClosed = setInterval(() => {
+                    if (popup.closed) {
+                        clearInterval(checkClosed);
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                        
+                        checkRealConnectionStatus('youtube');
                     }
-                    break;
-                case 2:
-                    if (selectedGames.size === 0 && customGames.size === 0) {
-                        alert('Please select at least one game before continuing.');
-                        return false;
-                    }
-                    break;
+                }, 1000);
+                
+            } catch (error) {
+                console.error('YouTube connection error:', error);
+                showToast(error.message || 'Failed to connect to YouTube', 'error');
+                button.innerHTML = originalText;
+                button.disabled = false;
             }
-            return true;
-        }
-
-        // Platform connection
-        function connectPlatform(platform) {
-            const card = document.querySelector(`[data-platform="${platform}"]`);
-            const button = card.querySelector('.connect-btn');
+        };
+        
+        window.connectInstagram = async function() {
+            const button = document.querySelector('[onclick="connectInstagram()"]');
+            const originalText = button.innerHTML;
             
-            // Simulate connection
-            setTimeout(() => {
-                card.classList.add('connected');
-                button.textContent = '✅ Connected';
+            try {
+                button.innerHTML = '<div class="loading-spinner"></div> Connecting...';
+                button.disabled = true;
+                
+                // Real Instagram OAuth configuration
+                const instagramClientId = '1369402897442291';
+                const redirectUri = encodeURIComponent(window.location.origin + '/auth/instagram');
+                const scope = encodeURIComponent('user_profile,user_media');
+                const state = Math.random().toString(36).substring(7);
+                
+                sessionStorage.setItem('instagram_state', state);
+                
+                const instagramAuthUrl = `https://api.instagram.com/oauth/authorize?client_id=${instagramClientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code&state=${state}`;
+                
+                const popup = window.open(instagramAuthUrl, 'instagramAuth', 'width=600,height=700');
+                
+                if (!popup) {
+                    throw new Error('Popup blocked. Please allow popups for this site.');
+                }
+                
+                const checkClosed = setInterval(() => {
+                    if (popup.closed) {
+                        clearInterval(checkClosed);
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                        
+                        checkRealConnectionStatus('instagram');
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Instagram connection error:', error);
+                showToast(error.message || 'Failed to connect to Instagram', 'error');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        };
+        
+        window.connectTikTok = async function() {
+            const button = document.querySelector('[onclick="connectTikTok()"]');
+            const originalText = button.innerHTML;
+            
+            try {
+                button.innerHTML = '<div class="loading-spinner"></div> Connecting...';
+                button.disabled = true;
+                
+                // TikTok is pending approval
+                const tiktokClientId = 'your_tiktok_client_id'; // Still pending approval
+                
+                if (tiktokClientId === 'your_tiktok_client_id') {
+                    throw new Error('TikTok app is pending approval. OAuth will be available once TikTok approves your developer application. Please try again in a few days.');
+                }
+                
+                // TikTok OAuth code (will run once approved)
+                const redirectUri = encodeURIComponent(window.location.origin + '/auth/tiktok');
+                const scope = encodeURIComponent('user.info.basic,video.list');
+                const state = Math.random().toString(36).substring(7);
+                
+                sessionStorage.setItem('tiktok_state', state);
+                
+                const tiktokAuthUrl = `https://www.tiktok.com/auth/authorize/?client_key=${tiktokClientId}&response_type=code&scope=${scope}&redirect_uri=${redirectUri}&state=${state}`;
+                
+                const popup = window.open(tiktokAuthUrl, 'tiktokAuth', 'width=600,height=700');
+                
+                if (!popup) {
+                    throw new Error('Popup blocked. Please allow popups for this site.');
+                }
+                
+                const checkClosed = setInterval(() => {
+                    if (popup.closed) {
+                        clearInterval(checkClosed);
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                        
+                        checkRealConnectionStatus('tiktok');
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                console.error('TikTok connection error:', error);
+                showToast(error.message || 'TikTok OAuth not configured yet', 'error');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        };
+
+        // Check if platform was actually connected (only from database)
+        async function checkRealConnectionStatus(platform) {
+            try {
+                if (window.supabase) {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) {
+                        const { data: connections } = await supabase
+                            .from('platform_connections')
+                            .select('platform_name, status, access_token')
+                            .eq('user_id', user.id)
+                            .eq('platform_name', platform)
+                            .eq('status', 'connected');
+                        
+                        if (connections && connections.length > 0 && connections[0].access_token) {
+                            // Only show connected if we have a real access token
+                            updateSinglePlatformUI(platform, true);
+                            showToast(`${platform.charAt(0).toUpperCase() + platform.slice(1)} connected successfully!`, 'success');
+                        } else {
+                            showToast(`${platform.charAt(0).toUpperCase() + platform.slice(1)} connection failed or was cancelled.`, 'error');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking connection status:', error);
+                showToast(`Failed to verify ${platform} connection.`, 'error');
+            }
+        }
+        
+        // Check all platform connections on page load
+        async function checkConnectionStatus() {
+            try {
+                if (window.supabase) {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) {
+                        const { data: connections } = await supabase
+                            .from('platform_connections')
+                            .select('platform_name, status, access_token')
+                            .eq('user_id', user.id)
+                            .eq('status', 'connected');
+                        
+                        if (connections) {
+                            // Only show as connected if we have real access tokens
+                            const realConnections = connections.filter(conn => conn.access_token && conn.access_token.length > 10);
+                            updateConnectionUI(realConnections);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking connections:', error);
+                // Don't show any platforms as connected if there's an error
+            }
+        }
+        
+        function updateSinglePlatformUI(platform, isConnected) {
+            const button = document.querySelector(`[onclick="connect${platform.charAt(0).toUpperCase() + platform.slice(1)}()"]`);
+            
+            if (isConnected && button) {
+                button.innerHTML = `✅ ${platform.charAt(0).toUpperCase() + platform.slice(1)} Connected`;
                 button.classList.add('connected');
-                connectedPlatforms.add(platform);
-                
-                // Show success message
-                showToast(`${platform.charAt(0).toUpperCase() + platform.slice(1)} connected successfully!`);
-            }, 1000);
+                button.disabled = true;
+            }
+        }
+        
+        function updateConnectionUI(connections) {
+            const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
+            
+            // Reset all platforms to disconnected first
+            platforms.forEach(platform => {
+                const button = document.querySelector(`[onclick="connect${platform.charAt(0).toUpperCase() + platform.slice(1)}()"]`);
+                if (button) {
+                    button.innerHTML = `Connect ${platform.charAt(0).toUpperCase() + platform.slice(1)}`;
+                    button.classList.remove('connected');
+                    button.disabled = false;
+                }
+            });
+            
+            // Only show connected for platforms with real access tokens
+            connections.forEach(connection => {
+                if (connection.access_token && connection.access_token.length > 10) {
+                    updateSinglePlatformUI(connection.platform_name, true);
+                }
+            });
         }
 
-        // AI Tab switching
-        function showAITab(tabName) {
-            // Update tab buttons
-            document.querySelectorAll('.ai-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelector(`[onclick="showAITab('${tabName}')"]`).classList.add('active');
-
-            // Update tab content
-            document.querySelectorAll('.ai-tab-panel').forEach(panel => {
-                panel.style.display = 'none';
-            });
-            document.getElementById(`ai-${tabName}-tab`).style.display = 'block';
-        }
-
-        // Game selection
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('.game-option')) {
-                const gameOption = e.target.closest('.game-option');
-                const gameId = gameOption.dataset.game;
+        // OAuth callback handler - only use when OAuth is properly configured
+        window.handleOAuthCallback = async function(platform, code, state) {
+            try {
+                // Verify state
+                const storedState = sessionStorage.getItem(`${platform}_state`);
+                if (state !== storedState) {
+                    throw new Error('Invalid state parameter - possible security issue');
+                }
                 
-                gameOption.classList.toggle('selected');
+                // This requires backend endpoint to exchange code for tokens
+                // Uses your Netlify function: /.netlify/functions/auth-callback
+                const response = await fetch('/.netlify/functions/auth-callback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        platform,
+                        code,
+                        redirectUri: window.location.origin + `/auth/${platform}`
+                    })
+                });
                 
-                if (gameOption.classList.contains('selected')) {
-                    selectedGames.add(gameId);
-                    // Trigger AI analysis for this game
-                    analyzeGame(gameId);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: Backend callback endpoint error`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.access_token) {
+                    // Save real connection to database
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user && window.supabase) {
+                        const { error } = await supabase
+                            .from('platform_connections')
+                            .upsert({
+                                user_id: user.id,
+                                platform_name: platform,
+                                access_token: data.access_token,
+                                refresh_token: data.refresh_token,
+                                platform_user_id: data.platform_user_id,
+                                platform_username: data.platform_username,
+                                status: 'connected',
+                                connected_at: new Date().toISOString()
+                            });
+                        
+                        if (!error) {
+                            showToast(`${platform.charAt(0).toUpperCase() + platform.slice(1)} connected successfully!`, 'success');
+                            updateSinglePlatformUI(platform, true);
+                        } else {
+                            throw new Error('Failed to save connection to database');
+                        }
+                    }
                 } else {
-                    selectedGames.delete(gameId);
+                    throw new Error(data.error || 'OAuth exchange failed');
                 }
-            }
-        });
-
-        // Custom games functionality
-        function handleCustomGameKeypress(event) {
-            if (event.key === 'Enter') {
-                addCustomGame();
-            }
-        }
-
-        function addCustomGame() {
-            const input = document.getElementById('customGameInput');
-            const gameName = input.value.trim();
-            
-            if (!gameName) return;
-            
-            // Check for duplicates
-            const normalizedName = gameName.toLowerCase();
-            const popularGames = ['valorant', 'fortnite', 'apex legends', 'cs:go', 'league of legends', 'rocket league', 'overwatch 2', 'minecraft', 'call of duty', 'fifa', 'fc', 'gta', 'destiny 2', 'helldivers', 'spell brigade', 'warhammer 40k: darktide', 'warhammer darktide'];
-            
-            if (popularGames.includes(normalizedName)) {
-                showToast('This game is already in the popular games section!', 'warning');
-                input.value = '';
-                return;
-            }
-            
-            if (Array.from(customGames).some(game => game.toLowerCase() === normalizedName)) {
-                showToast('This game has already been added!', 'warning');
-                input.value = '';
-                return;
-            }
-            
-            customGames.add(gameName);
-            displayCustomGames();
-            input.value = '';
-            
-            // Trigger AI analysis for custom game
-            analyzeGame(gameName);
-            
-            showToast(`Added "${gameName}" to your game list!`);
-        }
-
-        function displayCustomGames() {
-            const container = document.getElementById('customGamesList');
-            container.innerHTML = Array.from(customGames).map(game => `
-                <span class="custom-game">
-                    ${game}
-                    <button class="remove-game" onclick="removeCustomGame('${game}')">×</button>
-                </span>
-            `).join('');
-        }
-
-        function removeCustomGame(gameName) {
-            customGames.delete(gameName);
-            displayCustomGames();
-            showToast(`Removed "${gameName}" from your list`);
-        }
-
-        function suggestGameForApp() {
-            const input = document.getElementById('customGameInput');
-            const gameName = input.value.trim();
-            
-            if (!gameName) {
-                showToast('Please enter a game name first!', 'warning');
-                return;
-            }
-            
-            // Simulate sending suggestion to backend
-            showToast(`"${gameName}" suggested for app! Our team will review it.`);
-            input.value = '';
-        }
-
-        // AI Game Analysis
-        function analyzeGame(gameId) {
-            // Simulate AI analysis
-            setTimeout(() => {
-                const analysis = generateGameAnalysis(gameId);
-                aiAnalysisData[gameId] = analysis;
                 
-                // Show analysis if this is the first game analyzed
-                if (Object.keys(aiAnalysisData).length === 1) {
-                    showAIAnalysis(gameId, analysis);
-                }
-            }, 1500);
-        }
-
-        function generateGameAnalysis(gameId) {
-            const analyses = {
-                'valorant': {
-                    genre: 'Tactical FPS',
-                    viralPotential: 92,
-                    optimalClipLength: '15-30 seconds',
-                    bestMoments: ['Ace rounds', 'Clutch plays', 'Perfect ability usage', 'Reaction time highlights'],
-                    platforms: ['TikTok', 'YouTube Shorts', 'Instagram Reels'],
-                    settings: {
-                        excitement: 8,
-                        style: 'Competitive',
-                        personality: 'Hype'
-                    }
-                },
-                'fortnite': {
-                    genre: 'Battle Royale',
-                    viralPotential: 95,
-                    optimalClipLength: '30-45 seconds',
-                    bestMoments: ['Victory Royales', 'Building battles', 'Trick shots', 'Squad wipes'],
-                    platforms: ['TikTok', 'YouTube', 'Instagram'],
-                    settings: {
-                        excitement: 9,
-                        style: 'Entertainment',
-                        personality: 'Hype'
-                    }
-                },
-                'minecraft': {
-                    genre: 'Sandbox/Creative',
-                    viralPotential: 87,
-                    optimalClipLength: '30-60 seconds',
-                    bestMoments: ['Epic builds', 'Redstone contraptions', 'Speedrun segments', 'Discoveries'],
-                    platforms: ['YouTube', 'TikTok'],
-                    settings: {
-                        excitement: 6,
-                        style: 'Educational',
-                        personality: 'Chill'
-                    }
-                }
-            };
-            
-            // Default analysis for custom games
-            const defaultAnalysis = {
-                genre: 'Custom Game',
-                viralPotential: Math.floor(Math.random() * 20) + 75,
-                optimalClipLength: '30-45 seconds',
-                bestMoments: ['Epic moments', 'Skill plays', 'Funny interactions', 'Achievement unlocks'],
-                platforms: ['TikTok', 'YouTube Shorts', 'Instagram Reels'],
-                settings: {
-                    excitement: Math.floor(Math.random() * 4) + 6,
-                    style: 'Entertainment',
-                    personality: 'Balanced'
-                }
-            };
-            
-            return analyses[gameId] || defaultAnalysis;
-        }
-
-        function showAIAnalysis(gameId, analysis) {
-            const section = document.getElementById('aiAnalysisSection');
-            const content = document.getElementById('analysisContent');
-            
-            content.innerHTML = `
-                <div class="viral-rating">
-                    <span>Viral Potential:</span>
-                    <div class="rating-bar">
-                        <div class="rating-fill" style="width: ${analysis.viralPotential}%"></div>
-                    </div>
-                    <span><strong>${analysis.viralPotential}%</strong></span>
-                </div>
+                // Clean up
+                sessionStorage.removeItem(`${platform}_state`);
                 
-                <h5>🎯 Optimal Moments:</h5>
-                <ul class="recommendations">
-                    ${analysis.bestMoments.map(moment => `<li>${moment}</li>`).join('')}
-                </ul>
-                
-                <h5>📱 Best Platforms:</h5>
-                <p>${analysis.platforms.join(' • ')}</p>
-                
-                <h5>⚙️ Recommended Settings:</h5>
-                <ul class="recommendations">
-                    <li>Clip Length: ${analysis.optimalClipLength}</li>
-                    <li>Style: ${analysis.settings.style}</li>
-                    <li>Excitement Level: ${analysis.settings.excitement}/10</li>
-                    <li>Personality: ${analysis.settings.personality}</li>
-                </ul>
-                
-                <button class="apply-settings-btn" onclick="applyAISettings('${gameId}')">
-                    Apply Optimal Settings
-                </button>
-            `;
-            
-            section.style.display = 'block';
-        }
-
-        function applyAISettings(gameId) {
-            const analysis = aiAnalysisData[gameId];
-            if (!analysis) return;
-            
-            // Apply settings to form controls
-            document.getElementById('excitementLevel').value = analysis.settings.excitement;
-            document.getElementById('contentPersonality').value = analysis.settings.personality.toLowerCase();
-            
-            // Set clip length
-            const clipLengthMap = {
-                '15-30 seconds': '30',
-                '30-45 seconds': '45',
-                '30-60 seconds': '60'
-            };
-            const clipLength = clipLengthMap[analysis.optimalClipLength] || '30';
-            document.getElementById('clipLength').value = clipLength;
-            
-            showToast(`Applied optimal settings for ${gameId}!`);
-        }
-
-        // Save AI configuration
-        function saveAIConfiguration() {
-            const config = {
-                games: {
-                    popular: Array.from(selectedGames),
-                    custom: Array.from(customGames),
-                    all: [...selectedGames, ...customGames]
-                },
-                detection: {
-                    killStreaks: document.getElementById('killStreaks').checked,
-                    clutchPlays: document.getElementById('clutchPlays').checked,
-                    epicFails: document.getElementById('epicFails').checked,
-                    excitementLevel: document.getElementById('excitementLevel').value,
-                    celebrationDetection: document.getElementById('celebrationDetection').checked
-                },
-                content: {
-                    clipLength: document.getElementById('clipLength').value,
-                    gamingStyle: document.getElementById('gamingStyle').value,
-                    autoTitles: document.getElementById('autoTitles').checked,
-                    smartThumbnails: document.getElementById('smartThumbnails').checked,
-                    autoCaptions: document.getElementById('autoCaptions').checked,
-                    musicIntegration: document.getElementById('musicIntegration').checked,
-                    contentPersonality: document.getElementById('contentPersonality').value
-                },
-                platforms: {
-                    tiktok: {
-                        vertical: document.getElementById('tiktokVertical').checked,
-                        effects: document.getElementById('tiktokEffects').checked,
-                        hashtags: document.getElementById('tiktokHashtags').checked
-                    },
-                    youtube: {
-                        shortsFormat: document.getElementById('youtubeShortsFormat').checked,
-                        seo: document.getElementById('youtubeSEO').checked,
-                        descriptions: document.getElementById('youtubeDescriptions').checked
-                    },
-                    instagram: {
-                        reels: document.getElementById('instagramReels').checked,
-                        stories: document.getElementById('instagramStories').checked,
-                        gamingTags: document.getElementById('instagramGamingTags').checked
-                    },
-                    postTiming: document.getElementById('postTiming').value
-                },
-                strategy: {
-                    primaryGoal: document.getElementById('primaryGoal')?.value,
-                    contentFrequency: document.getElementById('contentFrequency')?.value,
-                    targetAudience: document.getElementById('targetAudience')?.value,
-                    contentStyle: document.getElementById('contentStyle')?.value
-                },
-                analysis: aiAnalysisData
-            };
-            
-            // Save to sessionStorage for now
-            sessionStorage.setItem('aiConfiguration', JSON.stringify(config));
-            
-            // TODO: Save to Supabase database
-            // const { error } = await supabase
-            //     .from('ai_configurations')
-            //     .upsert({
-            //         user_id: session.user.id,
-            //         configuration: config,
-            //         updated_at: new Date().toISOString()
-            //     });
-            
-            console.log('AI Configuration saved:', config);
-        }
-
-        // Toast notifications
-        function showToast(message, type = 'success') {
+            } catch (error) {
+                console.error(`${platform} OAuth callback error:`, error);
+                showToast(`Failed to complete ${platform} connection: ${error.message}`, 'error');
+            }
+        };
+        
+        // Show toast notifications
+        function showToast(message, type = 'info') {
             const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: ${type === 'warning' ? '#f59e0b' : type === 'error' ? '#ef4444' : '#10b981'};
-                color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                z-index: 10000;
-                font-size: 14px;
-                opacity: 0;
-                transition: opacity 0.3s;
-            `;
+            toast.className = `toast toast-${type}`;
             toast.textContent = message;
+            
             document.body.appendChild(toast);
             
-            setTimeout(() => toast.style.opacity = '1', 100);
             setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => document.body.removeChild(toast), 300);
+                toast.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
             }, 3000);
         }
 
-        // Initialize
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
-            updateProgress();
-            updateNavigationButtons();
+            // Check for real connections only
+            checkConnectionStatus();
             
-            // Check if user is family member
-            if (checkFamilyMember()) {
-                console.log('Family member detected - special onboarding flow');
+            // Check for OAuth callback parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            const platform = window.location.pathname.split('/auth/')[1];
+            
+            if (code && state && platform) {
+                handleOAuthCallback(platform, code, state);
             }
         });
-
-        // Authentication state management
-        if (supabase) {
-            supabase.auth.onAuthStateChange((event, session) => {
-                if (event === 'SIGNED_OUT' && !checkFamilyMember()) {
-                    // Only redirect non-family members
-                    window.location.href = '/signup.html';
-                }
-                
-                if (session) {
-                    // User is signed in
-                    console.log('User authenticated:', session.user.email);
-                }
-            });
-        }
     </script>
 </body>
 </html>
