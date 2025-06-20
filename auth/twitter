@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connecting Twitter...</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        
+        .loading-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #1da1f2, #0d8bd9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1da1f2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .message {
+            color: #374151;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-container">
+        <div class="logo">🐦 Twitter</div>
+        <div class="spinner"></div>
+        <div class="message">Connecting your Twitter account...</div>
+    </div>
+
+    <script>
+        // Extract OAuth parameters from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const error = urlParams.get('error');
+        const state = urlParams.get('state');
+        const oauth_token = urlParams.get('oauth_token');
+        const oauth_verifier = urlParams.get('oauth_verifier');
+
+        if (error) {
+            // OAuth error occurred
+            console.error('Twitter OAuth error:', error);
+            
+            // Send error message to parent window
+            if (window.opener) {
+                window.opener.postMessage({
+                    type: 'OAUTH_ERROR',
+                    platform: 'twitter',
+                    error: error
+                }, window.location.origin);
+            }
+            
+            // Close popup
+            window.close();
+        } else if (code) {
+            // OAuth 2.0 success (newer Twitter API)
+            console.log('Twitter OAuth 2.0 success, code received');
+            
+            if (window.opener) {
+                window.opener.postMessage({
+                    type: 'OAUTH_SUCCESS',
+                    platform: 'twitter',
+                    code: code,
+                    state: state
+                }, window.location.origin);
+            }
+            
+            // Close popup after a short delay
+            setTimeout(() => {
+                window.close();
+            }, 1000);
+        } else if (oauth_token && oauth_verifier) {
+            // OAuth 1.0a success (legacy Twitter API)
+            console.log('Twitter OAuth 1.0a success, tokens received');
+            
+            if (window.opener) {
+                window.opener.postMessage({
+                    type: 'OAUTH_SUCCESS',
+                    platform: 'twitter',
+                    oauth_token: oauth_token,
+                    oauth_verifier: oauth_verifier,
+                    state: state
+                }, window.location.origin);
+            }
+            
+            // Close popup after a short delay
+            setTimeout(() => {
+                window.close();
+            }, 1000);
+        } else {
+            // No code or error - something went wrong
+            console.error('No OAuth code or error received');
+            
+            if (window.opener) {
+                window.opener.postMessage({
+                    type: 'OAUTH_ERROR',
+                    platform: 'twitter',
+                    error: 'No authorization code received'
+                }, window.location.origin);
+            }
+            
+            window.close();
+        }
+    </script>
+</body>
+</html>
