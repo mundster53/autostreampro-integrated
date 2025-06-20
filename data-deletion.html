@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Deletion Request - AutoStreamPro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            color: #1f2937;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        p {
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .status {
+            background: #ecfdf5;
+            color: #065f46;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #10b981;
+            text-align: left;
+        }
+
+        .request-id {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #6b7280;
+            text-align: left;
+            font-family: monospace;
+        }
+
+        .timeline {
+            text-align: left;
+            margin: 1.5rem 0;
+        }
+
+        .timeline-item {
+            margin-bottom: 0.5rem;
+            color: #4b5563;
+        }
+
+        .contact-info {
+            background: #fef3c7;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #f59e0b;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="logo">🚀 AutoStreamPro</div>
+            <div class="icon">🗑️</div>
+            <h1>Data Deletion Request Received</h1>
+            
+            <div class="status">
+                <strong>Request Confirmed</strong><br>
+                We have received your data deletion request and will process it according to our privacy policy and applicable laws.
+            </div>
+
+            <div class="request-id">
+                <strong>Request ID:</strong> <span id="requestId">Loading...</span><br>
+                <strong>Date:</strong> <span id="requestDate">Loading...</span>
+            </div>
+            
+            <p><strong>What happens next:</strong></p>
+            
+            <div class="timeline">
+                <div class="timeline-item">✅ <strong>Immediate:</strong> Request logged and confirmed</div>
+                <div class="timeline-item">⏳ <strong>Within 24 hours:</strong> Account access disabled</div>
+                <div class="timeline-item">⏳ <strong>Within 7 days:</strong> Active data deletion begins</div>
+                <div class="timeline-item">⏳ <strong>Within 30 days:</strong> Complete data deletion (excluding legal retention requirements)</div>
+            </div>
+            
+            <p><strong>Data that will be deleted:</strong></p>
+            <ul style="text-align: left; margin-left: 2rem;">
+                <li>Account information and profile data</li>
+                <li>Connected platform tokens and authentication data</li>
+                <li>Generated content and AI-created clips</li>
+                <li>Usage analytics and performance data</li>
+                <li>Communication history and support tickets</li>
+            </ul>
+            
+            <p><strong>Data that may be retained:</strong></p>
+            <ul style="text-align: left; margin-left: 2rem;">
+                <li>Basic transaction records (legal requirement)</li>
+                <li>Aggregated analytics (anonymized)</li>
+                <li>Security logs (limited retention period)</li>
+            </ul>
+            
+            <div class="contact-info">
+                <strong>Questions about your deletion request?</strong><br>
+                Contact us at <strong>privacy@autostreampro.com</strong> with your Request ID.
+            </div>
+            
+            <a href="https://autostreampro.com/privacy-policy" class="back-btn">View Privacy Policy</a>
+        </div>
+    </div>
+
+    <script>
+        // Generate a unique request ID
+        function generateRequestId() {
+            const timestamp = Date.now().toString(36);
+            const random = Math.random().toString(36).substr(2, 5);
+            return `DEL-${timestamp}-${random}`.toUpperCase();
+        }
+
+        // Set request information
+        const requestId = generateRequestId();
+        const requestDate = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        document.getElementById('requestId').textContent = requestId;
+        document.getElementById('requestDate').textContent = requestDate;
+
+        // Log deletion request
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('user_id') || urlParams.get('id');
+        const platform = urlParams.get('platform') || 'unknown';
+        
+        const deletionRequest = {
+            requestId: requestId,
+            userId: userId,
+            platform: platform,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            url: window.location.href,
+            type: 'data_deletion'
+        };
+
+        // Log the deletion request (in production, this would go to your backend)
+        console.log('Data deletion request:', deletionRequest);
+
+        // In production, you would send this data to your backend:
+        // fetch('/api/data-deletion', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify(deletionRequest)
+        // });
+
+        // Store in localStorage for debugging (remove in production)
+        localStorage.setItem('lastDeletionRequest', JSON.stringify(deletionRequest));
+    </script>
+</body>
+</html>
