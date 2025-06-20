@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoStreamPro - Set Up Your Streams v2.10</title>
-    <!-- onboarding.html Version 2.10: Keep Existing OAuth Callback URLs, Fix COOP with Simple Redirect -->
+    <title>AutoStreamPro - Set Up Your Streams v2.11</title>
+    <!-- onboarding.html Version 2.11: Added Coming Soon Check for Unconfigured Platforms -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
@@ -1479,10 +1479,16 @@
             return true;
         }
 
-        // Platform connection with OAuth - Simple redirect to avoid COOP issues
+        // Platform connection with OAuth - Check for valid credentials first
         function connectPlatform(platform) {
             const card = document.querySelector(`[data-platform="${platform}"]`);
             const button = card.querySelector('.connect-btn');
+            
+            // Check if platform has real credentials
+            if (!isValidCredential(platform)) {
+                showToast(`${platform.charAt(0).toUpperCase() + platform.slice(1)} integration coming soon!`, 'warning');
+                return;
+            }
             
             if (!oauthUrls[platform]) {
                 showToast(`${platform} OAuth not configured yet`, 'warning');
@@ -1496,6 +1502,33 @@
             
             // Simple redirect to OAuth (no popup to avoid COOP)
             window.location.href = oauthUrls[platform];
+        }
+
+        // Check if platform has valid (non-placeholder) credentials
+        function isValidCredential(platform) {
+            const credentials = {
+                'twitch': twitchClientId,
+                'youtube': youtubeClientId,
+                'instagram': instagramClientId,
+                'tiktok': tiktokClientId,
+                'twitter': twitterClientId
+            };
+            
+            const credential = credentials[platform];
+            
+            // Check for placeholder values
+            const placeholders = [
+                'YOUR_TWITCH_CLIENT_ID',
+                'YOUR_YOUTUBE_CLIENT_ID', 
+                'YOUR_INSTAGRAM_CLIENT_ID',
+                'YOUR_TIKTOK_CLIENT_ID',
+                'YOUR_TWITTER_CLIENT_ID',
+                '',
+                null,
+                undefined
+            ];
+            
+            return credential && !placeholders.includes(credential);
         }
 
         async function savePlatformConnection(platform, oauthData) {
@@ -1851,6 +1884,9 @@
             updateProgress();
             updateNavigationButtons();
             
+            // Mark unconfigured platforms
+            markUnconfiguredPlatforms();
+            
             // Check if returning from OAuth
             const returnFromOAuth = sessionStorage.getItem('returnToOnboarding');
             if (returnFromOAuth) {
@@ -1880,6 +1916,46 @@
                 }
             }
         });
+
+        // Mark platforms that don't have valid credentials
+        function markUnconfiguredPlatforms() {
+            const platforms = ['twitch', 'youtube', 'instagram', 'tiktok', 'twitter'];
+            
+            platforms.forEach(platform => {
+                if (!isValidCredential(platform)) {
+                    const card = document.querySelector(`[data-platform="${platform}"]`);
+                    const button = card.querySelector('.connect-btn');
+                    
+                    // Update button text and style
+                    button.textContent = 'Coming Soon';
+                    button.style.background = '#94a3b8';
+                    button.style.cursor = 'default';
+                    
+                    // Add visual indicator
+                    card.style.opacity = '0.7';
+                    
+                    // Add "Coming Soon" badge
+                    if (!card.querySelector('.coming-soon-badge')) {
+                        const badge = document.createElement('div');
+                        badge.className = 'coming-soon-badge';
+                        badge.textContent = 'Coming Soon';
+                        badge.style.cssText = `
+                            position: absolute;
+                            top: 10px;
+                            right: 10px;
+                            background: #f59e0b;
+                            color: white;
+                            padding: 4px 8px;
+                            border-radius: 4px;
+                            font-size: 10px;
+                            font-weight: bold;
+                        `;
+                        card.style.position = 'relative';
+                        card.appendChild(badge);
+                    }
+                }
+            });
+        }
 
         async function checkExistingConnections() {
             try {
