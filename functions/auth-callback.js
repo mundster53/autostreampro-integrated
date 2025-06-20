@@ -1,6 +1,23 @@
 exports.handler = async (event, context) => {
+    // Set CORS headers
+    const headers = {
+        'Access-Control-Allow-Origin': 'https://autostreampro.com',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Content-Type': 'application/json'
+    };
+
+    // Handle OPTIONS request
+    if (event.httpMethod === 'OPTIONS') {
+        return { statusCode: 200, headers, body: '' };
+    }
+
     if (event.httpMethod !== 'POST') {
-        return { statusCode: 405, body: 'Method Not Allowed' };
+        return { 
+            statusCode: 405, 
+            headers,
+            body: JSON.stringify({ success: false, error: 'Method Not Allowed' })
+        };
     }
 
     const { platform, code, redirectUri } = JSON.parse(event.body);
@@ -11,14 +28,13 @@ exports.handler = async (event, context) => {
         
         switch(platform) {
             case 'twitch':
-                // Check if Twitch credentials are configured
                 if (!process.env.TWITCH_CLIENT_ID || !process.env.TWITCH_CLIENT_SECRET) {
                     return {
                         statusCode: 400,
-                        headers: { 'Content-Type': 'application/json' },
+                        headers,
                         body: JSON.stringify({ 
                             success: false, 
-                            error: 'Twitch OAuth not configured. Please add TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET environment variables.'
+                            error: 'Twitch OAuth not configured. Please add credentials to environment variables.'
                         })
                     };
                 }
@@ -36,6 +52,10 @@ exports.handler = async (event, context) => {
                 });
                 tokenData = await tokenResponse.json();
                 
+                if (!tokenResponse.ok) {
+                    throw new Error(`Twitch OAuth failed: ${tokenData.message}`);
+                }
+                
                 // Get user info from Twitch
                 const twitchUserResponse = await fetch('https://api.twitch.tv/helix/users', {
                     headers: {
@@ -47,7 +67,7 @@ exports.handler = async (event, context) => {
                 
                 return {
                     statusCode: 200,
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify({ 
                         success: true, 
                         access_token: tokenData.access_token,
@@ -58,14 +78,13 @@ exports.handler = async (event, context) => {
                 };
                 
             case 'youtube':
-                // Check if YouTube credentials are configured
                 if (!process.env.YOUTUBE_CLIENT_ID || !process.env.YOUTUBE_CLIENT_SECRET) {
                     return {
                         statusCode: 400,
-                        headers: { 'Content-Type': 'application/json' },
+                        headers,
                         body: JSON.stringify({ 
                             success: false, 
-                            error: 'YouTube OAuth not configured. Please add YOUTUBE_CLIENT_ID and YOUTUBE_CLIENT_SECRET environment variables.'
+                            error: 'YouTube OAuth not configured. Please add credentials to environment variables.'
                         })
                     };
                 }
@@ -83,13 +102,17 @@ exports.handler = async (event, context) => {
                 });
                 tokenData = await tokenResponse.json();
                 
+                if (!tokenResponse.ok) {
+                    throw new Error(`YouTube OAuth failed: ${tokenData.error_description}`);
+                }
+                
                 // Get user info from YouTube
                 const youtubeUserResponse = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true&access_token=${tokenData.access_token}`);
                 const youtubeUser = await youtubeUserResponse.json();
                 
                 return {
                     statusCode: 200,
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify({ 
                         success: true, 
                         access_token: tokenData.access_token,
@@ -100,14 +123,13 @@ exports.handler = async (event, context) => {
                 };
                 
             case 'instagram':
-                // Check if Instagram credentials are configured
                 if (!process.env.INSTAGRAM_CLIENT_ID || !process.env.INSTAGRAM_CLIENT_SECRET) {
                     return {
                         statusCode: 400,
-                        headers: { 'Content-Type': 'application/json' },
+                        headers,
                         body: JSON.stringify({ 
                             success: false, 
-                            error: 'Instagram OAuth not configured. Please add INSTAGRAM_CLIENT_ID and INSTAGRAM_CLIENT_SECRET environment variables.'
+                            error: 'Instagram OAuth not configured. Please add credentials to environment variables.'
                         })
                     };
                 }
@@ -125,76 +147,25 @@ exports.handler = async (event, context) => {
                 });
                 tokenData = await tokenResponse.json();
                 
-                // Get user info from Instagram
-                const instagramUserResponse = await fetch(`https://graph.instagram.com/me?fields=id,username&access_token=${tokenData.access_token}`);
-                const instagramUser = await instagramUserResponse.json();
-                
-                return {
-                    statusCode: 200,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        success: true, 
-                        access_token: tokenData.access_token,
-                        refresh_token: tokenData.refresh_token || null,
-                        platform_user_id: instagramUser.id,
-                        platform_username: instagramUser.username
-                    })
-                };
-                
-            case 'tiktok':
-                // Check if TikTok credentials are configured (you don't have these yet)
-                if (!process.env.TIKTOK_CLIENT_KEY || !process.env.TIKTOK_CLIENT_SECRET) {
-                    return {
-                        statusCode: 400,
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            success: false, 
-                            error: 'TikTok app is pending approval. OAuth will be available once TikTok approves your developer application. Please try again in a few days.'
-                        })
-                    };
+                if (!tokenResponse.ok) {
+                    throw new Error(`Instagram OAuth failed: ${tokenData.error_message}`);
                 }
                 
-                // TikTok OAuth code (will run once you get approved and add credentials)
-                tokenResponse = await fetch('https://open.tiktokapis.com/v2/oauth/token/', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Cache-Control': 'no-cache'
-                    },
-                    body: new URLSearchParams({
-                        client_key: process.env.TIKTOK_CLIENT_KEY,
-                        client_secret: process.env.TIKTOK_CLIENT_SECRET,
-                        code,
-                        grant_type: 'authorization_code',
-                        redirect_uri: redirectUri
-                    })
-                });
-                tokenData = await tokenResponse.json();
-                
-                // Get user info from TikTok
-                const tiktokUserResponse = await fetch('https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name', {
-                    headers: {
-                        'Authorization': `Bearer ${tokenData.access_token}`
-                    }
-                });
-                const tiktokUser = await tiktokUserResponse.json();
-                
                 return {
                     statusCode: 200,
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify({ 
                         success: true, 
                         access_token: tokenData.access_token,
-                        refresh_token: tokenData.refresh_token,
-                        platform_user_id: tiktokUser.data?.user?.open_id,
-                        platform_username: tiktokUser.data?.user?.display_name
+                        platform_user_id: tokenData.user_id,
+                        platform_username: tokenData.user_id // Instagram Basic Display doesn't provide username
                     })
                 };
                 
             default:
                 return {
                     statusCode: 400,
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify({ 
                         success: false, 
                         error: `Unsupported platform: ${platform}` 
@@ -206,7 +177,7 @@ exports.handler = async (event, context) => {
         console.error(`OAuth error for ${platform}:`, error);
         return {
             statusCode: 400,
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({ 
                 success: false, 
                 error: error.message || `OAuth exchange failed for ${platform}`
