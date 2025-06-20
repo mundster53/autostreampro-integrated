@@ -3,9 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoStreamPro - Set Up Your Streams v2.11</title>
-    <!-- onboarding.html Version 2.11: Added Coming Soon Check for Unconfigured Platforms -->
+    <title>AutoStreamPro - Set Up Your Streams v2.12</title>
+    <!-- onboarding.html Version 2.12: Updated Instagram to use Facebook SDK instead of direct OAuth -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Facebook SDK for JavaScript -->
+    <script>
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId: '1369402897442291', // Your Facebook App ID for Instagram integration
+          cookie: true,
+          xfbml: true,
+          version: 'v18.0'
+        });
+      };
+    </script>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
     <style>
         * {
             margin: 0;
@@ -1388,13 +1401,13 @@
         const youtubeClientId = '17381198225-gn5qnqdlhuehbhlva9ro046r5qbssfrn.apps.googleusercontent.com';
         const instagramClientId = '1369402897442291';
         const tiktokClientId = 'YOUR_TIKTOK_CLIENT_ID';
-        const twitterClientId = 'WEdRcTBfd1c0QTN6eEk1ZHo4OWY6MTpjaQ';
+        const twitterClientId = 'YOUR_TWITTER_CLIENT_ID';
 
-        // OAuth URLs - Keep original callback URLs
+        // OAuth URLs - Instagram uses Facebook SDK instead of direct OAuth
         const oauthUrls = {
             twitch: `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=https://autostreampro.com/auth/twitch.html&response_type=code&scope=user:read:email`,
             youtube: `https://accounts.google.com/o/oauth2/v2/auth?client_id=${youtubeClientId}&redirect_uri=https://autostreampro.com/auth/youtube.html&response_type=code&scope=https://www.googleapis.com/auth/youtube.readonly&access_type=offline`,
-            instagram: `https://api.instagram.com/oauth/authorize?client_id=${instagramClientId}&redirect_uri=https://autostreampro.com/auth/instagram.html&scope=user_profile,user_media&response_type=code`,
+            // instagram: handled by Facebook SDK, no direct OAuth URL needed
             tiktok: `https://www.tiktok.com/auth/authorize/?client_key=${tiktokClientId}&redirect_uri=https://autostreampro.com/auth/tiktok.html&response_type=code&scope=user.info.basic`,
             twitter: `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${twitterClientId}&redirect_uri=https://autostreampro.com/auth/twitter.html&scope=tweet.read%20tweet.write%20users.read%20offline.access&state=state&code_challenge=challenge&code_challenge_method=plain`
         };
@@ -1479,7 +1492,7 @@
             return true;
         }
 
-        // Platform connection with OAuth - Check for valid credentials first
+        // Platform connection with OAuth - Instagram uses Facebook SDK, others use redirect
         function connectPlatform(platform) {
             const card = document.querySelector(`[data-platform="${platform}"]`);
             const button = card.querySelector('.connect-btn');
@@ -1487,6 +1500,12 @@
             // Check if platform has real credentials
             if (!isValidCredential(platform)) {
                 showToast(`${platform.charAt(0).toUpperCase() + platform.slice(1)} integration coming soon!`, 'warning');
+                return;
+            }
+            
+            // Instagram uses Facebook SDK instead of direct OAuth
+            if (platform === 'instagram') {
+                connectInstagramWithFacebookSDK();
                 return;
             }
             
@@ -1504,12 +1523,57 @@
             window.location.href = oauthUrls[platform];
         }
 
+        // Instagram connection using Facebook SDK
+        function connectInstagramWithFacebookSDK() {
+            if (typeof FB === 'undefined') {
+                showToast('Facebook SDK not loaded. Please refresh the page and try again.', 'error');
+                return;
+            }
+
+            FB.login(function(response) {
+                if (response.authResponse) {
+                    console.log('Instagram connected via Facebook SDK');
+                    console.log('Access Token:', response.authResponse.accessToken);
+                    
+                    // Get user info from Facebook API
+                    FB.api('/me', {fields: 'id,name,email'}, function(userInfo) {
+                        const instagramData = {
+                            access_token: response.authResponse.accessToken,
+                            platform_user_id: userInfo.id,
+                            platform_username: userInfo.name || userInfo.email,
+                            expires_in: response.authResponse.expiresIn
+                        };
+                        
+                        // Update UI
+                        const card = document.querySelector(`[data-platform="instagram"]`);
+                        const button = card.querySelector('.connect-btn');
+                        
+                        card.classList.add('connected');
+                        button.textContent = '✅ Connected';
+                        button.classList.add('connected');
+                        connectedPlatforms.add('instagram');
+                        
+                        showToast('Instagram connected successfully via Facebook!');
+                        
+                        // Save to database
+                        savePlatformConnection('instagram', instagramData);
+                    });
+                } else {
+                    showToast('Instagram connection cancelled or failed', 'warning');
+                    console.log('User cancelled Instagram login or did not fully authorize.');
+                }
+            }, {
+                scope: 'instagram_basic,pages_read_engagement,pages_show_list',
+                return_scopes: true
+            });
+        }
+
         // Check if platform has valid (non-placeholder) credentials
         function isValidCredential(platform) {
             const credentials = {
                 'twitch': twitchClientId,
                 'youtube': youtubeClientId,
-                'instagram': instagramClientId,
+                'instagram': facebookAppId, // Instagram now uses Facebook App ID (always valid)
                 'tiktok': tiktokClientId,
                 'twitter': twitterClientId
             };
