@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Disconnected - AutoStreamPro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            color: #1f2937;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        p {
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .status {
+            background: #ecfdf5;
+            color: #065f46;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="logo">🚀 AutoStreamPro</div>
+            <div class="icon">✅</div>
+            <h1>Account Disconnected</h1>
+            
+            <div class="status">
+                <strong>Deauthorization Complete</strong><br>
+                Your platform account has been successfully disconnected from AutoStreamPro.
+            </div>
+            
+            <p>Your account has been deauthorized and we have removed all access tokens and associated data for the platform you disconnected.</p>
+            
+            <p>You can reconnect your account at any time by logging into AutoStreamPro and going through the platform connection process again.</p>
+            
+            <a href="https://autostreampro.com" class="back-btn">← Return to AutoStreamPro</a>
+        </div>
+    </div>
+
+    <script>
+        // Log deauthorization request
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('user_id') || urlParams.get('id');
+        const platform = urlParams.get('platform') || 'unknown';
+        
+        // Log the deauthorization (in production, this would go to your backend)
+        console.log('Deauthorization request:', {
+            userId: userId,
+            platform: platform,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            url: window.location.href
+        });
+
+        // In production, you would send this data to your backend:
+        // fetch('/api/deauthorization', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify({
+        //         userId: userId,
+        //         platform: platform,
+        //         timestamp: new Date().toISOString()
+        //     })
+        // });
+    </script>
+</body>
+</html>
