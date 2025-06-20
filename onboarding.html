@@ -3,8 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoStreamPro - Set Up Your Streams v2.18</title>
-    <!-- onboarding.html Version 2.18: Fixed Twitch Client ID - Hardcoded to Eliminate Variable Issues -->
+    <title>AutoStreamPro - Set Up Your Streams v2.13</title>
+    <!-- onboarding.html Version 2.13: Fixed Instagram SDK Loading with Better Error Handling -->
+    
+    <!-- Facebook SDK -->
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+    <script>
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId: '1369402897442291',
+          cookie: true,
+          xfbml: true,
+          version: 'v18.0'
+        });
+      };
+    </script>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -469,10 +482,8 @@
         // Platform connection functions
         function connectTwitch() {
             console.log('Connecting to Twitch...');
-            console.log('Twitch Client ID:', 'nnhwtwu8zixqcdgv0kzkjtzqrmh0ye');
             
-            const twitchAuthUrl = `https://id.twitch.tv/oauth2/authorize?client_id=nnhwtwu8zixqcdgv0kzkjtzqrmh0ye&redirect_uri=https://autostreampro.com/auth/twitch.html&response_type=code&scope=user:read:email+clips:edit+videos:edit`;
-            console.log('Twitch Auth URL:', twitchAuthUrl);
+            const twitchAuthUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=https://autostreampro.com/auth/twitch.html&response_type=code&scope=user:read:email+clips:edit+videos:edit`;
             window.location.href = twitchAuthUrl;
         }
 
@@ -484,10 +495,74 @@
         }
 
         function connectInstagram() {
-            console.log('Connecting to Instagram...');
+            console.log('Instagram connect clicked');
             
-            const facebookAuthUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=1369402897442291&redirect_uri=https://autostreampro.com/auth/instagram.html&scope=email,pages_show_list,pages_read_engagement&response_type=code`;
-            window.location.href = facebookAuthUrl;
+            // Check if Facebook SDK is loaded
+            if (typeof FB === 'undefined') {
+                console.error('Facebook SDK not loaded - trying to load...');
+                
+                // Try to reload Facebook SDK
+                loadFacebookSDK().then(() => {
+                    console.log('Facebook SDK loaded, retrying Instagram connection');
+                    connectInstagramWithSDK();
+                }).catch(() => {
+                    alert('Instagram connection unavailable. Please disable ad blockers and try again.');
+                });
+                return;
+            }
+            
+            connectInstagramWithSDK();
+        }
+        
+        function connectInstagramWithSDK() {
+            console.log('Attempting Instagram connection with Facebook SDK');
+            
+            FB.login(function(response) {
+                console.log('Facebook login response:', response);
+                
+                if (response.authResponse) {
+                    console.log('Instagram connected successfully');
+                    console.log('Access token:', response.authResponse.accessToken);
+                    
+                    // Save to Supabase
+                    savePlatformConnection('instagram', {
+                        accessToken: response.authResponse.accessToken,
+                        userID: response.authResponse.userID,
+                        expiresIn: response.authResponse.expiresIn
+                    });
+                    
+                    // Update UI
+                    document.querySelector('[data-platform="instagram"] .connect-btn').innerHTML = 
+                        '<span class="text-green-600">✓</span> Connected';
+                    document.querySelector('[data-platform="instagram"]').classList.add('connected');
+                } else {
+                    console.log('Instagram connection cancelled or failed:', response);
+                    alert('Instagram connection failed. Please try again.');
+                }
+            }, {scope: 'email,pages_show_list,pages_read_engagement'});
+        }
+        
+        function loadFacebookSDK() {
+            return new Promise((resolve, reject) => {
+                if (typeof FB !== 'undefined') {
+                    resolve();
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = 'https://connect.facebook.net/en_US/sdk.js';
+                script.onload = () => {
+                    FB.init({
+                        appId: '1369402897442291',
+                        cookie: true,
+                        xfbml: true,
+                        version: 'v18.0'
+                    });
+                    resolve();
+                };
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
         }
 
         // Save platform connection to Supabase
