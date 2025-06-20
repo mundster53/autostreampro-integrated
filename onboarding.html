@@ -810,11 +810,117 @@
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
+            // Check for direct AI settings navigation
+            const urlParams = new URLSearchParams(window.location.search);
+            const step = urlParams.get('step');
+            
+            if (step === 'ai-settings') {
+                // Create a simplified AI settings page for users coming from dashboard
+                document.querySelector('.header h1').textContent = '🤖 AI Configuration Settings';
+                document.querySelector('.header p').textContent = 'Configure your AI clip creation and optimization settings';
+                document.querySelector('.progress-text .step-indicator').textContent = 'AI Settings';
+                document.querySelector('#progressPercentage').textContent = 'Configure AI';
+                
+                // Hide platform connection step and show AI settings
+                document.getElementById('step-1').style.display = 'none';
+                
+                // Add AI settings content
+                document.getElementById('step-1').insertAdjacentHTML('afterend', `
+                    <div class="step active" id="ai-settings-step">
+                        <h2>
+                            <span class="step-icon">🤖</span>
+                            AI Configuration Settings
+                        </h2>
+                        <p>Configure how AI creates and optimizes your gaming clips</p>
+                        
+                        <div style="background: #f0f9ff; padding: 20px; border-radius: 12px; margin: 20px 0;">
+                            <h3 style="color: #1e40af; margin-bottom: 15px;">🎯 Quick Settings</h3>
+                            
+                            <div style="display: grid; gap: 15px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e5f3ff;">
+                                    <div>
+                                        <strong>Auto-Create Clips</strong>
+                                        <br><small>Automatically create clips from your streams</small>
+                                    </div>
+                                    <label style="position: relative; width: 50px; height: 28px;">
+                                        <input type="checkbox" checked style="opacity: 0;">
+                                        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #3b82f6; transition: 0.3s; border-radius: 28px;"></span>
+                                        <span style="position: absolute; content: ''; height: 20px; width: 20px; left: 26px; bottom: 4px; background-color: white; transition: 0.3s; border-radius: 50%;"></span>
+                                    </label>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e5f3ff;">
+                                    <div>
+                                        <strong>Viral Moment Detection</strong>
+                                        <br><small>Detect kill streaks, clutch plays, and epic moments</small>
+                                    </div>
+                                    <label style="position: relative; width: 50px; height: 28px;">
+                                        <input type="checkbox" checked style="opacity: 0;">
+                                        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #3b82f6; transition: 0.3s; border-radius: 28px;"></span>
+                                        <span style="position: absolute; content: ''; height: 20px; width: 20px; left: 26px; bottom: 4px; background-color: white; transition: 0.3s; border-radius: 50%;"></span>
+                                    </label>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e5f3ff;">
+                                    <div>
+                                        <strong>Auto-Generate Titles</strong>
+                                        <br><small>Create engaging titles using AI and trending keywords</small>
+                                    </div>
+                                    <label style="position: relative; width: 50px; height: 28px;">
+                                        <input type="checkbox" checked style="opacity: 0;">
+                                        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #3b82f6; transition: 0.3s; border-radius: 28px;"></span>
+                                        <span style="position: absolute; content: ''; height: 20px; width: 20px; left: 26px; bottom: 4px; background-color: white; transition: 0.3s; border-radius: 50%;"></span>
+                                    </label>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+                                    <div>
+                                        <strong>Clip Length</strong>
+                                        <br><small>Default length for auto-generated clips</small>
+                                    </div>
+                                    <select style="padding: 8px 12px; border: 2px solid #e5f3ff; border-radius: 6px; background: white;">
+                                        <option value="15">15 seconds</option>
+                                        <option value="30" selected>30 seconds</option>
+                                        <option value="45">45 seconds</option>
+                                        <option value="60">60 seconds</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 20px; text-align: center;">
+                                <button onclick="saveAISettings()" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                    Save AI Settings
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                            <h4 style="color: #92400e; margin: 0 0 10px 0;">⚙️ Advanced Configuration</h4>
+                            <p style="color: #92400e; margin: 0; font-size: 14px;">
+                                For more detailed AI configuration options, <a href="/onboarding.html" style="color: #92400e; text-decoration: underline;">visit the full onboarding setup</a>.
+                            </p>
+                        </div>
+                    </div>
+                `);
+                
+                // Update navigation
+                document.querySelector('.navigation').innerHTML = `
+                    <a href="/dashboard.html" class="btn btn-secondary">
+                        ← Back to Dashboard
+                    </a>
+                    <a href="/onboarding.html" class="btn btn-primary">
+                        Full AI Configuration →
+                    </a>
+                `;
+                
+                return; // Exit early for AI settings mode
+            }
+            
+            // Normal onboarding flow
             // Check for real connections only
             checkConnectionStatus();
             
             // Check for OAuth callback parameters
-            const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
             const state = urlParams.get('state');
             const platform = window.location.pathname.split('/auth/')[1];
@@ -823,6 +929,16 @@
                 handleOAuthCallback(platform, code, state);
             }
         });
+        
+        // Save AI Settings function
+        window.saveAISettings = function() {
+            // Simulate saving settings
+            showToast('AI settings saved successfully!', 'success');
+            
+            setTimeout(() => {
+                window.location.href = '/dashboard.html';
+            }, 2000);
+        };
     </script>
 </body>
 </html>
