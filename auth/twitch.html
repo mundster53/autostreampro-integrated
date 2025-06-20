@@ -53,6 +53,16 @@
             color: #374151;
             margin-bottom: 1rem;
         }
+        
+        .debug-info {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            text-align: left;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
     </style>
 </head>
 <body>
@@ -60,18 +70,35 @@
         <div class="logo">🎮 Twitch</div>
         <div class="spinner"></div>
         <div class="message">Connecting your Twitch account...</div>
+        <div class="debug-info" id="debug-info">
+            Processing OAuth response...
+        </div>
     </div>
 
     <script>
+        console.log('Twitch OAuth callback page loaded');
+        
         // Extract OAuth parameters from URL
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         const error = urlParams.get('error');
         const state = urlParams.get('state');
 
+        // Update debug info
+        document.getElementById('debug-info').innerHTML = `
+            <strong>Debug Info:</strong><br>
+            Code: ${code ? 'Received' : 'Not found'}<br>
+            Error: ${error || 'None'}<br>
+            State: ${state || 'None'}<br>
+            URL: ${window.location.href}
+        `;
+
+        console.log('OAuth parameters:', { code, error, state });
+
         if (error) {
             // OAuth error occurred
             console.error('Twitch OAuth error:', error);
+            document.querySelector('.message').textContent = `Error: ${error}`;
             
             // Send error message to parent window
             if (window.opener) {
@@ -80,13 +107,14 @@
                     platform: 'twitch',
                     error: error
                 }, window.location.origin);
+                
+                setTimeout(() => window.close(), 3000);
             }
             
-            // Close popup
-            window.close();
         } else if (code) {
             // OAuth success - send code to parent window
             console.log('Twitch OAuth success, code received');
+            document.querySelector('.message').textContent = 'Success! Closing popup...';
             
             if (window.opener) {
                 window.opener.postMessage({
@@ -95,15 +123,16 @@
                     code: code,
                     state: state
                 }, window.location.origin);
+                
+                setTimeout(() => window.close(), 2000);
+            } else {
+                document.querySelector('.message').textContent = 'Success! You can close this window.';
             }
             
-            // Close popup after a short delay
-            setTimeout(() => {
-                window.close();
-            }, 1000);
         } else {
             // No code or error - something went wrong
             console.error('No OAuth code or error received');
+            document.querySelector('.message').textContent = 'No authorization code received';
             
             if (window.opener) {
                 window.opener.postMessage({
@@ -111,9 +140,9 @@
                     platform: 'twitch',
                     error: 'No authorization code received'
                 }, window.location.origin);
+                
+                setTimeout(() => window.close(), 3000);
             }
-            
-            window.close();
         }
     </script>
 </body>
