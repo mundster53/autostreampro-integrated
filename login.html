@@ -549,31 +549,31 @@
         }
 
         // Forgot Password
-        async function handleForgotPassword() {
-            const email = document.getElementById('email').value;
-            
-            if (!email) {
-                showMessage('Please enter your email address first.');
-                document.getElementById('email').focus();
-                return;
-            }
-            
-            try {
-                const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://autostreampro.com/reset-password'
-});
-                
-                if (error) {
-                    throw error;
-                }
-                
-                showMessage('Password reset email sent! Check your inbox.', 'success');
-                
-            } catch (error) {
-                console.error('Password reset error:', error);
-                showMessage('Failed to send password reset email. Please try again.');
-            }
+   async function handleForgotPassword() {
+    const email = document.getElementById('email').value;
+    
+    if (!email) {
+        showMessage('Please enter your email address first.');
+        document.getElementById('email').focus();
+        return;
+    }
+    
+    try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: 'https://autostreampro.com/reset-password'  // ← Fixed URL
+        });
+        
+        if (error) {
+            throw error;
         }
+        
+        showMessage('Password reset email sent! Check your inbox.', 'success');
+        
+    } catch (error) {
+        console.error('Password reset error:', error);
+        showMessage('Failed to send password reset email. Please try again.');
+    }
+}
 
         // Check if user is already logged in
         document.addEventListener('DOMContentLoaded', async () => {
