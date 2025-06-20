@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoStreamPro - Set Up Your Streams v2.14</title>
-    <!-- onboarding.html Version 2.14: Fixed Instagram OAuth - Switched to Redirect Method to Avoid CSP Issues -->
+    <title>AutoStreamPro - Set Up Your Streams v2.15</title>
+    <!-- onboarding.html Version 2.15: Fixed CSP Issues - Converted All onclick to Event Listeners -->
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -95,7 +95,7 @@
                                 <p class="text-sm text-gray-600">Live streaming source</p>
                             </div>
                         </div>
-                        <button onclick="connectTwitch()" class="connect-btn w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                        <button class="connect-btn w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors" data-platform="twitch">
                             Connect Twitch
                         </button>
                     </div>
@@ -111,7 +111,7 @@
                                 <p class="text-sm text-gray-600">Video publishing</p>
                             </div>
                         </div>
-                        <button onclick="connectYoutube()" class="connect-btn w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors">
+                        <button class="connect-btn w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors" data-platform="youtube">
                             Connect YouTube
                         </button>
                     </div>
@@ -127,7 +127,7 @@
                                 <p class="text-sm text-gray-600">Short clips & reels</p>
                             </div>
                         </div>
-                        <button onclick="connectInstagram()" class="connect-btn w-full bg-pink-600 text-white py-2 rounded-lg hover:bg-pink-700 transition-colors">
+                        <button class="connect-btn w-full bg-pink-600 text-white py-2 rounded-lg hover:bg-pink-700 transition-colors" data-platform="instagram">
                             Connect Instagram
                         </button>
                     </div>
@@ -166,7 +166,7 @@
                 </div>
 
                 <div class="mt-8 text-center">
-                    <button onclick="nextStep()" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                    <button class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold" id="step1-next">
                         Continue to AI Configuration
                     </button>
                 </div>
@@ -178,13 +178,13 @@
                 
                 <!-- AI Tabs -->
                 <div class="flex mb-6 bg-gray-100 rounded-lg p-1">
-                    <button onclick="switchAITab('moments')" class="ai-tab flex-1 py-2 px-4 rounded-md font-medium transition-all active" data-tab="moments">
+                    <button class="ai-tab flex-1 py-2 px-4 rounded-md font-medium transition-all active" data-tab="moments">
                         Moment Detection
                     </button>
-                    <button onclick="switchAITab('games')" class="ai-tab flex-1 py-2 px-4 rounded-md font-medium transition-all" data-tab="games">
+                    <button class="ai-tab flex-1 py-2 px-4 rounded-md font-medium transition-all" data-tab="games">
                         Game Selection
                     </button>
-                    <button onclick="switchAITab('optimization')" class="ai-tab flex-1 py-2 px-4 rounded-md font-medium transition-all" data-tab="optimization">
+                    <button class="ai-tab flex-1 py-2 px-4 rounded-md font-medium transition-all" data-tab="optimization">
                         Platform Optimization
                     </button>
                 </div>
@@ -233,28 +233,28 @@
                 <div id="games-tab" class="ai-tab-content hidden">
                     <p class="text-gray-600 mb-4">Select the games you primarily stream (helps AI understand context):</p>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="valorant">
+                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" data-game="valorant">
                             <div class="font-semibold">Valorant</div>
                         </div>
-                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="fortnite">
+                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" data-game="fortnite">
                             <div class="font-semibold">Fortnite</div>
                         </div>
-                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="apex">
+                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" data-game="apex">
                             <div class="font-semibold">Apex Legends</div>
                         </div>
-                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="cod">
+                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" data-game="cod">
                             <div class="font-semibold">Call of Duty</div>
                         </div>
-                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="lol">
+                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" data-game="lol">
                             <div class="font-semibold">League of Legends</div>
                         </div>
-                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="minecraft">
+                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" data-game="minecraft">
                             <div class="font-semibold">Minecraft</div>
                         </div>
-                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="gta">
+                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" data-game="gta">
                             <div class="font-semibold">GTA V</div>
                         </div>
-                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="other">
+                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" data-game="other">
                             <div class="font-semibold">Other</div>
                         </div>
                     </div>
@@ -322,10 +322,10 @@
                 </div>
 
                 <div class="mt-8 flex justify-between">
-                    <button onclick="prevStep()" class="bg-gray-500 text-white px-8 py-3 rounded-lg hover:bg-gray-600 transition-colors font-semibold">
+                    <button class="bg-gray-500 text-white px-8 py-3 rounded-lg hover:bg-gray-600 transition-colors font-semibold" id="step2-prev">
                         Back
                     </button>
-                    <button onclick="nextStep()" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                    <button class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold" id="step2-next">
                         Continue to Content Strategy
                     </button>
                 </div>
@@ -410,10 +410,10 @@
                 </div>
 
                 <div class="mt-8 flex justify-between">
-                    <button onclick="prevStep()" class="bg-gray-500 text-white px-8 py-3 rounded-lg hover:bg-gray-600 transition-colors font-semibold">
+                    <button class="bg-gray-500 text-white px-8 py-3 rounded-lg hover:bg-gray-600 transition-colors font-semibold" id="step3-prev">
                         Back
                     </button>
-                    <button onclick="nextStep()" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                    <button class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold" id="step3-next">
                         Complete Setup
                     </button>
                 </div>
@@ -443,7 +443,7 @@
                     <button class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold w-full">
                         Go to Dashboard
                     </button>
-                    <button onclick="restartSetup()" class="bg-gray-500 text-white px-8 py-3 rounded-lg hover:bg-gray-600 transition-colors font-semibold w-full">
+                    <button class="bg-gray-500 text-white px-8 py-3 rounded-lg hover:bg-gray-600 transition-colors font-semibold w-full" id="restart-setup">
                         Restart Setup
                     </button>
                 </div>
@@ -747,6 +747,35 @@
             console.log('Page loaded');
             checkPlatformConnections();
             handleOAuthReturn();
+            
+            // Add event listeners to replace onclick handlers (CSP compliance)
+            
+            // Platform connection buttons
+            document.querySelector('[data-platform="twitch"] .connect-btn').addEventListener('click', connectTwitch);
+            document.querySelector('[data-platform="youtube"] .connect-btn').addEventListener('click', connectYoutube);
+            document.querySelector('[data-platform="instagram"] .connect-btn').addEventListener('click', connectInstagram);
+            
+            // Navigation buttons
+            document.getElementById('step1-next').addEventListener('click', nextStep);
+            document.getElementById('step2-prev').addEventListener('click', prevStep);
+            document.getElementById('step2-next').addEventListener('click', nextStep);
+            document.getElementById('step3-prev').addEventListener('click', prevStep);
+            document.getElementById('step3-next').addEventListener('click', nextStep);
+            document.getElementById('restart-setup').addEventListener('click', restartSetup);
+            
+            // AI tab buttons
+            document.querySelectorAll('.ai-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    switchAITab(this.dataset.tab);
+                });
+            });
+            
+            // Game selection options
+            document.querySelectorAll('.game-option').forEach(game => {
+                game.addEventListener('click', function() {
+                    toggleGame(this);
+                });
+            });
         });
     </script>
 </body>
