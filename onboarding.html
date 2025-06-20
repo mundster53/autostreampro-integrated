@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoStreamPro - Set Up Your Streams v2.8</title>
-    <!-- onboarding.html Version 2.8: Added Twitter/X Platform Integration -->
+    <title>AutoStreamPro - Set Up Your Streams v2.10</title>
+    <!-- onboarding.html Version 2.10: Keep Existing OAuth Callback URLs, Fix COOP with Simple Redirect -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
@@ -1390,13 +1390,13 @@
         const tiktokClientId = 'YOUR_TIKTOK_CLIENT_ID';
         const twitterClientId = 'YOUR_TWITTER_CLIENT_ID';
 
-        // OAuth URLs
+        // OAuth URLs - Keep original callback URLs
         const oauthUrls = {
-            twitch: `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=https://autostreampro.com/auth/twitch&response_type=code&scope=user:read:email`,
-            youtube: `https://accounts.google.com/o/oauth2/v2/auth?client_id=${youtubeClientId}&redirect_uri=https://autostreampro.com/auth/youtube&response_type=code&scope=https://www.googleapis.com/auth/youtube.readonly&access_type=offline`,
-            instagram: `https://api.instagram.com/oauth/authorize?client_id=${instagramClientId}&redirect_uri=https://autostreampro.com/auth/instagram&scope=user_profile,user_media&response_type=code`,
-            tiktok: `https://www.tiktok.com/auth/authorize/?client_key=${tiktokClientId}&redirect_uri=https://autostreampro.com/auth/tiktok&response_type=code&scope=user.info.basic`,
-            twitter: `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${twitterClientId}&redirect_uri=https://autostreampro.com/auth/twitter&scope=tweet.read%20tweet.write%20users.read%20offline.access&state=state&code_challenge=challenge&code_challenge_method=plain`
+            twitch: `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=https://autostreampro.com/auth/twitch.html&response_type=code&scope=user:read:email`,
+            youtube: `https://accounts.google.com/o/oauth2/v2/auth?client_id=${youtubeClientId}&redirect_uri=https://autostreampro.com/auth/youtube.html&response_type=code&scope=https://www.googleapis.com/auth/youtube.readonly&access_type=offline`,
+            instagram: `https://api.instagram.com/oauth/authorize?client_id=${instagramClientId}&redirect_uri=https://autostreampro.com/auth/instagram.html&scope=user_profile,user_media&response_type=code`,
+            tiktok: `https://www.tiktok.com/auth/authorize/?client_key=${tiktokClientId}&redirect_uri=https://autostreampro.com/auth/tiktok.html&response_type=code&scope=user.info.basic`,
+            twitter: `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${twitterClientId}&redirect_uri=https://autostreampro.com/auth/twitter.html&scope=tweet.read%20tweet.write%20users.read%20offline.access&state=state&code_challenge=challenge&code_challenge_method=plain`
         };
 
         let currentStepNumber = 1;
@@ -1479,7 +1479,7 @@
             return true;
         }
 
-        // REAL Platform connection with OAuth
+        // Platform connection with OAuth - Simple redirect to avoid COOP issues
         function connectPlatform(platform) {
             const card = document.querySelector(`[data-platform="${platform}"]`);
             const button = card.querySelector('.connect-btn');
@@ -1489,75 +1489,13 @@
                 return;
             }
 
-            // Store current state
+            // Store current state before redirect
             sessionStorage.setItem('oauthPlatform', platform);
+            sessionStorage.setItem('currentStep', currentStepNumber);
+            sessionStorage.setItem('returnToOnboarding', 'true');
             
-            // Open OAuth popup
-            const popup = window.open(
-                oauthUrls[platform],
-                'oauth',
-                'width=500,height=600,scrollbars=yes,resizable=yes'
-            );
-
-            // Listen for OAuth completion
-            const checkClosed = setInterval(() => {
-                if (popup.closed) {
-                    clearInterval(checkClosed);
-                    // Check if connection was successful
-                    checkConnectionStatus(platform);
-                }
-            }, 1000);
-
-            // Listen for OAuth messages
-            window.addEventListener('message', (event) => {
-                if (event.origin !== window.location.origin) return;
-                
-                if (event.data.type === 'oauth_success' && event.data.platform === platform) {
-                    // Connection successful
-                    card.classList.add('connected');
-                    button.textContent = '✅ Connected';
-                    button.classList.add('connected');
-                    connectedPlatforms.add(platform);
-                    
-                    showToast(`${platform.charAt(0).toUpperCase() + platform.slice(1)} connected successfully!`);
-                    
-                    // Save to database
-                    savePlatformConnection(platform, event.data);
-                }
-                
-                if (event.data.type === 'oauth_error' && event.data.platform === platform) {
-                    showToast(`Failed to connect ${platform}: ${event.data.error}`, 'error');
-                }
-            });
-        }
-
-        async function checkConnectionStatus(platform) {
-            try {
-                if (!supabase) return;
-                
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return;
-
-                const { data, error } = await supabase
-                    .from('platform_connections')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .eq('platform_name', platform)
-                    .eq('status', 'connected')
-                    .single();
-
-                if (data && !error) {
-                    const card = document.querySelector(`[data-platform="${platform}"]`);
-                    const button = card.querySelector('.connect-btn');
-                    
-                    card.classList.add('connected');
-                    button.textContent = '✅ Connected';
-                    button.classList.add('connected');
-                    connectedPlatforms.add(platform);
-                }
-            } catch (error) {
-                console.error('Error checking connection status:', error);
-            }
+            // Simple redirect to OAuth (no popup to avoid COOP)
+            window.location.href = oauthUrls[platform];
         }
 
         async function savePlatformConnection(platform, oauthData) {
@@ -1913,9 +1851,33 @@
             updateProgress();
             updateNavigationButtons();
             
-            // Check existing connections on load
-            if (supabase) {
-                checkExistingConnections();
+            // Check if returning from OAuth
+            const returnFromOAuth = sessionStorage.getItem('returnToOnboarding');
+            if (returnFromOAuth) {
+                sessionStorage.removeItem('returnToOnboarding');
+                
+                // Restore step
+                const savedStep = sessionStorage.getItem('currentStep');
+                if (savedStep) {
+                    currentStepNumber = parseInt(savedStep);
+                    document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
+                    document.getElementById(`step-${currentStepNumber}`).classList.add('active');
+                    updateProgress();
+                    updateNavigationButtons();
+                    sessionStorage.removeItem('currentStep');
+                }
+                
+                // Check for new connections
+                setTimeout(() => {
+                    if (supabase) {
+                        checkExistingConnections();
+                    }
+                }, 1000);
+            } else {
+                // Normal page load
+                if (supabase) {
+                    checkExistingConnections();
+                }
             }
         });
 
@@ -1924,9 +1886,10 @@
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) return;
 
+                // Fix the 406 error by using simpler query
                 const { data, error } = await supabase
                     .from('platform_connections')
-                    .select('*')
+                    .select('platform_name, status')
                     .eq('user_id', user.id)
                     .eq('status', 'connected');
 
