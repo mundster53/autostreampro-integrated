@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitch Debug</title>
+</head>
+<body>
+    <h1>Twitch OAuth Debug Page</h1>
+    <p>This page should stay here and show debug info.</p>
+    
+    <div id="debug-info">
+        <h2>URL Parameters:</h2>
+        <p id="url-params">Loading...</p>
+        
+        <h2>Full URL:</h2>
+        <p id="full-url">Loading...</p>
+        
+        <h2>Page Info:</h2>
+        <p>Current time: <span id="current-time"></span></p>
+        <p>Window type: <span id="window-type"></span></p>
+    </div>
+
+    <script>
+        // Just show debug info, no redirects or window closing
+        document.getElementById('url-params').textContent = window.location.search || 'No parameters';
+        document.getElementById('full-url').textContent = window.location.href;
+        document.getElementById('current-time').textContent = new Date().toLocaleString();
+        document.getElementById('window-type').textContent = window.opener ? 'Popup window' : 'Direct visit';
+        
+        console.log('Twitch debug page loaded');
+        console.log('URL:', window.location.href);
+        console.log('Search params:', window.location.search);
+    </script>
+</body>
+</html>
