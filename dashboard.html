@@ -3,12 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - AutoStreamPro</title>
-    <meta name="description" content="Your AutoStreamPro dashboard - Monitor your streaming performance">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>AutoStreamPro - Dashboard</title>
+    <!-- dashboard.html Version 2.5: Fixed AI Settings Button -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
@@ -18,412 +14,147 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f0f8ff 0%, #e0f2fe 50%, #bfdbfe 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: #1e293b;
-            position: relative;
         }
 
-        /* Background Pattern */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 75% 75%, rgba(147, 197, 253, 0.1) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: -1;
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
-        /* Navigation */
-        .navbar {
+        header {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
-            padding: 1rem 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
 
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
+        .header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 2rem;
         }
 
         .logo {
-            display: flex;
-            align-items: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #1e40af;
-            text-decoration: none;
-        }
-
-        .logo span {
-            margin-left: 0.5rem;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .nav-links a {
-            color: #64748b;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            color: #3b82f6;
-        }
-
-        .nav-links a.active {
-            color: #1e40af;
-            font-weight: 600;
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .user-menu {
-            position: relative;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 8px;
-            transition: background 0.3s ease;
+            gap: 1rem;
         }
 
-        .user-menu:hover {
-            background: rgba(59, 130, 246, 0.1);
+        .user-info {
+            font-size: 0.9rem;
+            color: #64748b;
         }
 
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        .sign-out-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
             color: white;
-            border-radius: 50%;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .sign-out-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
-            font-size: 0.875rem;
+            font-size: 1.2rem;
         }
 
-        .user-email {
-            color: #64748b;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
+        .icon-streams { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .icon-views { background: linear-gradient(135deg, #10b981, #059669); }
+        .icon-revenue { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .icon-platforms { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
 
-        .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-            min-width: 160px;
-            z-index: 1001;
-        }
-
-        .user-menu:hover .dropdown-menu {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .dropdown-menu a {
-            display: block;
-            padding: 0.75rem 1rem;
-            color: #374151;
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: background 0.3s ease;
-        }
-
-        .dropdown-menu a:hover {
-            background: rgba(59, 130, 246, 0.1);
-            color: #1e40af;
-        }
-
-        /* Main Content */
-        .main-container {
-            padding-top: 100px;
-            padding-bottom: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding-left: 2rem;
-            padding-right: 2rem;
-        }
-
-        .welcome-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.1);
-            margin-bottom: 2rem;
-            position: relative;
-        }
-
-        .welcome-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            border-radius: 16px 16px 0 0;
-        }
-
-        .welcome-title {
-            font-size: 2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #1e40af, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
-        }
-
-        .welcome-subtitle {
-            color: #64748b;
+        .card-title {
             font-size: 1.1rem;
-            line-height: 1.6;
+            font-weight: 600;
+            color: #1f2937;
         }
 
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-        }
-
-        .stat-title {
-            color: #64748b;
-            font-size: 0.875rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .stat-icon {
-            font-size: 1.5rem;
-            opacity: 0.7;
-        }
-
-        .stat-number {
+        .stat-value {
             font-size: 2.5rem;
-            font-weight: 700;
-            color: #1e40af;
+            font-weight: bold;
+            color: #1f2937;
             margin-bottom: 0.5rem;
         }
 
         .stat-change {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            font-size: 0.875rem;
-            color: #10b981;
+            font-size: 0.9rem;
             font-weight: 500;
         }
 
-        /* Streaming Status */
-        .streaming-section {
-            background: white;
+        .positive { color: #10b981; }
+        .negative { color: #ef4444; }
+        .neutral { color: #6b7280; }
+
+        .actions-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
             padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             margin-bottom: 2rem;
-            position: relative;
-        }
-
-        .streaming-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            border-radius: 16px 16px 0 0;
-        }
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.5rem;
         }
 
         .section-title {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 600;
-            color: #1e293b;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #ef4444;
-        }
-
-        .status-dot.online {
-            background: #10b981;
-        }
-
-        .platforms-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-
-        .platform-card {
-            background: #f8fafc;
-            border: 2px solid #e5f3ff;
-            border-radius: 12px;
-            padding: 1.5rem;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .platform-card:hover {
-            border-color: #3b82f6;
-            transform: translateY(-2px);
-        }
-
-        .platform-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            margin: 0 auto 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 1.25rem;
-        }
-
-        .platform-icon.twitch {
-            background: #9146ff;
-        }
-
-        .platform-icon.youtube {
-            background: #ff0000;
-        }
-
-        .platform-icon.instagram {
-            background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
-        }
-
-        .platform-icon.tiktok {
-            background: #000000;
-        }
-
-        .platform-name {
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 0.5rem;
-        }
-
-        .platform-status {
-            font-size: 0.875rem;
-            color: #64748b;
-        }
-
-        .platform-status.connected {
-            color: #10b981;
-            font-weight: 500;
-        }
-
-        /* Quick Actions */
-        .actions-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.1);
-            position: relative;
-        }
-
-        .actions-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            border-radius: 16px 16px 0 0;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
         }
 
         .actions-grid {
@@ -437,473 +168,414 @@
             color: white;
             border: none;
             padding: 1rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 1rem;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            font-weight: 500;
             text-decoration: none;
-            display: inline-flex;
+            text-align: center;
+            display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+            transition: all 0.3s ease;
         }
 
         .action-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
         }
 
         .action-btn.secondary {
-            background: white;
-            color: #3b82f6;
-            border: 2px solid #3b82f6;
+            background: linear-gradient(135deg, #6b7280, #4b5563);
         }
 
         .action-btn.secondary:hover {
-            background: #3b82f6;
+            box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+        }
+
+        .platforms-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .platform-status {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 10px;
+            background: #f8fafc;
+        }
+
+        .platform-icon {
+            width: 30px;
+            height: 30px;
+            margin: 0 auto 0.5rem;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
             color: white;
         }
 
-        /* Responsive Design */
+        .twitch { background: #9146ff; }
+        .youtube { background: #ff0000; }
+        .instagram { background: #e4405f; }
+        .tiktok { background: #000000; }
+
+        .platform-name {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.25rem;
+        }
+
+        .connection-status {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .connected {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .disconnected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
         @media (max-width: 768px) {
-            .nav-container {
-                padding: 0 1rem;
+            .container {
+                padding: 1rem;
             }
 
-            .main-container {
-                padding-left: 1rem;
-                padding-right: 1rem;
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
             }
 
-            .stats-grid {
+            .dashboard-grid {
                 grid-template-columns: 1fr;
-            }
-
-            .platforms-grid {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 1rem;
             }
 
             .actions-grid {
                 grid-template-columns: 1fr;
             }
 
-            .user-email {
-                display: none;
-            }
-
-            .welcome-title {
-                font-size: 1.5rem;
-            }
-
-            .stat-number {
+            .stat-value {
                 font-size: 2rem;
             }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            background: #10b981;
+        }
+
+        .toast.error {
+            background: #ef4444;
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="/" class="logo">
-                🚀 <span>AutoStreamPro</span>
-            </a>
-            <div class="nav-links">
-                <a href="/dashboard.html" class="active">Dashboard</a>
-                <a href="/onboarding.html">Setup</a>
-                <a href="#" onclick="showAnalytics()">Analytics</a>
-            </div>
-            <div class="user-menu">
-                <div class="user-avatar">U</div>
-                <span class="user-email">Loading...</span>
-                <div class="dropdown-menu">
-                    <a href="/onboarding.html">Settings</a>
-                    <a href="#" onclick="signOut()">Sign Out</a>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="logo">🚀 AutoStreamPro</div>
+                <div class="user-menu">
+                    <div class="user-info" id="userEmail">Loading...</div>
+                    <button class="sign-out-btn" onclick="signOut()">Sign Out</button>
                 </div>
             </div>
-        </div>
-    </nav>
+        </header>
 
-    <!-- Main Content -->
-    <div class="main-container">
-        <!-- Welcome Section -->
-        <div class="welcome-section">
-            <h1 class="welcome-title">👋 Welcome back!</h1>
-            <p class="welcome-subtitle">Your streaming empire is ready to create viral clips. Check your stats below and start streaming to see the magic happen!</p>
-        </div>
-
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-header">
-                    <span class="stat-title">Total Clips Created</span>
-                    <span class="stat-icon">🎬</span>
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon icon-streams">📹</div>
+                    <div class="card-title">Active Streams</div>
                 </div>
-                <div class="stat-number">0</div>
-                <div class="stat-change">
-                    📈 +0 this week
-                </div>
+                <div class="stat-value" id="activeStreams">0</div>
+                <div class="stat-change neutral" id="streamsChange">No active streams</div>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-header">
-                    <span class="stat-title">Total Views</span>
-                    <span class="stat-icon">👀</span>
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon icon-views">👁️</div>
+                    <div class="card-title">Total Views</div>
                 </div>
-                <div class="stat-number">0</div>
-                <div class="stat-change">
-                    📈 +0 this week
-                </div>
+                <div class="stat-value" id="totalViews">0</div>
+                <div class="stat-change neutral" id="viewsChange">Start streaming to track views</div>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-header">
-                    <span class="stat-title">Stream Time</span>
-                    <span class="stat-icon">⏱️</span>
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon icon-revenue">💰</div>
+                    <div class="card-title">Revenue</div>
                 </div>
-                <div class="stat-number">0h</div>
-                <div class="stat-change">
-                    📈 +0h this week
-                </div>
+                <div class="stat-value" id="revenue">$0</div>
+                <div class="stat-change neutral" id="revenueChange">No revenue yet</div>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-header">
-                    <span class="stat-title">Viral Clips</span>
-                    <span class="stat-icon">🚀</span>
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div class="card-icon icon-platforms">🔗</div>
+                    <div class="card-title">Connected Platforms</div>
                 </div>
-                <div class="stat-number">0</div>
-                <div class="stat-change">
-                    📈 +0 this week
+                <div class="stat-value" id="connectedPlatforms">0</div>
+                <div class="platforms-status">
+                    <div class="platform-status">
+                        <div class="platform-icon twitch">T</div>
+                        <div class="platform-name">Twitch</div>
+                        <div class="connection-status disconnected" id="twitch-status">Not Connected</div>
+                    </div>
+                    <div class="platform-status">
+                        <div class="platform-icon youtube">Y</div>
+                        <div class="platform-name">YouTube</div>
+                        <div class="connection-status disconnected" id="youtube-status">Not Connected</div>
+                    </div>
+                    <div class="platform-status">
+                        <div class="platform-icon instagram">I</div>
+                        <div class="platform-name">Instagram</div>
+                        <div class="connection-status disconnected" id="instagram-status">Not Connected</div>
+                    </div>
+                    <div class="platform-status">
+                        <div class="platform-icon tiktok">T</div>
+                        <div class="platform-name">TikTok</div>
+                        <div class="connection-status disconnected" id="tiktok-status">Not Connected</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Streaming Status -->
-        <div class="streaming-section">
-            <div class="section-header">
-                <h2 class="section-title">
-                    🎮 Streaming Status
-                </h2>
-                <div class="status-indicator">
-                    <div class="status-dot"></div>
-                    Offline
-                </div>
-            </div>
-
-            <div class="platforms-grid">
-                <div class="platform-card">
-                    <div class="platform-icon twitch">T</div>
-                    <div class="platform-name">Twitch</div>
-                    <div class="platform-status">Not Connected</div>
-                </div>
-
-                <div class="platform-card">
-                    <div class="platform-icon youtube">Y</div>
-                    <div class="platform-name">YouTube</div>
-                    <div class="platform-status">Not Connected</div>
-                </div>
-
-                <div class="platform-card">
-                    <div class="platform-icon instagram">I</div>
-                    <div class="platform-name">Instagram</div>
-                    <div class="platform-status">Not Connected</div>
-                </div>
-
-                <div class="platform-card">
-                    <div class="platform-icon tiktok">T</div>
-                    <div class="platform-name">TikTok</div>
-                    <div class="platform-status">Not Connected</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
         <div class="actions-section">
-            <div class="section-header">
-                <h2 class="section-title">⚡ Quick Actions</h2>
-            </div>
-
+            <div class="section-title">Quick Actions</div>
             <div class="actions-grid">
                 <a href="/onboarding.html" class="action-btn">
                     🔗 Connect Platforms
                 </a>
-                <button class="action-btn secondary" onclick="startStreaming()">
-                    🎥 Go Live
-                </button>
-                <a href="/onboarding.html" class="action-btn secondary">
+                <a href="/onboarding.html?step=ai-settings" class="action-btn">
                     🤖 AI Settings
                 </a>
-                <button class="action-btn secondary" onclick="showAnalytics()">
+                <button class="action-btn secondary" onclick="startStream()">
+                    📹 Start Stream
+                </button>
+                <button class="action-btn secondary" onclick="viewAnalytics()">
                     📊 View Analytics
                 </button>
+                <button class="action-btn secondary" onclick="manageContent()">
+                    📝 Manage Content
+                </button>
+                <a href="/admin.html" class="action-btn secondary">
+                    ⚙️ Admin Panel
+                </a>
             </div>
         </div>
     </div>
 
+    <!-- Toast notification container -->
+    <div id="toast" class="toast"></div>
+
     <script>
-        // Initialize Supabase with YOUR actual credentials
-        const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co'; // Your working Supabase URL
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg'; // Your actual anon key
+        // Initialize Supabase with your actual credentials
+        const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
+        
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Check authentication and load user data
-        async function initializeDashboard() {
+        // Check authentication and load dashboard
+        async function loadDashboard() {
             try {
                 // Check if user is authenticated
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                const { data: { user }, error: authError } = await supabase.auth.getUser();
                 
-                if (sessionError) {
-                    console.error('Session error:', sessionError);
-                    redirectToLogin();
+                if (authError || !user) {
+                    console.log('User not authenticated, redirecting to login');
+                    window.location.href = '/login.html';
                     return;
                 }
-                
-                if (!session) {
-                    console.log('No active session, redirecting to login');
-                    redirectToLogin();
-                    return;
-                }
-                
-                // User is authenticated, load their data
-                const user = session.user;
-                console.log('Authenticated user:', user);
-                
-                // Update UI with user info
-                updateUserProfile(user);
-                
-                // Load dashboard data
-                await loadDashboardStats(user.id);
-                await loadStreamingStatus(user.id);
-                
-                // Start periodic updates
-                startPeriodicUpdates(user.id);
-                
+
+                // Display user email
+                document.getElementById('userEmail').textContent = user.email;
+
+                // Load user data and platform connections
+                await loadUserStats();
+                await loadPlatformConnections();
+
             } catch (error) {
-                console.error('Dashboard initialization error:', error);
-                showError('Failed to load dashboard. Please try refreshing the page.');
+                console.error('Dashboard loading error:', error);
+                showToast('Failed to load dashboard data', 'error');
             }
-        }
-        
-        function redirectToLogin() {
-            window.location.href = '/login.html';
-        }
-        
-        function updateUserProfile(user) {
-            // Update user email in UI
-            const userEmailElement = document.querySelector('.user-email, .user-info');
-            if (userEmailElement) {
-                userEmailElement.textContent = user.email;
-            }
-            
-            // Update any other user-specific UI elements
-            document.title = `Dashboard - ${user.email} - AutoStreamPro`;
-        }
-        
-        function showError(message) {
-            // Create or update error message
-            let errorContainer = document.getElementById('error-container');
-            if (!errorContainer) {
-                errorContainer = document.createElement('div');
-                errorContainer.id = 'error-container';
-                errorContainer.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    background: #fee2e2;
-                    color: #dc2626;
-                    padding: 1rem;
-                    border-radius: 8px;
-                    border: 1px solid #fecaca;
-                    z-index: 1000;
-                    max-width: 400px;
-                `;
-                document.body.appendChild(errorContainer);
-            }
-            
-            errorContainer.innerHTML = `
-                <strong>Error:</strong> ${message}
-                <button onclick="this.parentElement.remove()" style="margin-left: 10px; background: none; border: none; color: #dc2626; cursor: pointer;">×</button>
-            `;
-            
-            // Auto-remove after 5 seconds
-            setTimeout(() => {
-                if (errorContainer.parentElement) {
-                    errorContainer.remove();
-                }
-            }, 5000);
         }
 
-        // Load dashboard statistics with better error handling
-        async function loadDashboardStats(userId) {
+        // Load user stats from database
+        async function loadUserStats() {
             try {
-                // Initialize with default values
-                let totalClips = 0;
-                let totalViews = 0;
-                let streamTime = '0h';
-                let viralClips = 0;
+                // For now, display default values since we don't have streaming data yet
+                document.getElementById('activeStreams').textContent = '0';
+                document.getElementById('totalViews').textContent = '0';
+                document.getElementById('revenue').textContent = '$0';
                 
-                // Try to load real data from database
-                if (window.supabase && userId) {
-                    try {
-                        // Load clips data
-                        const { data: clips, error: clipsError } = await supabase
-                            .from('clips')
-                            .select('*')
-                            .eq('user_id', userId);
-                        
-                        if (!clipsError && clips) {
-                            totalClips = clips.length;
-                            totalViews = clips.reduce((sum, clip) => sum + (clip.views || 0), 0);
-                            viralClips = clips.filter(clip => (clip.views || 0) > 10000).length;
-                        }
-                        
-                        // Load stream time data
-                        const { data: streamData, error: streamError } = await supabase
-                            .from('user_activity')
-                            .select('total_stream_time')
-                            .eq('user_id', userId)
-                            .single();
-                        
-                        if (!streamError && streamData && streamData.total_stream_time) {
-                            streamTime = formatStreamTime(streamData.total_stream_time);
-                        }
-                        
-                    } catch (dbError) {
-                        console.log('Database not fully configured yet, using default values');
-                    }
-                }
-                
-                // Update UI with data (real or default)
-                updateStatsUI({
-                    totalClips,
-                    totalViews, 
-                    streamTime,
-                    viralClips
-                });
-                
+                // Update change indicators
+                document.getElementById('streamsChange').textContent = 'No active streams';
+                document.getElementById('viewsChange').textContent = 'Start streaming to track views';
+                document.getElementById('revenueChange').textContent = 'No revenue yet';
+
             } catch (error) {
-                console.error('Error loading dashboard stats:', error);
-                // Still show UI with default values
-                updateStatsUI({
-                    totalClips: 0,
-                    totalViews: 0,
-                    streamTime: '0h',
-                    viralClips: 0
-                });
+                console.error('Error loading user stats:', error);
+                // Don't show error toast for stats - just use defaults
             }
         }
-        
-        function updateStatsUI(stats) {
-            // Update total clips
-            const clipsElement = document.querySelector('.stat-card:nth-child(1) .stat-number');
-            if (clipsElement) clipsElement.textContent = stats.totalClips;
-            
-            // Update total views  
-            const viewsElement = document.querySelector('.stat-card:nth-child(2) .stat-number');
-            if (viewsElement) viewsElement.textContent = stats.totalViews.toLocaleString();
-            
-            // Update stream time
-            const timeElement = document.querySelector('.stat-card:nth-child(3) .stat-number');
-            if (timeElement) timeElement.textContent = stats.streamTime;
-            
-            // Update viral clips
-            const viralElement = document.querySelector('.stat-card:nth-child(4) .stat-number');
-            if (viralElement) viralElement.textContent = stats.viralClips;
-        }
-        
-        function formatStreamTime(minutes) {
-            if (!minutes || minutes < 60) return '0h';
-            const hours = Math.floor(minutes / 60);
-            return `${hours}h`;
-        }
 
-        // Load streaming status and platform connections
-        async function loadStreamingStatus(userId) {
+        // Load platform connections
+        async function loadPlatformConnections() {
             try {
-                if (!window.supabase || !userId) return;
-                
-                // Load platform connections
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+
+                // Check if platform_connections table exists and get connections
                 const { data: connections, error } = await supabase
                     .from('platform_connections')
                     .select('platform_name, status')
-                    .eq('user_id', userId);
-                
-                if (!error && connections) {
-                    updatePlatformStatus(connections);
+                    .eq('user_id', user.id);
+
+                if (error && error.code === '42P01') {
+                    // Table doesn't exist yet - that's okay
+                    console.log('Platform connections table not set up yet');
+                    return;
                 }
-                
+
+                if (error) {
+                    throw error;
+                }
+
+                // Update platform status
+                const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
+                let connectedCount = 0;
+
+                platforms.forEach(platform => {
+                    const connection = connections?.find(c => c.platform_name === platform);
+                    const statusElement = document.getElementById(`${platform}-status`);
+                    
+                    if (connection && connection.status === 'connected') {
+                        statusElement.textContent = 'Connected';
+                        statusElement.className = 'connection-status connected';
+                        connectedCount++;
+                    } else {
+                        statusElement.textContent = 'Not Connected';
+                        statusElement.className = 'connection-status disconnected';
+                    }
+                });
+
+                // Update connected platforms count
+                document.getElementById('connectedPlatforms').textContent = connectedCount;
+
             } catch (error) {
-                console.log('Platform connections not configured yet');
+                console.error('Error loading platform connections:', error);
+                // Don't show error toast - platform connections are optional
             }
         }
 
-        function updatePlatformStatus(connections) {
-            const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
-            
-            platforms.forEach(platform => {
-                const connection = connections.find(c => c.platform_name === platform);
-                const statusElement = document.querySelector(`.platform-icon.${platform}`).parentElement.querySelector('.platform-status');
-                
-                if (connection && connection.status === 'connected') {
-                    statusElement.textContent = 'Connected';
-                    statusElement.classList.add('connected');
-                }
-            });
-        }
-
-        // Periodic updates
-        function startPeriodicUpdates(userId) {
-            // Update stats every 30 seconds
-            setInterval(() => {
-                loadDashboardStats(userId);
-                loadStreamingStatus(userId);
-            }, 30000);
-        }
-
-        // Action functions
-        function startStreaming() {
-            alert('Streaming feature coming soon! Connect your platforms first.');
-        }
-
-        function showAnalytics() {
-            alert('Analytics feature coming soon!');
-        }
-
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Dashboard loading...');
-            initializeDashboard();
-        });
-        
-        // Handle auth state changes
-        if (window.supabase) {
-            supabase.auth.onAuthStateChange((event, session) => {
-                console.log('Auth state changed:', event, session);
-                
-                if (event === 'SIGNED_OUT' || !session) {
-                    console.log('User signed out, redirecting to login');
-                    window.location.href = '/login.html';
-                } else if (event === 'SIGNED_IN' && session) {
-                    console.log('User signed in, refreshing dashboard');
-                    initializeDashboard();
-                }
-            });
-        }
-        
         // Sign out function
-        window.signOut = async function() {
+        async function signOut() {
             try {
                 const { error } = await supabase.auth.signOut();
                 if (error) throw error;
+                
                 window.location.href = '/login.html';
             } catch (error) {
                 console.error('Sign out error:', error);
-                // Force redirect anyway
+                showToast('Failed to sign out', 'error');
+            }
+        }
+
+        // Quick action functions
+        function startStream() {
+            showToast('Streaming feature coming soon!', 'success');
+        }
+
+        function viewAnalytics() {
+            showToast('Analytics feature coming soon!', 'success');
+        }
+
+        function manageContent() {
+            showToast('Content management feature coming soon!', 'success');
+        }
+
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3000);
+        }
+
+        // Refresh data periodically
+        function refreshDashboard() {
+            loadUserStats();
+            loadPlatformConnections();
+        }
+
+        // Initialize dashboard on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+            
+            // Refresh data every 30 seconds
+            setInterval(refreshDashboard, 30000);
+        });
+
+        // Handle authentication state changes
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT') {
                 window.location.href = '/login.html';
             }
-        };
+        });
     </script>
 </body>
 </html>
