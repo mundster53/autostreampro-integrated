@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoStreamPro - Set Up Your Streams v2.17</title>
-    <!-- onboarding.html Version 2.17: REVERTED to Working onclick Handlers - Event Listeners Were Broken -->
+    <title>AutoStreamPro - Set Up Your Streams v2.18</title>
+    <!-- onboarding.html Version 2.18: Fixed Twitch Client ID - Hardcoded to Eliminate Variable Issues -->
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -469,8 +469,10 @@
         // Platform connection functions
         function connectTwitch() {
             console.log('Connecting to Twitch...');
+            console.log('Twitch Client ID:', 'nnhwtwu8zixqcdgv0kzkjtzqrmh0ye');
             
-            const twitchAuthUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=https://autostreampro.com/auth/twitch.html&response_type=code&scope=user:read:email+clips:edit+videos:edit`;
+            const twitchAuthUrl = `https://id.twitch.tv/oauth2/authorize?client_id=nnhwtwu8zixqcdgv0kzkjtzqrmh0ye&redirect_uri=https://autostreampro.com/auth/twitch.html&response_type=code&scope=user:read:email+clips:edit+videos:edit`;
+            console.log('Twitch Auth URL:', twitchAuthUrl);
             window.location.href = twitchAuthUrl;
         }
 
