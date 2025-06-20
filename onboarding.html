@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoStreamPro - Set Up Your Streams v2.15</title>
-    <!-- onboarding.html Version 2.15: Fixed CSP Issues - Converted All onclick to Event Listeners -->
+    <title>AutoStreamPro - Set Up Your Streams v2.16</title>
+    <!-- onboarding.html Version 2.16: Fixed Event Listener Selectors for Platform Buttons -->
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -751,9 +751,9 @@
             // Add event listeners to replace onclick handlers (CSP compliance)
             
             // Platform connection buttons
-            document.querySelector('[data-platform="twitch"] .connect-btn').addEventListener('click', connectTwitch);
-            document.querySelector('[data-platform="youtube"] .connect-btn').addEventListener('click', connectYoutube);
-            document.querySelector('[data-platform="instagram"] .connect-btn').addEventListener('click', connectInstagram);
+            document.querySelector('button[data-platform="twitch"]').addEventListener('click', connectTwitch);
+            document.querySelector('button[data-platform="youtube"]').addEventListener('click', connectYoutube);
+            document.querySelector('button[data-platform="instagram"]').addEventListener('click', connectInstagram);
             
             // Navigation buttons
             document.getElementById('step1-next').addEventListener('click', nextStep);
