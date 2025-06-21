@@ -498,7 +498,7 @@
         function connectTwitter() {
             console.log('Connecting to Twitter/X...');
             
-            const twitterAuthUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${twitterClientId}&redirect_uri=https://autostreampro.com/auth/twitter.html&scope=tweet.read%20users.read%20offline.access&state=twitter`;
+            const twitterAuthUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${twitterClientId}&redirect_uri=https://autostreampro.com/onboarding.html&scope=tweet.read%20users.read%20offline.access&state=twitter`;
             window.location.href = twitterAuthUrl;
         }
 
