@@ -1,0 +1,6 @@
+<script>
+const code = new URLSearchParams(window.location.search).get('code');
+window.location.href = code ? 
+  `/onboarding.html?code=${code}&state=twitch` : 
+  '/onboarding.html?error=twitch_failed';
+</script>
