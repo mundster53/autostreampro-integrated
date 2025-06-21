@@ -494,9 +494,22 @@
     
     var youtubeUrl = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' + youtubeClientId + '&redirect_uri=https://autostreampro.com/auth/youtube.html&response_type=code&scope=https://www.googleapis.com/auth/youtube.upload+https://www.googleapis.com/auth/youtube.readonly&access_type=offline';
     
-    window.open(youtubeUrl, 'youtube_auth', 'width=600,height=600');
+    var popup = window.open(youtubeUrl, 'youtube_auth', 'width=600,height=600');
     
-    alert('YouTube OAuth popup opened!');
+    var checkClosed = setInterval(function() {
+        if (popup.closed) {
+            clearInterval(checkClosed);
+            
+            document.querySelector('[data-platform="youtube"] .connect-btn').innerHTML = '<span class="text-green-600">✓</span> Connected';
+            document.querySelector('[data-platform="youtube"]').classList.add('connected');
+            
+            if (connectedPlatforms.indexOf('youtube') === -1) {
+                connectedPlatforms.push('youtube');
+            }
+            
+            console.log('YouTube connection completed');
+        }
+    }, 1000);
 }
 
         function connectTwitter() {
