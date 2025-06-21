@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoStreamPro - Set Up Your Streams v2.13</title>
-    <!-- onboarding.html Version 2.13: Fixed Instagram SDK Loading with Better Error Handling -->
+    <title>AutoStreamPro - Set Up Your Streams v2.19</title>
+    <!-- onboarding.html Version 2.19: FIXED - Corrected Twitch Client ID and Redirect URI -->
     
     <!-- Facebook SDK -->
     <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
@@ -476,14 +476,14 @@
         let connectedPlatforms = [];
 
         // OAuth Configuration
-        const twitchClientId = 'nnhwtwu8zixqcdgv0kzkjtzqrmh0ye';
+        const twitchClientId = 'mzjsqcwxj9mexsa8vaimtzanbe7pll';
         const youtubeClientId = '142278892648-o8i2jlhp1rjh9jrr8dq1r3spg7p3pcn8.apps.googleusercontent.com';
 
         // Platform connection functions
         function connectTwitch() {
             console.log('Connecting to Twitch...');
             
-            const twitchAuthUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=https://autostreampro.com/auth/twitch.html&response_type=code&scope=user:read:email+clips:edit+videos:edit`;
+            const twitchAuthUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=https://autostreampro.com/auth/twitch&response_type=code&scope=user:read:email+clips:edit+videos:edit`;
             window.location.href = twitchAuthUrl;
         }
 
