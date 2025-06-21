@@ -496,11 +496,36 @@
         }
 
         function connectTwitter() {
-            console.log('Connecting to Twitter/X...');
+    console.log('Connecting to Twitter/X...');
+    
+    // Use popup approach like Instagram to avoid CSP issues
+    const twitterAuthUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${twitterClientId}&redirect_uri=https://autostreampro.com/auth/twitter.html&scope=users.read%20tweet.read%20offline.access&state=twitter`;
+    
+    // Open popup like Instagram does
+    const popup = window.open(
+        twitterAuthUrl,
+        'twitter_auth',
+        'width=600,height=600,scrollbars=yes,resizable=yes'
+    );
+    
+    // Monitor popup like Instagram pattern
+    const checkClosed = setInterval(() => {
+        if (popup.closed) {
+            clearInterval(checkClosed);
             
-            const twitterAuthUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${twitterClientId}&redirect_uri=https://autostreampro.com/auth/twitter.html&scope=users.read%20tweet.read%20offline.access&state=twitter`;
-            window.location.href = twitterAuthUrl;
+            // Mark as connected (same as Instagram approach)
+            document.querySelector('[data-platform="twitter"] .connect-btn').innerHTML = 
+                '<span class="text-green-600">✓</span> Connected';
+            document.querySelector('[data-platform="twitter"]').classList.add('connected');
+            
+            if (!connectedPlatforms.includes('twitter')) {
+                connectedPlatforms.push('twitter');
+            }
+            
+            console.log('Twitter connection attempt completed');
         }
+    }, 1000);
+}
 
         function connectInstagram() {
             console.log('Instagram connect clicked');
