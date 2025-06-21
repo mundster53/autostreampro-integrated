@@ -489,23 +489,7 @@
         }
 
         function connectYoutube() {
-    console.log('Connecting to YouTube...');
-    
-    const youtubeAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${youtubeClientId}&redirect_uri=https://autostreampro.com/auth/youtube.html&response_type=code&scope=https://www.googleapis.com/auth/youtube.upload+https://www.googleapis.com/auth/youtube.readonly&access_type=offline`;
-    
-    const popup = window.open(youtubeAuthUrl, 'youtube_auth', 'width=600,height=600,scrollbars=yes,resizable=yes');
-    
-    const checkClosed = setInterval(() => {
-        if (popup.closed) {
-            clearInterval(checkClosed);
-            document.querySelector('[data-platform="youtube"] .connect-btn').innerHTML = '<span class="text-green-600">✓</span> Connected';
-            document.querySelector('[data-platform="youtube"]').classList.add('connected');
-            if (!connectedPlatforms.includes('youtube')) {
-                connectedPlatforms.push('youtube');
-            }
-            console.log('YouTube connection attempt completed');
-        }
-    }, 1000);
+    alert('YouTube works!');
 }
     
     // Monitor popup like Instagram/Twitter pattern
