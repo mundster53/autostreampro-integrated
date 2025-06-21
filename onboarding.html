@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoStreamPro - Set Up Your Streams v2.24</title>
-    <!-- onboarding.html Version 2.24: Added Twitter/X Connection (Instagram & Twitch Protected) -->
+    <title>AutoStreamPro - Set Up Your Streams v2.25</title>
+    <!-- onboarding.html Version 2.25: Fixed Twitter OAuth URL (Instagram & Twitch Protected) -->
     
     <!-- Facebook SDK -->
     <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
@@ -498,7 +498,7 @@
         function connectTwitter() {
             console.log('Connecting to Twitter/X...');
             
-            const twitterAuthUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${twitterClientId}&redirect_uri=https://autostreampro.com/auth/twitter.html&scope=tweet.read%20tweet.write%20users.read%20offline.access&state=twitter&code_challenge=challenge&code_challenge_method=plain`;
+            const twitterAuthUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${twitterClientId}&redirect_uri=https://autostreampro.com/auth/twitter.html&scope=tweet.read%20users.read%20offline.access&state=twitter`;
             window.location.href = twitterAuthUrl;
         }
 
