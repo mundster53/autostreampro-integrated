@@ -471,26 +471,48 @@
         }
 
         // Load platform connections
-        async function loadPlatformConnections() {
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return;
+async function loadPlatformConnections() {
+    try {
+        // Check platform_connections table with the same structure as onboarding
+        const { data: connections, error } = await supabase
+            .from('platform_connections')
+            .select('platform')
+            .eq('user_id', 'test-user'); // Use same user_id as onboarding
 
-                // Check if platform_connections table exists and get connections
-                const { data: connections, error } = await supabase
-                    .from('platform_connections')
-                    .select('platform_name, status')
-                    .eq('user_id', user.id);
+        if (error && error.code === '42P01') {
+            console.log('Platform connections table not set up yet');
+            return;
+        }
 
-                if (error && error.code === '42P01') {
-                    // Table doesn't exist yet - that's okay
-                    console.log('Platform connections table not set up yet');
-                    return;
-                }
+        if (error) {
+            throw error;
+        }
 
-                if (error) {
-                    throw error;
-                }
+        // Update platform status
+        const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
+        let connectedCount = 0;
+
+        platforms.forEach(platform => {
+            const connection = connections?.find(c => c.platform === platform);
+            const statusElement = document.getElementById(`${platform}-status`);
+            
+            if (connection) {
+                statusElement.textContent = 'Connected';
+                statusElement.className = 'connection-status connected';
+                connectedCount++;
+            } else {
+                statusElement.textContent = 'Not Connected';
+                statusElement.className = 'connection-status disconnected';
+            }
+        });
+
+        // Update connected platforms count
+        document.getElementById('connectedPlatforms').textContent = connectedCount;
+
+    } catch (error) {
+        console.error('Error loading platform connections:', error);
+    }
+}
 
                 // Update platform status
                 const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
