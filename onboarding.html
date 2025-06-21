@@ -489,19 +489,10 @@
         }
 
         function connectYoutube() {
-    console.log('Connecting to YouTube...');
-    
-    const youtubeAuthUrl = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' + youtubeClientId + '&redirect_uri=https://autostreampro.com/auth/youtube.html&response_type=code&scope=https://www.googleapis.com/auth/youtube.upload+https://www.googleapis.com/auth/youtube.readonly&access_type=offline';
-    
-    const popup = window.open(youtubeAuthUrl, 'youtube_auth', 'width=600,height=600');
-    
-    setTimeout(function() {
-        if (popup.closed) {
-            document.querySelector('[data-platform="youtube"] .connect-btn').innerHTML = '<span class="text-green-600">✓</span> Connected';
-            document.querySelector('[data-platform="youtube"]').classList.add('connected');
-            console.log('YouTube connection completed');
-        }
-    }, 3000);
+    console.log('YouTube clicked');
+    console.log('Client ID:', youtubeClientId);
+    alert('YouTube function works!');
+}
 
         function connectTwitter() {
     console.log('Connecting to Twitter/X...');
