@@ -492,9 +492,11 @@
     console.log('YouTube clicked');
     console.log('Client ID:', youtubeClientId);
     
-    window.open('https://google.com', 'test', 'width=600,height=600');
+    var youtubeUrl = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' + youtubeClientId + '&redirect_uri=https://autostreampro.com/auth/youtube.html&response_type=code&scope=https://www.googleapis.com/auth/youtube.upload+https://www.googleapis.com/auth/youtube.readonly&access_type=offline';
     
-    alert('YouTube function works!');
+    window.open(youtubeUrl, 'youtube_auth', 'width=600,height=600');
+    
+    alert('YouTube OAuth popup opened!');
 }
 
         function connectTwitter() {
