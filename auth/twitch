@@ -1,32 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Connecting Twitch...</title>
-    <style>
-        body { font-family: Arial; text-align: center; padding: 50px; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #9146ff; 
-                   border-radius: 50%; width: 40px; height: 40px; 
-                   animation: spin 1s linear infinite; margin: 20px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
-</head>
-<body>
-    <h2>🎮 Connecting Twitch...</h2>
-    <div class="spinner"></div>
-    <p>Processing authorization...</p>
-    
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        const error = urlParams.get('error');
-        
-        if (error) {
-            window.location.href = `/onboarding.html?error=twitch_${error}`;
-        } else if (code) {
-            window.location.href = `/onboarding.html?code=${code}&state=twitch`;
-        } else {
-            window.location.href = `/onboarding.html?error=twitch_no_code`;
-        }
-    </script>
-</body>
-</html>
+<script>
+const code = new URLSearchParams(window.location.search).get('code');
+if (code) {
+    window.location.href = `/onboarding.html?code=${code}&state=twitch`;
+} else {
+    window.location.href = '/onboarding.html?error=twitch_failed';
+}
+</script>
