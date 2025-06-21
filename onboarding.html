@@ -489,10 +489,19 @@
         }
 
         function connectYoutube() {
-    console.log('YouTube clicked');
+    console.log('Connecting to YouTube...');
     console.log('Client ID:', youtubeClientId);
-    alert('YouTube function works!');
-}
+    
+    // Test popup first
+    var popup = window.open('https://google.com', 'test_popup', 'width=600,height=600');
+    
+    if (popup) {
+        console.log('Popup opened successfully');
+        alert('Popup test worked!');
+    } else {
+        console.log('Popup blocked');
+        alert('Popup was blocked');
+    }
 
         function connectTwitter() {
     console.log('Connecting to Twitter/X...');
