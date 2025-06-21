@@ -491,7 +491,6 @@
         function connectYoutube() {
     console.log('Connecting to YouTube...');
     
-    // Use popup approach like Instagram/Twitter (proven to work)
     const youtubeAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${youtubeClientId}&redirect_uri=https://autostreampro.com/auth/youtube.html&response_type=code&scope=https://www.googleapis.com/auth/youtube.upload+https://www.googleapis.com/auth/youtube.readonly&access_type=offline`;
     
     const popup = window.open(youtubeAuthUrl, 'youtube_auth', 'width=600,height=600,scrollbars=yes,resizable=yes');
