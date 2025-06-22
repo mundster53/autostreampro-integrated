@@ -475,82 +475,86 @@
             }
         }
 
-        // DEBUG VERSION - Load platform connections
-        async function loadPlatformConnections() {
-            console.log('🔍 Starting debug of platform connections...');
+        // SAFE VERSION - Load platform connections
+async function loadPlatformConnections() {
+    console.log('🔍 Loading platform connections (safe mode)...');
+    
+    try {
+        // Try to read from dashboard database (if table exists)
+        const { data, error } = await supabase
+            .from('user_platforms')
+            .select('*')
+            .eq('user_id', 'test-user');
+
+        let connectedCount = 0;
+        const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
+
+        if (!error && data && data.length > 0) {
+            // If we have data in dashboard database, use it
+            console.log('✅ Found platform data in dashboard database:', data);
             
-            try {
-                // First, let's see if the connection works at all
-                console.log('✅ Platforms database client created');
+            platforms.forEach(platform => {
+                const isConnected = data.some(connection => 
+                    connection.platform === platform && connection.connected === true
+                );
                 
-                // Let's try to see what tables exist
-                console.log('📋 Checking what tables exist...');
+                const statusElement = document.getElementById(`${platform}-status`);
                 
-                // Let's try different possible table names
-                const possibleTables = ['user_platforms', 'platforms', 'connections', 'platform_connections'];
-                
-                for (const tableName of possibleTables) {
-                    console.log(`🔍 Trying table: ${tableName}`);
-                    try {
-                        const { data, error, count } = await supabasePlatforms
-                            .from(tableName)
-                            .select('*', { count: 'exact' });
-                        
-                        if (!error) {
-                            console.log(`✅ Found table "${tableName}" with ${count} rows:`, data);
-                            
-                            // If we find data, let's see the structure
-                            if (data && data.length > 0) {
-                                console.log(`📊 Sample data from ${tableName}:`, JSON.stringify(data[0], null, 2));
-                            }
-                        } else {
-                            console.log(`❌ Table "${tableName}" error:`, error.message);
-                        }
-                    } catch (e) {
-                        console.log(`❌ Exception for table "${tableName}":`, e.message);
+                if (isConnected) {
+                    if (statusElement) {
+                        statusElement.textContent = 'Connected';
+                        statusElement.className = 'connection-status connected';
+                        connectedCount++;
                     }
-                }
-                
-                // Let's also try to see what user_ids exist
-                console.log('👤 Checking for user data...');
-                try {
-                    const { data: userData, error: userError } = await supabasePlatforms
-                        .from('user_platforms')
-                        .select('user_id')
-                        .limit(10);
-                        
-                    if (!userError && userData) {
-                        console.log('👤 Found these user_ids:', userData.map(u => u.user_id));
-                    }
-                } catch (e) {
-                    console.log('👤 Could not check user_ids:', e.message);
-                }
-                
-                // Now let's try the original query
-                console.log('🎯 Trying original query with user_id: test-user');
-                const { data, error } = await supabasePlatforms
-                    .from('user_platforms')
-                    .select('*')
-                    .eq('user_id', 'test-user');
-
-                if (error) {
-                    console.error('❌ Original query error:', error);
                 } else {
-                    console.log('✅ Original query result:', data);
-                }
-
-                // For now, show all as disconnected until we get the debug info
-                const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
-                let connectedCount = 0;
-
-                platforms.forEach(platform => {
-                    const statusElement = document.getElementById(`${platform}-status`);
                     if (statusElement) {
                         statusElement.textContent = 'Not Connected';
                         statusElement.className = 'connection-status disconnected';
                     }
-                });
+                }
+            });
+        } else {
+            // If no data or table doesn't exist, show helpful message
+            console.log('ℹ️ No platform data found in dashboard database');
+            
+            platforms.forEach(platform => {
+                const statusElement = document.getElementById(`${platform}-status`);
+                if (statusElement) {
+                    statusElement.textContent = 'Visit Setup';
+                    statusElement.className = 'connection-status disconnected';
+                }
+            });
+            
+            // Add a helpful message
+            const platformsCard = document.querySelector('#connectedPlatforms').closest('.dashboard-card');
+            if (platformsCard && !document.getElementById('platform-help-message')) {
+                const helpMessage = document.createElement('div');
+                helpMessage.id = 'platform-help-message';
+                helpMessage.style.cssText = 'font-size: 0.8rem; color: #6b7280; margin-top: 1rem; text-align: center;';
+                helpMessage.innerHTML = '💡 Connect platforms via <a href="/onboarding.html" style="color: #3b82f6;">Setup</a> to see status here';
+                platformsCard.appendChild(helpMessage);
+            }
+        }
 
+        // Update connected platforms count
+        document.getElementById('connectedPlatforms').textContent = connectedCount;
+
+    } catch (error) {
+        console.log('ℹ️ Platform status unavailable:', error.message);
+        
+        // Show friendly fallback
+        const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
+        platforms.forEach(platform => {
+            const statusElement = document.getElementById(`${platform}-status`);
+            if (statusElement) {
+                statusElement.textContent = 'Check Setup';
+                statusElement.className = 'connection-status disconnected';
+            }
+        });
+        
+        document.getElementById('connectedPlatforms').textContent = '?';
+    }
+}
                 // Update connected platforms count
                 document.getElementById('connectedPlatforms').textContent = connectedCount;
 
