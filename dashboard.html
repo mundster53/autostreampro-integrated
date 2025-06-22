@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const { data, error } = await supabase
             .from('platform_connections')
             .select('*')
-            .eq('user_id', 'test-user');
+            .eq('user_id', '99f0c4bb-9016-409e-83ef-2c827c27b63d');
         
         if (!error && data && data.length > 0) {
             console.log('Found real platform data:', data);
@@ -576,7 +576,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             platforms.forEach(platform => {
                 const isConnected = data.some(connection => 
-                    connection.platform === platform && connection.connected === true
+                    connection.platform_name === platform && connection.status === 'connected'
                 );
                 
                 const statusElement = document.getElementById(`${platform}-status`);
