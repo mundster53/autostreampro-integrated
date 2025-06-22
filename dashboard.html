@@ -556,5 +556,29 @@
             }
         });
     </script>
+    <script>
+// Simple fix that runs immediately
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Simple script running...');
+    
+    // Change platform status texts
+    document.getElementById('twitch-status').textContent = 'Visit Setup';
+    document.getElementById('youtube-status').textContent = 'Visit Setup'; 
+    document.getElementById('instagram-status').textContent = 'Visit Setup';
+    document.getElementById('tiktok-status').textContent = 'Visit Setup';
+    
+    // Add helpful message
+    const platformsCard = document.querySelector('#connectedPlatforms').closest('.dashboard-card');
+    if (platformsCard) {
+        const helpMessage = document.createElement('div');
+        helpMessage.innerHTML = '💡 <a href="/onboarding.html" style="color: #3b82f6;">Connect platforms here</a>';
+        helpMessage.style.cssText = 'text-align: center; margin-top: 10px; font-size: 0.9rem;';
+        platformsCard.appendChild(helpMessage);
+    }
+    
+    console.log('Platform status updated to Visit Setup');
+});
+</script>
+</body>
 </body>
 </html>
