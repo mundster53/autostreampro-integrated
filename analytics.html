@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoStreamPro - Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #64748b;
+        }
+
+        .breadcrumb a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .analytics-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .analytics-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .analytics-subtitle {
+            color: #64748b;
+            font-size: 1rem;
+        }
+
+        .date-selector {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .date-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .date-btn.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .date-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .date-btn.active:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .metric-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .icon-views { background: linear-gradient(135deg, #10b981, #059669); }
+        .icon-engagement { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .icon-revenue { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .icon-growth { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-change {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .change-positive { color: #10b981; }
+        .change-negative { color: #ef4444; }
+        .change-neutral { color: #6b7280; }
+
+        .charts-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+        }
+
+        .platform-analytics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .platform-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .platform-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .platform-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .twitch { background: #9146ff; }
+        .youtube { background: #ff0000; }
+        .instagram { background: #e4405f; }
+        .twitter { background: #1da1f2; }
+
+        .platform-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .platform-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .platform-stat {
+            text-align: center;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .platform-stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .platform-stat-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        .content-performance {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .content-table th,
+        .content-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .content-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .content-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .performance-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .badge-excellent { background: #dcfce7; color: #166534; }
+        .badge-good { background: #dbeafe; color: #1e40af; }
+        .badge-average { background: #fef3c7; color: #92400e; }
+        .badge-poor { background: #fee2e2; color: #991b1b; }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .platform-analytics {
+                grid-template-columns: 1fr;
+            }
+
+            .date-selector {
+                flex-wrap: wrap;
+            }
+
+            .analytics-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: #64748b;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #64748b;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="logo">📊 AutoStreamPro Analytics</div>
+                <div class="breadcrumb">
+                    <a href="/dashboard.html">Dashboard</a>
+                    <span>/</span>
+                    <span>Analytics</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="analytics-header">
+            <div class="analytics-title">Stream Performance Analytics</div>
+            <div class="analytics-subtitle">Track your content performance across all connected platforms</div>
+            
+            <div class="date-selector">
+                <button class="date-btn active" onclick="setDateRange('7d')">Last 7 Days</button>
+                <button class="date-btn" onclick="setDateRange('30d')">Last 30 Days</button>
+                <button class="date-btn" onclick="setDateRange('90d')">Last 90 Days</button>
+                <button class="date-btn" onclick="setDateRange('1y')">Last Year</button>
+            </div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-title">Total Views</div>
+                    <div class="metric-icon icon-views">👁️</div>
+                </div>
+                <div class="metric-value" id="totalViews">0</div>
+                <div class="metric-change change-neutral" id="viewsChange">
+                    <span>📈</span>
+                    <span>No data yet</span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-title">Engagement Rate</div>
+                    <div class="metric-icon icon-engagement">💬</div>
+                </div>
+                <div class="metric-value" id="engagementRate">0%</div>
+                <div class="metric-change change-neutral" id="engagementChange">
+                    <span>📊</span>
+                    <span>No data yet</span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-title">Revenue Generated</div>
+                    <div class="metric-icon icon-revenue">💰</div>
+                </div>
+                <div class="metric-value" id="revenue">$0</div>
+                <div class="metric-change change-neutral" id="revenueChange">
+                    <span>💵</span>
+                    <span>No revenue yet</span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-title">Follower Growth</div>
+                    <div class="metric-icon icon-growth">📈</div>
+                </div>
+                <div class="metric-value" id="followerGrowth">+0</div>
+                <div class="metric-change change-neutral" id="growthChange">
+                    <span>👥</span>
+                    <span>No data yet</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-section">
+            <div class="chart-card">
+                <div class="chart-title">Views Over Time</div>
+                <canvas id="viewsChart" width="400" height="200"></canvas>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">Platform Distribution</div>
+                <canvas id="platformChart" width="300" height="300"></canvas>
+            </div>
+        </div>
+
+        <div class="platform-analytics">
+            <div class="platform-card">
+                <div class="platform-header">
+                    <div class="platform-icon twitch">T</div>
+                    <div class="platform-name">Twitch</div>
+                </div>
+                <div class="platform-stats">
+                    <div class="platform-stat">
+                        <div class="platform-stat-value" id="twitchViews">0</div>
+                        <div class="platform-stat-label">Views</div>
+                    </div>
+                    <div class="platform-stat">
+                        <div class="platform-stat-value" id="twitchFollowers">0</div>
+                        <div class="platform-stat-label">Followers</div>
+                    </div>
+                    <div class="platform-stat">
+                        <div class="platform-stat-value" id="twitchStreams">0</div>
+                        <div class="platform-stat-label">Streams</div>
+                    </div>
+                    <div class="platform-stat">
+                        <div class="platform-stat-value" id="twitchAvgViewers">0</div>
+                        <div class="platform-stat-label">Avg Viewers</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="platform-card">
+                <div class="platform-header">
+                    <div class="platform-icon youtube">Y</div>
+                    <div class="platform-name">YouTube</div>
+                </div>
+                <div class="platform-stats">
+                    <div class="platform-stat">
+                        <div class="platform-stat-value" id="youtubeViews">0</div>
+                        <div class="platform-stat-label">Views</div>
+                    </div>
+                    <div class="platform-stat">
+                        <div class="platform-stat-value" id="youtubeSubscribers">0</div>
+                        <div class="platform-stat-label">Subscribers</div>
+                    </div>
+                    <div class="platform-stat">
+                        <div class="platform-stat-value" id="youtubeVideos">0</div>
+                        <div class="platform-stat-label">Videos</div>
+                    </div>
+                    <div class="platform-stat">
+                        <div class="platform-stat-value" id="youtubeWatchTime">0h</div>
+                        <div class="platform-stat-label">Watch Time</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="platform-card">
+                <div class="platform-header">
+                    <div class="platform-icon instagram">I</div>
+                    <div class="platform-name">Instagram</div>
+                </div>
+                <div class="platform-stats">
+                    <div class="platform-stat">
+                        <div class="platform-stat-value" id="instagramViews">0</div>
+                        <div class="platform-stat-label">Views</div>
+                    </div>
+                    <div class="platform-stat">
+                        <div class="platform-stat-value" id="instagramFollowers">0</div>
+                        <div class="platform-stat-label">Followers</div>
+                    </div>
+                    <div class="platform-stat">
+                        <div class="platform-stat-value" id="instagramPosts">0</div>
+                        <div class="platform-stat-label">Posts</div>
+                    </div>
+                    <div class="platform-stat">
+                        <div class="platform-stat-value" id="instagramEngagement">0%</div>
+                        <div class="platform-stat-label">Engagement</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="platform-card">
+                <div class="platform-header">
+                    <div class="platform-icon twitter">X</div>
+                    <div class="platform-name">Twitter/X</div>
+                </div>
+                <div class="platform-stats">
+                    <div class="platform-stat">
+                        <div class="platform-stat-value" id="twitterViews">0</div>
+                        <div class="platform-stat-label">Views</div>
+                    </div>
+                    <div class="platform-stat">
+                        <div class="platform-stat-value" id="twitterFollowers">0</div>
+                        <div class="platform-stat-label">Followers</div>
+                    </div>
+                    <div class="platform-stat">
+                        <div class="platform-stat-value" id="twitterTweets">0</div>
+                        <div class="platform-stat-label">Tweets</div>
+                    </div>
+                    <div class="platform-stat">
+                        <div class="platform-stat-value" id="twitterEngagement">0%</div>
+                        <div class="platform-stat-label">Engagement</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-performance">
+            <div class="chart-title">Top Performing Content</div>
+            <table class="content-table">
+                <thead>
+                    <tr>
+                        <th>Content</th>
+                        <th>Platform</th>
+                        <th>Views</th>
+                        <th>Engagement</th>
+                        <th>Performance</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="contentTable">
+                    <tr>
+                        <td colspan="6" class="no-data">
+                            No content data available yet. Start streaming to see analytics!
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        let currentDateRange = '7d';
+        let viewsChart, platformChart;
+
+        // Date range selector
+        function setDateRange(range) {
+            currentDateRange = range;
+            
+            // Update button states
+            document.querySelectorAll('.date-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Reload analytics data
+            loadAnalytics();
+        }
+
+        // Load analytics data
+        async function loadAnalytics() {
+            try {
+                // For now, display sample data since we don't have real stream data yet
+                displaySampleData();
+                
+                // Initialize charts
+                initializeCharts();
+                
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+
+        // Display sample data for demonstration
+        function displaySampleData() {
+            // Sample metrics data
+            const sampleMetrics = {
+                totalViews: { value: '1.2K', change: '+15.3% vs last period', positive: true },
+                engagementRate: { value: '4.8%', change: '+2.1% vs last period', positive: true },
+                revenue: { value: '$127', change: '+$23 vs last period', positive: true },
+                followerGrowth: { value: '+89', change: '+12 vs last period', positive: true }
+            };
+
+            // Update metric cards
+            document.getElementById('totalViews').textContent = sampleMetrics.totalViews.value;
+            document.getElementById('engagementRate').textContent = sampleMetrics.engagementRate.value;
+            document.getElementById('revenue').textContent = sampleMetrics.revenue.value;
+            document.getElementById('followerGrowth').textContent = sampleMetrics.followerGrowth.value;
+
+            // Update platform stats
+            document.getElementById('twitchViews').textContent = '567';
+            document.getElementById('twitchFollowers').textContent = '234';
+            document.getElementById('twitchStreams').textContent = '12';
+            document.getElementById('twitchAvgViewers').textContent = '47';
+
+            document.getElementById('youtubeViews').textContent = '423';
+            document.getElementById('youtubeSubscribers').textContent = '189';
+            document.getElementById('youtubeVideos').textContent = '8';
+            document.getElementById('youtubeWatchTime').textContent = '156h';
+
+            document.getElementById('instagramViews').textContent = '156';
+            document.getElementById('instagramFollowers').textContent = '98';
+            document.getElementById('instagramPosts').textContent = '15';
+            document.getElementById('instagramEngagement').textContent = '6.2%';
+
+            document.getElementById('twitterViews').textContent = '89';
+            document.getElementById('twitterFollowers').textContent = '76';
+            document.getElementById('twitterTweets').textContent = '23';
+            document.getElementById('twitterEngagement').textContent = '3.1%';
+
+            // Update content table with sample data
+            const contentTableBody = document.getElementById('contentTable');
+            contentTableBody.innerHTML = `
+                <tr>
+                    <td>Epic Clutch Play - Valorant</td>
+                    <td>Twitch</td>
+                    <td>1,234</td>
+                    <td>8.9%</td>
+                    <td><span class="performance-badge badge-excellent">Excellent</span></td>
+                    <td>Dec 20, 2024</td>
+                </tr>
+                <tr>
+                    <td>Funny Fail Compilation</td>
+                    <td>YouTube</td>
+                    <td>876</td>
+                    <td>6.7%</td>
+                    <td><span class="performance-badge badge-good">Good</span></td>
+                    <td>Dec 19, 2024</td>
+                </tr>
+                <tr>
+                    <td>Quick Gaming Tips</td>
+                    <td>Instagram</td>
+                    <td>543</td>
+                    <td>4.2%</td>
+                    <td><span class="performance-badge badge-average">Average</span></td>
+                    <td>Dec 18, 2024</td>
+                </tr>
+            `;
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Views over time chart
+            const viewsCtx = document.getElementById('viewsChart').getContext('2d');
+            if (viewsChart) viewsChart.destroy();
+            
+            viewsChart = new Chart(viewsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Dec 14', 'Dec 15', 'Dec 16', 'Dec 17', 'Dec 18', 'Dec 19', 'Dec 20'],
+                    datasets: [{
+                        label: 'Views',
+                        data: [120, 190, 300, 250, 420, 380, 470],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f1f5f9'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Platform distribution chart
+            const platformCtx = document.getElementById('platformChart').getContext('2d');
+            if (platformChart) platformChart.destroy();
+            
+            platformChart = new Chart(platformCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Twitch', 'YouTube', 'Instagram', 'Twitter'],
+                    datasets: [{
+                        data: [40, 30, 20, 10],
+                        backgroundColor: [
+                            '#9146ff',
+                            '#ff0000',
+                            '#e4405f',
+                            '#1da1f2'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Check authentication and load analytics
+        async function initializeAnalytics() {
+            try {
+                const { data: { user }, error } = await supabase.auth.getUser();
+                
+                if (error || !user) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                loadAnalytics();
+
+            } catch (error) {
+                console.error('Analytics initialization error:', error);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initializeAnalytics);
+    </script>
+</body>
+</html>
