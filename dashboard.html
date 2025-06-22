@@ -426,10 +426,6 @@
         
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // NEW connection for platform data (where onboarding saves connections)
-        const platformsUrl = 'https://ksgehuprwrqvmmdngjoj.supabase.co';
-        const platformsKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzZ2VodXByd3Jxdm1tZG5nam9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyMzQxMDYsImV4cCI6MjA0OTgxMDEwNn0.Qr8aaP2VfHYQDHo7FMp6KWs6Jd0-U3y6F4HzKpWqJeI';
-        const supabasePlatforms = window.supabase.createClient(platformsUrl, platformsKey);
 
         // Check authentication and load dashboard
         async function loadDashboard() {
