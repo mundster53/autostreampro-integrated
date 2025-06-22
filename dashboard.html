@@ -563,7 +563,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     try {
         // Try to read actual connection data from dashboard database
         const { data, error } = await supabase
-            .from('user_platforms')
+            .from('platform_connections')
             .select('*')
             .eq('user_id', 'test-user');
         
