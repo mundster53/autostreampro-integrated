@@ -426,7 +426,6 @@
         
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-
         // Check authentication and load dashboard
         async function loadDashboard() {
             try {
@@ -471,76 +470,30 @@
             }
         }
 
-       async function loadPlatformConnections() {
-    console.log('Loading platform connections...');
-    
-    // Since CSP blocks the other database, show helpful message
-    const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
-    
-    platforms.forEach(platform => {
-        const statusElement = document.getElementById(`${platform}-status`);
-        if (statusElement) {
-            statusElement.textContent = 'Visit Setup';
-            statusElement.className = 'connection-status disconnected';
-        }
-    });
-    
-    document.getElementById('connectedPlatforms').textContent = '0';
-    
-    // Add helpful message
-    const platformsCard = document.querySelector('#connectedPlatforms').closest('.dashboard-card');
-    if (platformsCard && !document.getElementById('platform-help-message')) {
-        const helpMessage = document.createElement('div');
-        helpMessage.style.cssText = 'font-size: 0.8rem; color: #6b7280; margin-top: 1rem; text-align: center;';
-        helpMessage.innerHTML = '💡 Connect platforms via <a href="/onboarding.html" style="color: #3b82f6;">Setup</a>';
-        platformsCard.appendChild(helpMessage);
-    }
-}
-
-        // Update connected platforms count
-        document.getElementById('connectedPlatforms').textContent = connectedCount;
-
-    } catch (error) {
-        console.log('ℹ️ Platform status unavailable:', error.message);
-        
-        // Show friendly fallback
-        const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
-        platforms.forEach(platform => {
-            const statusElement = document.getElementById(`${platform}-status`);
-            if (statusElement) {
-                statusElement.textContent = 'Check Setup';
-                statusElement.className = 'connection-status disconnected';
-            }
-        });
-        
-        document.getElementById('connectedPlatforms').textContent = '?';
-    }
-}
-
-        // Update connected platforms count
-        document.getElementById('connectedPlatforms').textContent = connectedCount;
-
-    catch (error) {
-        console.log('ℹ️ Platform status unavailable:', error.message);
-        
-        // Show friendly fallback
-        const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
-        platforms.forEach(platform => {
-            const statusElement = document.getElementById(`${platform}-status`);
-            if (statusElement) {
-                statusElement.textContent = 'Check Setup';
-                statusElement.className = 'connection-status disconnected';
-            }
-        });
-        
-        document.getElementById('connectedPlatforms').textContent = '?';
-    }
-}
-                // Update connected platforms count
-                document.getElementById('connectedPlatforms').textContent = connectedCount;
-
-            } catch (error) {
-                console.error('💥 Major error in loadPlatformConnections:', error);
+        // Load platform connections
+        async function loadPlatformConnections() {
+            console.log('Loading platform connections...');
+            
+            // Show helpful message for all platforms
+            const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
+            
+            platforms.forEach(platform => {
+                const statusElement = document.getElementById(`${platform}-status`);
+                if (statusElement) {
+                    statusElement.textContent = 'Visit Setup';
+                    statusElement.className = 'connection-status disconnected';
+                }
+            });
+            
+            document.getElementById('connectedPlatforms').textContent = '0';
+            
+            // Add helpful message
+            const platformsCard = document.querySelector('#connectedPlatforms').closest('.dashboard-card');
+            if (platformsCard && !document.getElementById('platform-help-message')) {
+                const helpMessage = document.createElement('div');
+                helpMessage.style.cssText = 'font-size: 0.8rem; color: #6b7280; margin-top: 1rem; text-align: center;';
+                helpMessage.innerHTML = '💡 Connect platforms via <a href="/onboarding.html" style="color: #3b82f6;">Setup</a>';
+                platformsCard.appendChild(helpMessage);
             }
         }
 
@@ -589,7 +542,7 @@
 
         // Initialize dashboard on page load
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Page loaded, starting platform connections debug...');
+            console.log('🚀 Dashboard loaded');
             loadDashboard();
             
             // Refresh data every 30 seconds
