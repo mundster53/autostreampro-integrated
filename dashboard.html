@@ -555,7 +555,7 @@ async function loadPlatformConnections() {
         // Update connected platforms count
         document.getElementById('connectedPlatforms').textContent = connectedCount;
 
-    } catch (error) {
+    catch (error) {
         console.log('ℹ️ Platform status unavailable:', error.message);
         
         // Show friendly fallback
