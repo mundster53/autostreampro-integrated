@@ -426,6 +426,10 @@
         
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+        const platformsUrl = 'https://ksgehuprwrqvmmdngjoj.supabase.co';
+const platformsKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzZ2VodXByd3Jxdm1tZG5nam9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyMzQxMDYsImV4cCI6MjA0OTgxMDEwNn0.Qr8aaP2VfHYQDHo7FMp6KWs6Jd0-U3y6F4HzKpWqJeI';
+const supabasePlatforms = window.supabase.createClient(platformsUrl, platformsKey);
+
         // Check authentication and load dashboard
         async function loadDashboard() {
             try {
@@ -473,20 +477,66 @@
         // Load platform connections
 async function loadPlatformConnections() {
     try {
-        // Check platform_connections table with the same structure as onboarding
-        const { data: connections, error } = await supabase
-            .from('platform_connections')
-            .select('platform')
-            .eq('user_id', 'test-user'); // Use same user_id as onboarding
+        // Read from the onboarding database where connections are actually saved
+        const { data, error } = await supabasePlatforms
+            .from('user_platforms')
+            .select('*')
+            .eq('user_id', 'test-user'); // Use the same user_id as onboarding
 
-        if (error && error.code === '42P01') {
-            console.log('Platform connections table not set up yet');
+        if (error) {
+            console.error('Error loading platform connections:', error);
             return;
         }
 
-        if (error) {
-            throw error;
-        }
+        console.log('Platform connections loaded:', data);
+
+        // Update the UI to show connected platforms
+        const platforms = ['twitch', 'instagram', 'twitter', 'youtube'];
+        
+        platforms.forEach(platform => {
+            const isConnected = data && data.some(connection => 
+                connection.platform === platform && connection.connected === true
+            );
+            
+            const button = document.querySelector(`[data-platform="${platform}"]`);
+            const statusElement = document.querySelector(`#${platform}-status`);
+            
+            if (isConnected) {
+                if (button) {
+                    button.textContent = 'Connected';
+                    button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    button.classList.add('bg-green-600', 'hover:bg-green-700');
+                    button.disabled = true;
+                }
+                if (statusElement) {
+                    statusElement.textContent = 'Connected';
+                    statusElement.classList.remove('text-red-500');
+                    statusElement.classList.add('text-green-500');
+                }
+            } else {
+                if (button) {
+                    button.textContent = 'Connect';
+                    button.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    button.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    button.disabled = false;
+                }
+                if (statusElement) {
+                    statusElement.textContent = 'Not Connected';
+                    statusElement.classList.remove('text-green-500');
+                    statusElement.classList.add('text-red-500');
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error in loadPlatformConnections:', error);
+    }
+}
+
+// Call this function when the dashboard loads
+document.addEventListener('DOMContentLoaded', function() {
+    loadPlatformConnections();
+});
 
         // Update platform status
         const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
