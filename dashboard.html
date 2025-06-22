@@ -426,9 +426,10 @@
         
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+        // NEW connection for platform data (where onboarding saves connections)
         const platformsUrl = 'https://ksgehuprwrqvmmdngjoj.supabase.co';
-const platformsKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzZ2VodXByd3Jxdm1tZG5nam9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyMzQxMDYsImV4cCI6MjA0OTgxMDEwNn0.Qr8aaP2VfHYQDHo7FMp6KWs6Jd0-U3y6F4HzKpWqJeI';
-const supabasePlatforms = window.supabase.createClient(platformsUrl, platformsKey);
+        const platformsKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzZ2VodXByd3Jxdm1tZG5nam9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyMzQxMDYsImV4cCI6MjA0OTgxMDEwNn0.Qr8aaP2VfHYQDHo7FMp6KWs6Jd0-U3y6F4HzKpWqJeI';
+        const supabasePlatforms = window.supabase.createClient(platformsUrl, platformsKey);
 
         // Check authentication and load dashboard
         async function loadDashboard() {
@@ -474,168 +475,77 @@ const supabasePlatforms = window.supabase.createClient(platformsUrl, platformsKe
             }
         }
 
-        // TEMPORARY DEBUG VERSION - Replace your loadPlatformConnections function with this
-async function loadPlatformConnections() {
-    console.log('🔍 Starting debug of platform connections...');
-    
-    try {
-        // First, let's see if the connection works at all
-        console.log('✅ Platforms database client created');
-        
-        // Let's try to see what tables exist (this will show us the structure)
-        console.log('📋 Checking what tables exist...');
-        
-        // Let's try different possible table names
-        const possibleTables = ['user_platforms', 'platforms', 'connections', 'platform_connections'];
-        
-        for (const tableName of possibleTables) {
-            console.log(`🔍 Trying table: ${tableName}`);
+        // DEBUG VERSION - Load platform connections
+        async function loadPlatformConnections() {
+            console.log('🔍 Starting debug of platform connections...');
+            
             try {
-                const { data, error, count } = await supabasePlatforms
-                    .from(tableName)
-                    .select('*', { count: 'exact' });
+                // First, let's see if the connection works at all
+                console.log('✅ Platforms database client created');
                 
-                if (!error) {
-                    console.log(`✅ Found table "${tableName}" with ${count} rows:`, data);
-                    
-                    // If we find data, let's see the structure
-                    if (data && data.length > 0) {
-                        console.log(`📊 Sample data from ${tableName}:`, JSON.stringify(data[0], null, 2));
+                // Let's try to see what tables exist
+                console.log('📋 Checking what tables exist...');
+                
+                // Let's try different possible table names
+                const possibleTables = ['user_platforms', 'platforms', 'connections', 'platform_connections'];
+                
+                for (const tableName of possibleTables) {
+                    console.log(`🔍 Trying table: ${tableName}`);
+                    try {
+                        const { data, error, count } = await supabasePlatforms
+                            .from(tableName)
+                            .select('*', { count: 'exact' });
+                        
+                        if (!error) {
+                            console.log(`✅ Found table "${tableName}" with ${count} rows:`, data);
+                            
+                            // If we find data, let's see the structure
+                            if (data && data.length > 0) {
+                                console.log(`📊 Sample data from ${tableName}:`, JSON.stringify(data[0], null, 2));
+                            }
+                        } else {
+                            console.log(`❌ Table "${tableName}" error:`, error.message);
+                        }
+                    } catch (e) {
+                        console.log(`❌ Exception for table "${tableName}":`, e.message);
                     }
-                } else {
-                    console.log(`❌ Table "${tableName}" error:`, error.message);
                 }
-            } catch (e) {
-                console.log(`❌ Exception for table "${tableName}":`, e.message);
-            }
-        }
-        
-        // Let's also try to see what user_ids exist
-        console.log('👤 Checking for user data...');
-        try {
-            const { data: userData, error: userError } = await supabasePlatforms
-                .from('user_platforms')
-                .select('user_id')
-                .limit(10);
                 
-            if (!userError && userData) {
-                console.log('👤 Found these user_ids:', userData.map(u => u.user_id));
-            }
-        } catch (e) {
-            console.log('👤 Could not check user_ids:', e.message);
-        }
-        
-        // Now let's try the original query
-        console.log('🎯 Trying original query with user_id: test-user');
-        const { data, error } = await supabasePlatforms
-            .from('user_platforms')
-            .select('*')
-            .eq('user_id', 'test-user');
-
-        if (error) {
-            console.error('❌ Original query error:', error);
-        } else {
-            console.log('✅ Original query result:', data);
-        }
-
-    } catch (error) {
-        console.error('💥 Major error in loadPlatformConnections:', error);
-    }
-}
-
-// Call this when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Page loaded, starting platform connections debug...');
-    loadPlatformConnections();
-});
-
-        // Update the UI to show connected platforms
-        const platforms = ['twitch', 'instagram', 'twitter', 'youtube'];
-        
-        platforms.forEach(platform => {
-            const isConnected = data && data.some(connection => 
-                connection.platform === platform && connection.connected === true
-            );
-            
-            const button = document.querySelector(`[data-platform="${platform}"]`);
-            const statusElement = document.querySelector(`#${platform}-status`);
-            
-            if (isConnected) {
-                if (button) {
-                    button.textContent = 'Connected';
-                    button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                    button.classList.add('bg-green-600', 'hover:bg-green-700');
-                    button.disabled = true;
+                // Let's also try to see what user_ids exist
+                console.log('👤 Checking for user data...');
+                try {
+                    const { data: userData, error: userError } = await supabasePlatforms
+                        .from('user_platforms')
+                        .select('user_id')
+                        .limit(10);
+                        
+                    if (!userError && userData) {
+                        console.log('👤 Found these user_ids:', userData.map(u => u.user_id));
+                    }
+                } catch (e) {
+                    console.log('👤 Could not check user_ids:', e.message);
                 }
-                if (statusElement) {
-                    statusElement.textContent = 'Connected';
-                    statusElement.classList.remove('text-red-500');
-                    statusElement.classList.add('text-green-500');
+                
+                // Now let's try the original query
+                console.log('🎯 Trying original query with user_id: test-user');
+                const { data, error } = await supabasePlatforms
+                    .from('user_platforms')
+                    .select('*')
+                    .eq('user_id', 'test-user');
+
+                if (error) {
+                    console.error('❌ Original query error:', error);
+                } else {
+                    console.log('✅ Original query result:', data);
                 }
-            } else {
-                if (button) {
-                    button.textContent = 'Connect';
-                    button.classList.remove('bg-green-600', 'hover:bg-green-700');
-                    button.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                    button.disabled = false;
-                }
-                if (statusElement) {
-                    statusElement.textContent = 'Not Connected';
-                    statusElement.classList.remove('text-green-500');
-                    statusElement.classList.add('text-red-500');
-                }
-            }
-        });
 
-    } catch (error) {
-        console.error('Error in loadPlatformConnections:', error);
-    }
-}
-
-// Call this function when the dashboard loads
-document.addEventListener('DOMContentLoaded', function() {
-    loadPlatformConnections();
-});
-
-        // Update platform status
-        const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
-        let connectedCount = 0;
-
-        platforms.forEach(platform => {
-            const connection = connections?.find(c => c.platform === platform);
-            const statusElement = document.getElementById(`${platform}-status`);
-            
-            if (connection) {
-                statusElement.textContent = 'Connected';
-                statusElement.className = 'connection-status connected';
-                connectedCount++;
-            } else {
-                statusElement.textContent = 'Not Connected';
-                statusElement.className = 'connection-status disconnected';
-            }
-        });
-
-        // Update connected platforms count
-        document.getElementById('connectedPlatforms').textContent = connectedCount;
-
-        catch (error) {
-        console.error('Error loading platform connections:', error);
-    }
-}
-
-                // Update platform status
+                // For now, show all as disconnected until we get the debug info
                 const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
                 let connectedCount = 0;
 
                 platforms.forEach(platform => {
-                    const connection = connections?.find(c => c.platform_name === platform);
                     const statusElement = document.getElementById(`${platform}-status`);
-                    
-                    if (connection && connection.status === 'connected') {
-                        statusElement.textContent = 'Connected';
-                        statusElement.className = 'connection-status connected';
-                        connectedCount++;
-                    } else {
+                    if (statusElement) {
                         statusElement.textContent = 'Not Connected';
                         statusElement.className = 'connection-status disconnected';
                     }
@@ -645,8 +555,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('connectedPlatforms').textContent = connectedCount;
 
             } catch (error) {
-                console.error('Error loading platform connections:', error);
-                // Don't show error toast - platform connections are optional
+                console.error('💥 Major error in loadPlatformConnections:', error);
             }
         }
 
@@ -669,8 +578,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function viewAnalytics() {
-    window.location.href = '/analytics.html';
-}
+            window.location.href = '/analytics.html';
+        }
 
         function manageContent() {
             showToast('Content management feature coming soon!', 'success');
@@ -695,6 +604,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Initialize dashboard on page load
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Page loaded, starting platform connections debug...');
             loadDashboard();
             
             // Refresh data every 30 seconds
