@@ -471,7 +471,7 @@
             }
         }
 
-        // SAFE VERSION - Load platform connections
+        // COMPLETE SAFE VERSION - Load platform connections
 async function loadPlatformConnections() {
     console.log('🔍 Loading platform connections (safe mode)...');
     
@@ -531,6 +531,26 @@ async function loadPlatformConnections() {
                 platformsCard.appendChild(helpMessage);
             }
         }
+
+        // Update connected platforms count
+        document.getElementById('connectedPlatforms').textContent = connectedCount;
+
+    } catch (error) {
+        console.log('ℹ️ Platform status unavailable:', error.message);
+        
+        // Show friendly fallback
+        const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
+        platforms.forEach(platform => {
+            const statusElement = document.getElementById(`${platform}-status`);
+            if (statusElement) {
+                statusElement.textContent = 'Check Setup';
+                statusElement.className = 'connection-status disconnected';
+            }
+        });
+        
+        document.getElementById('connectedPlatforms').textContent = '?';
+    }
+}
 
         // Update connected platforms count
         document.getElementById('connectedPlatforms').textContent = connectedCount;
