@@ -471,66 +471,31 @@
             }
         }
 
-        // COMPLETE SAFE VERSION - Load platform connections
-async function loadPlatformConnections() {
-    console.log('🔍 Loading platform connections (safe mode)...');
+       async function loadPlatformConnections() {
+    console.log('Loading platform connections...');
     
-    try {
-        // Try to read from dashboard database (if table exists)
-        const { data, error } = await supabase
-            .from('user_platforms')
-            .select('*')
-            .eq('user_id', 'test-user');
-
-        let connectedCount = 0;
-        const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
-
-        if (!error && data && data.length > 0) {
-            // If we have data in dashboard database, use it
-            console.log('✅ Found platform data in dashboard database:', data);
-            
-            platforms.forEach(platform => {
-                const isConnected = data.some(connection => 
-                    connection.platform === platform && connection.connected === true
-                );
-                
-                const statusElement = document.getElementById(`${platform}-status`);
-                
-                if (isConnected) {
-                    if (statusElement) {
-                        statusElement.textContent = 'Connected';
-                        statusElement.className = 'connection-status connected';
-                        connectedCount++;
-                    }
-                } else {
-                    if (statusElement) {
-                        statusElement.textContent = 'Not Connected';
-                        statusElement.className = 'connection-status disconnected';
-                    }
-                }
-            });
-        } else {
-            // If no data or table doesn't exist, show helpful message
-            console.log('ℹ️ No platform data found in dashboard database');
-            
-            platforms.forEach(platform => {
-                const statusElement = document.getElementById(`${platform}-status`);
-                if (statusElement) {
-                    statusElement.textContent = 'Visit Setup';
-                    statusElement.className = 'connection-status disconnected';
-                }
-            });
-            
-            // Add a helpful message
-            const platformsCard = document.querySelector('#connectedPlatforms').closest('.dashboard-card');
-            if (platformsCard && !document.getElementById('platform-help-message')) {
-                const helpMessage = document.createElement('div');
-                helpMessage.id = 'platform-help-message';
-                helpMessage.style.cssText = 'font-size: 0.8rem; color: #6b7280; margin-top: 1rem; text-align: center;';
-                helpMessage.innerHTML = '💡 Connect platforms via <a href="/onboarding.html" style="color: #3b82f6;">Setup</a> to see status here';
-                platformsCard.appendChild(helpMessage);
-            }
+    // Since CSP blocks the other database, show helpful message
+    const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
+    
+    platforms.forEach(platform => {
+        const statusElement = document.getElementById(`${platform}-status`);
+        if (statusElement) {
+            statusElement.textContent = 'Visit Setup';
+            statusElement.className = 'connection-status disconnected';
         }
+    });
+    
+    document.getElementById('connectedPlatforms').textContent = '0';
+    
+    // Add helpful message
+    const platformsCard = document.querySelector('#connectedPlatforms').closest('.dashboard-card');
+    if (platformsCard && !document.getElementById('platform-help-message')) {
+        const helpMessage = document.createElement('div');
+        helpMessage.style.cssText = 'font-size: 0.8rem; color: #6b7280; margin-top: 1rem; text-align: center;';
+        helpMessage.innerHTML = '💡 Connect platforms via <a href="/onboarding.html" style="color: #3b82f6;">Setup</a>';
+        platformsCard.appendChild(helpMessage);
+    }
+}
 
         // Update connected platforms count
         document.getElementById('connectedPlatforms').textContent = connectedCount;
