@@ -471,12 +471,45 @@
         }
 
         // Load platform connections
-        async function loadPlatformConnections() {
-            console.log('Loading platform connections...');
+async function loadPlatformConnections() {
+    console.log('Loading platform connections with real data...');
+    
+    try {
+        const { data, error } = await supabase
+            .from('platform_connections')
+            .select('*')
+            .eq('user_id', '99f0c4bb-9016-409e-83ef-2c827c27b63d');
+        
+        console.log('Platform query result:', { data, error });
+        
+        if (!error && data && data.length > 0) {
+            console.log('Found platform data:', data);
             
-            // Show helpful message for all platforms
             const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
+            let connectedCount = 0;
             
+            platforms.forEach(platform => {
+                const isConnected = data.some(connection => 
+                    connection.platform_name === platform && connection.status === 'connected'
+                );
+                
+                const statusElement = document.getElementById(`${platform}-status`);
+                if (statusElement) {
+                    if (isConnected) {
+                        statusElement.textContent = 'Connected';
+                        statusElement.className = 'connection-status connected';
+                        connectedCount++;
+                    } else {
+                        statusElement.textContent = 'Visit Setup';
+                        statusElement.className = 'connection-status disconnected';
+                    }
+                }
+            });
+            
+            document.getElementById('connectedPlatforms').textContent = connectedCount;
+        } else {
+            console.log('No platform data found');
+            const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
             platforms.forEach(platform => {
                 const statusElement = document.getElementById(`${platform}-status`);
                 if (statusElement) {
@@ -484,18 +517,12 @@
                     statusElement.className = 'connection-status disconnected';
                 }
             });
-            
             document.getElementById('connectedPlatforms').textContent = '0';
-            
-            // Add helpful message
-            const platformsCard = document.querySelector('#connectedPlatforms').closest('.dashboard-card');
-            if (platformsCard && !document.getElementById('platform-help-message')) {
-                const helpMessage = document.createElement('div');
-                helpMessage.style.cssText = 'font-size: 0.8rem; color: #6b7280; margin-top: 1rem; text-align: center;';
-                helpMessage.innerHTML = '💡 Connect platforms via <a href="/onboarding.html" style="color: #3b82f6;">Setup</a>';
-                platformsCard.appendChild(helpMessage);
-            }
         }
+    } catch (error) {
+        console.error('Error loading platform connections:', error);
+    }
+}
 
         // Sign out function
         async function signOut() {
@@ -556,59 +583,7 @@
             }
         });
     </script>
-<script>
-document.addEventListener('DOMContentLoaded', async function() {
-    console.log('Checking for real platform connections...');
-    
-    try {
-        // Try to read actual connection data from dashboard database
-        const { data, error } = await supabase
-            .from('platform_connections')
-            .select('*')
-            .eq('user_id', '99f0c4bb-9016-409e-83ef-2c827c27b63d');
-        
-        if (!error && data && data.length > 0) {
-            console.log('Found real platform data:', data);
-            
-            // Show real connection status
-            const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
-            let connectedCount = 0;
-            
-            platforms.forEach(platform => {
-                const isConnected = data.some(connection => 
-                    connection.platform_name === platform && connection.status === 'connected'
-                );
-                
-                const statusElement = document.getElementById(`${platform}-status`);
-                if (statusElement) {
-                    if (isConnected) {
-                        statusElement.textContent = 'Connected';
-                        statusElement.className = 'connection-status connected';
-                        connectedCount++;
-                    } else {
-                        statusElement.textContent = 'Visit Setup';
-                        statusElement.className = 'connection-status disconnected';
-                    }
-                }
-            });
-            
-            document.getElementById('connectedPlatforms').textContent = connectedCount;
-        } else {
-            // No data found, show Visit Setup for all
-            console.log('No platform data found, showing Visit Setup');
-            ['twitch', 'youtube', 'instagram', 'tiktok'].forEach(platform => {
-                document.getElementById(`${platform}-status`).textContent = 'Visit Setup';
-            });
-        }
-    } catch (error) {
-        console.log('Error checking platforms:', error);
-        // Fallback to Visit Setup
-        ['twitch', 'youtube', 'instagram', 'tiktok'].forEach(platform => {
-            document.getElementById(`${platform}-status`).textContent = 'Visit Setup';
-        });
-    }
-});
-</script>
+
 </body>
 </body>
 </html>
