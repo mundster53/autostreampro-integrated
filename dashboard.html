@@ -474,21 +474,80 @@ const supabasePlatforms = window.supabase.createClient(platformsUrl, platformsKe
             }
         }
 
-        // Load platform connections
+        // TEMPORARY DEBUG VERSION - Replace your loadPlatformConnections function with this
 async function loadPlatformConnections() {
+    console.log('🔍 Starting debug of platform connections...');
+    
     try {
-        // Read from the onboarding database where connections are actually saved
+        // First, let's see if the connection works at all
+        console.log('✅ Platforms database client created');
+        
+        // Let's try to see what tables exist (this will show us the structure)
+        console.log('📋 Checking what tables exist...');
+        
+        // Let's try different possible table names
+        const possibleTables = ['user_platforms', 'platforms', 'connections', 'platform_connections'];
+        
+        for (const tableName of possibleTables) {
+            console.log(`🔍 Trying table: ${tableName}`);
+            try {
+                const { data, error, count } = await supabasePlatforms
+                    .from(tableName)
+                    .select('*', { count: 'exact' });
+                
+                if (!error) {
+                    console.log(`✅ Found table "${tableName}" with ${count} rows:`, data);
+                    
+                    // If we find data, let's see the structure
+                    if (data && data.length > 0) {
+                        console.log(`📊 Sample data from ${tableName}:`, JSON.stringify(data[0], null, 2));
+                    }
+                } else {
+                    console.log(`❌ Table "${tableName}" error:`, error.message);
+                }
+            } catch (e) {
+                console.log(`❌ Exception for table "${tableName}":`, e.message);
+            }
+        }
+        
+        // Let's also try to see what user_ids exist
+        console.log('👤 Checking for user data...');
+        try {
+            const { data: userData, error: userError } = await supabasePlatforms
+                .from('user_platforms')
+                .select('user_id')
+                .limit(10);
+                
+            if (!userError && userData) {
+                console.log('👤 Found these user_ids:', userData.map(u => u.user_id));
+            }
+        } catch (e) {
+            console.log('👤 Could not check user_ids:', e.message);
+        }
+        
+        // Now let's try the original query
+        console.log('🎯 Trying original query with user_id: test-user');
         const { data, error } = await supabasePlatforms
             .from('user_platforms')
             .select('*')
-            .eq('user_id', 'test-user'); // Use the same user_id as onboarding
+            .eq('user_id', 'test-user');
 
         if (error) {
-            console.error('Error loading platform connections:', error);
-            return;
+            console.error('❌ Original query error:', error);
+        } else {
+            console.log('✅ Original query result:', data);
         }
 
-        console.log('Platform connections loaded:', data);
+    } catch (error) {
+        console.error('💥 Major error in loadPlatformConnections:', error);
+    }
+}
+
+// Call this when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Page loaded, starting platform connections debug...');
+    loadPlatformConnections();
+});
 
         // Update the UI to show connected platforms
         const platforms = ['twitch', 'instagram', 'twitter', 'youtube'];
