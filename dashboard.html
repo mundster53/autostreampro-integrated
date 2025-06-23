@@ -481,6 +481,16 @@ async function loadPlatformConnections() {
             .eq('user_id', '99f0c4bb-9016-409e-83ef-2c827c27b63d');
         
         console.log('Platform query result:', { data, error });
+        // Debug: Get ALL records to see what's in the table
+const { data: allData, error: allError } = await supabase
+    .from('platform_connections')
+    .select('*')
+    .limit(10);
+    
+console.log('ALL platform_connections records:', allData);
+if (allData && allData.length > 0) {
+    console.log('First record structure:', allData[0]);
+}
 console.log('Raw data array:', data);
 console.log('Data length:', data ? data.length : 'null');
 if (data && data.length > 0) {
