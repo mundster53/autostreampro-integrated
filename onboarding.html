@@ -969,7 +969,6 @@ function handleOAuthReturn() {
         // Clean up URL
         window.history.replaceState({}, document.title, window.location.pathname);
     }
-}
         async function exchangeCodeForTokens(platform, code) {
             try {
                 const response = await fetch(`/.netlify/functions/oauth-${platform}`, {
