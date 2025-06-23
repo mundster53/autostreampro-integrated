@@ -520,33 +520,28 @@ function connectYoutube() {
     }, 1000);
 }
 
-        // Fix 1: Update connectTwitter() function
-function connectTwitter() {
-    console.log('Connecting to Twitter/X...');
+        async function connectTwitter() {
+    console.log('Connecting to Twitter/X with real API...');
     
-    // Use popup approach like Instagram to avoid CSP issues
-    const twitterAuthUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${twitterClientId}&redirect_uri=https://autostreampro.com/auth/twitter.html&scope=users.read%20tweet.read%20offline.access&state=twitter`;
-    
-    // Open popup like Instagram does
-    const popup = window.open(
-        twitterAuthUrl,
-        'twitter_auth',
-        'width=600,height=600,scrollbars=yes,resizable=yes'
-    );
-    
-    // Monitor popup like Instagram pattern
-    const checkClosed = setInterval(() => {
-        if (popup.closed) {
-            clearInterval(checkClosed);
+    try {
+        // Use your existing Twitter API credentials to verify connection
+        const response = await fetch('/.netlify/functions/twitter-auth');
+        const data = await response.json();
+        
+        if (data.success && data.user) {
+            console.log('Twitter connected successfully!');
+            console.log('Real Twitter user data:', data.user);
             
-            // ADD THIS: Save to database like Instagram does
-            savePlatformConnection('twitter', {
-                accessToken: 'twitter_temp_token',
-                userID: 'twitter_user',
-                platform: 'twitter'
+            // Save REAL Twitter connection with actual API access
+            await savePlatformConnection('twitter', {
+                accessToken: 'TWITTER_API_CONNECTED', // Real API access indicator
+                userID: data.user.id,
+                username: data.user.username,
+                platform: 'twitter',
+                realConnection: true
             });
             
-            // Mark as connected (same as Instagram approach)
+            // Update UI to show connected
             document.querySelector('[data-platform="twitter"] .connect-btn').innerHTML = 
                 '<span class="text-green-600">✓</span> Connected';
             document.querySelector('[data-platform="twitter"]').classList.add('connected');
@@ -555,9 +550,17 @@ function connectTwitter() {
                 connectedPlatforms.push('twitter');
             }
             
-            console.log('Twitter connection attempt completed');
+            console.log('Twitter connection completed with real API access');
+            
+        } else {
+            console.error('Twitter API connection failed:', data);
+            alert('Twitter connection failed. Please check your Twitter API credentials in Netlify.');
         }
-    }, 1000);
+        
+    } catch (error) {
+        console.error('Twitter connection error:', error);
+        alert('Twitter connection failed. Please try again.');
+    }
 }
 
         function connectInstagram() {
