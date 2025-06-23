@@ -242,36 +242,69 @@
                     </div>
                 </div>
 
-                <!-- Game Selection Tab -->
-                <div id="games-tab" class="ai-tab-content hidden">
-                    <p class="text-gray-600 mb-4">Select the games you primarily stream (helps AI understand context):</p>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="valorant">
-                            <div class="font-semibold">Valorant</div>
-                        </div>
-                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="fortnite">
-                            <div class="font-semibold">Fortnite</div>
-                        </div>
-                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="apex">
-                            <div class="font-semibold">Apex Legends</div>
-                        </div>
-                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="cod">
-                            <div class="font-semibold">Call of Duty</div>
-                        </div>
-                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="lol">
-                            <div class="font-semibold">League of Legends</div>
-                        </div>
-                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="minecraft">
-                            <div class="font-semibold">Minecraft</div>
-                        </div>
-                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="gta">
-                            <div class="font-semibold">GTA V</div>
-                        </div>
-                        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="other">
-                            <div class="font-semibold">Other</div>
-                        </div>
-                    </div>
-                </div>
+                <!-- Game Selection Tab - Replace your existing games-tab section with this -->
+<div id="games-tab" class="ai-tab-content hidden">
+    <p class="text-gray-600 mb-4">Select the games you primarily stream (helps AI understand context):</p>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <!-- Existing Games -->
+        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="valorant">
+            <div class="font-semibold">Valorant</div>
+        </div>
+        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="fortnite">
+            <div class="font-semibold">Fortnite</div>
+        </div>
+        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="apex">
+            <div class="font-semibold">Apex Legends</div>
+        </div>
+        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="cod">
+            <div class="font-semibold">Call of Duty</div>
+        </div>
+        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="lol">
+            <div class="font-semibold">League of Legends</div>
+        </div>
+        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="minecraft">
+            <div class="font-semibold">Minecraft</div>
+        </div>
+        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="gta">
+            <div class="font-semibold">GTA V</div>
+        </div>
+        
+        <!-- NEW GAMES -->
+        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="darktide">
+            <div class="font-semibold">Warhammer 40K: Darktide</div>
+        </div>
+        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="spacemarine2">
+            <div class="font-semibold">Warhammer 40K: Space Marine 2</div>
+        </div>
+        <div class="game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center" onclick="toggleGame(this)" data-game="warthunder">
+            <div class="font-semibold">War Thunder</div>
+        </div>
+    </div>
+
+    <!-- Custom Games Section -->
+    <div class="border-t pt-6">
+        <h4 class="font-semibold text-gray-800 mb-3">Add Your Custom Games</h4>
+        <div class="flex gap-3 mb-4">
+            <input 
+                type="text" 
+                id="customGameInput" 
+                placeholder="Enter game name (e.g., Cyberpunk 2077, Among Us, etc.)" 
+                class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+            <button 
+                onclick="addCustomGame()" 
+                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+            >
+                Add Game
+            </button>
+        </div>
+        
+        <!-- Custom Games Display -->
+        <div id="customGamesContainer" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <!-- Custom games will be added here dynamically -->
+        </div>
+    </div>
+</div>
 
                 <!-- Platform Optimization Tab -->
                 <div id="optimization-tab" class="ai-tab-content hidden">
