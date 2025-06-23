@@ -545,6 +545,52 @@ async function exchangeCodeForTokens(platform, code) {
         alert(`${platform} connection failed. Please try again.`);
     }
 }
+        // ADD THE NEW FUNCTION RIGHT HERE:
+async function exchangeYouTubeCode(code) {
+    try {
+        const response = await fetch('/.netlify/functions/youtube-auth', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ code })
+        });
+
+        const data = await response.json();
+        
+        if (data.success && data.access_token) {
+            console.log('YouTube tokens received:', data);
+            
+            // Save real tokens to database
+            await savePlatformConnection('youtube', {
+                accessToken: data.access_token,
+                refreshToken: data.refresh_token,
+                userID: data.channel_id,
+                username: data.channel_title,
+                expiresIn: data.expires_in,
+                platform: 'youtube',
+                realConnection: true
+            });
+            
+            // Update UI
+            document.querySelector('[data-platform="youtube"] .connect-btn').innerHTML = 
+                '<span class="text-green-600">✓</span> Connected';
+            document.querySelector('[data-platform="youtube"]').classList.add('connected');
+            
+            if (!connectedPlatforms.includes('youtube')) {
+                connectedPlatforms.push('youtube');
+            }
+            
+            console.log('YouTube connection completed successfully');
+        } else {
+            console.error('Failed to exchange YouTube code:', data);
+            alert('YouTube connection failed. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error exchanging YouTube code:', error);
+        alert('YouTube connection failed. Please try again.');
+    }
+}
         async function connectTwitter() {
     console.log('Connecting to Twitter/X with real API...');
     
