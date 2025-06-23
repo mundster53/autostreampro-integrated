@@ -478,7 +478,7 @@ async function loadPlatformConnections() {
         const { data, error } = await supabase
             .from('platform_connections')
             .select('*')
-            .eq('user_id', '99f0c4bb-9016-409e-83ef-2c827c27b63d');
+            .eq('user_id', '99f0c4bb-9016-409e-83ef-2c827698a2d5');
         
         console.log('Platform query result:', { data, error });
         // Debug: Get ALL records to see what's in the table
