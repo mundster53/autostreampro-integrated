@@ -32,12 +32,15 @@ exports.handler = async (event, context) => {
     );
 
     const connectionData = {
-      user_id: '99f0c4bb-9016-409e-83ef-2c827698a2d5',
-      platform: platform,
-      connected: true,
-      auth_data: authData,
-      created_at: new Date().toISOString()
-    };
+  user_id: '99f0c4bb-9016-409e-83ef-2c827698a2d5',
+  platform_name: platform,      // ✅ CORRECT
+  status: 'connected',           // ✅ CORRECT
+  access_token: authData.accessToken,
+  refresh_token: authData.refreshToken,
+  platform_user_id: authData.userID,
+  connected_at: new Date().toISOString(),
+  updated_at: new Date().toISOString()
+};
 
     // Save to both databases
     const [onboardingResult, dashboardResult] = await Promise.all([
