@@ -1,62 +1,15 @@
-{
-  "name": "autostreampro-integrated",
-  "version": "1.0.0",
-  "description": "AutoStreamPro - AI-Powered Gaming Stream Automation Platform",
-  "main": "index.js",
-  "scripts": {
-    "dev": "netlify dev",
-    "build": "echo 'Building AutoStreamPro...'",
-    "deploy": "netlify deploy --prod",
-    "test": "echo 'Running tests...'"
-  },
-  "keywords": [
-    "streaming",
-    "gaming",
-    "automation",
-    "ai",
-    "twitch",
-    "youtube",
-    "social-media"
-  ],
-  "author": "AutoStreamPro",
-  "license": "MIT",
- "dependencies": {
-    "@netlify/functions": "^2.0.0",
-    "@supabase/supabase-js": "^2.38.0",
-    "axios": "^1.6.0",
-    "jsonwebtoken": "^9.0.0",
-    "dotenv": "^16.3.0",
-    "stripe": "^14.9.0",
-    "twitter-api-v2": "^1.15.0",
-    "openai": "^4.20.0",
-    "replicate": "^0.22.0",
-    "ffmpeg-static": "^5.2.0",
-    "fluent-ffmpeg": "^2.1.2",
-    "mongodb": "^6.0.0",
-    "redis": "^4.6.0",
-    "node-cron": "^3.0.0",
-    "uuid": "^9.0.0",
-    "moment": "^2.29.0",
-    "lodash": "^4.17.21",
-    "sharp": "^0.32.0",
-    "canvas": "^2.11.0",
-    "ws": "^8.14.0",
-    "socket.io": "^4.7.0"
-},
-  "devDependencies": {
-    "netlify-cli": "^17.0.0",
-    "nodemon": "^3.0.0",
-    "jest": "^29.7.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/autostreampro/platform.git"
-  },
-  "bugs": {
-    "url": "https://github.com/autostreampro/platform/issues"
-  },
-  "homepage": "https://autostreampro.com"
-}
+exports.handler = async (event, context) => {
+  console.log('Test function called');
+  
+  return {
+    statusCode: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      success: true,
+      message: 'Test function working'
+    })
+  };
+};
