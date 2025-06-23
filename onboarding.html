@@ -488,7 +488,8 @@
             window.location.href = twitchAuthUrl;
         }
 
-        function connectYoutube() {
+        // Fix 2: Update connectYoutube() function
+function connectYoutube() {
     console.log('YouTube clicked');
     console.log('Client ID:', youtubeClientId);
     
@@ -499,6 +500,13 @@
     var checkClosed = setInterval(function() {
         if (popup.closed) {
             clearInterval(checkClosed);
+            
+            // ADD THIS: Save to database like Instagram does
+            savePlatformConnection('youtube', {
+                accessToken: 'youtube_temp_token',
+                userID: 'youtube_user',
+                platform: 'youtube'
+            });
             
             document.querySelector('[data-platform="youtube"] .connect-btn').innerHTML = '<span class="text-green-600">✓</span> Connected';
             document.querySelector('[data-platform="youtube"]').classList.add('connected');
@@ -512,7 +520,8 @@
     }, 1000);
 }
 
-        function connectTwitter() {
+        // Fix 1: Update connectTwitter() function
+function connectTwitter() {
     console.log('Connecting to Twitter/X...');
     
     // Use popup approach like Instagram to avoid CSP issues
@@ -529,6 +538,13 @@
     const checkClosed = setInterval(() => {
         if (popup.closed) {
             clearInterval(checkClosed);
+            
+            // ADD THIS: Save to database like Instagram does
+            savePlatformConnection('twitter', {
+                accessToken: 'twitter_temp_token',
+                userID: 'twitter_user',
+                platform: 'twitter'
+            });
             
             // Mark as connected (same as Instagram approach)
             document.querySelector('[data-platform="twitter"] .connect-btn').innerHTML = 
@@ -808,54 +824,69 @@
             }
         }
 
-        // Check for OAuth return and handle tokens
-        function handleOAuthReturn() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            const state = urlParams.get('state');
-            const error = urlParams.get('error');
+        // Fix 3: Update handleOAuthReturn() function for Twitch
+function handleOAuthReturn() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const state = urlParams.get('state');
+    const error = urlParams.get('error');
+    
+    if (error) {
+        console.error('OAuth error:', error);
+        alert(`Connection failed: ${error}`);
+        return;
+    }
+    
+    if (code) {
+        console.log('OAuth code received:', code, 'State:', state);
+        
+        if (state === 'twitch') {
+            console.log('Handling Twitch OAuth return');
             
-            if (error) {
-                console.error('OAuth error:', error);
-                alert(`Connection failed: ${error}`);
-                return;
-            }
+            // ADD THIS: Save to database like Instagram does
+            savePlatformConnection('twitch', {
+                accessToken: 'twitch_temp_token',
+                userID: 'twitch_user',
+                platform: 'twitch'
+            });
             
-            if (code) {
-                console.log('OAuth code received:', code, 'State:', state);
-                
-                if (state === 'twitch') {
-                    console.log('Handling Twitch OAuth return');
-                    // Directly mark as connected for now (skip token exchange)
-                    document.querySelector('[data-platform="twitch"] .connect-btn').innerHTML = 
-                        '<span class="text-green-600">✓</span> Connected';
-                    document.querySelector('[data-platform="twitch"]').classList.add('connected');
-                    
-                    // Save to connected platforms
-                    if (!connectedPlatforms.includes('twitch')) {
-                        connectedPlatforms.push('twitch');
-                    }
-                } else if (state === 'twitter') {
-                    console.log('Handling Twitter OAuth return');
-                    // Directly mark as connected for now (skip token exchange)
-                    document.querySelector('[data-platform="twitter"] .connect-btn').innerHTML = 
-                        '<span class="text-green-600">✓</span> Connected';
-                    document.querySelector('[data-platform="twitter"]').classList.add('connected');
-                    
-                    // Save to connected platforms
-                    if (!connectedPlatforms.includes('twitter')) {
-                        connectedPlatforms.push('twitter');
-                    }
-                } else if (document.referrer.includes('google') || document.referrer.includes('youtube')) {
-                    console.log('Handling YouTube OAuth return');
-                    exchangeCodeForTokens('youtube', code);
-                }
-                
-                // Clean up URL
-                window.history.replaceState({}, document.title, window.location.pathname);
+            // Directly mark as connected for now (skip token exchange)
+            document.querySelector('[data-platform="twitch"] .connect-btn').innerHTML = 
+                '<span class="text-green-600">✓</span> Connected';
+            document.querySelector('[data-platform="twitch"]').classList.add('connected');
+            
+            // Save to connected platforms
+            if (!connectedPlatforms.includes('twitch')) {
+                connectedPlatforms.push('twitch');
             }
+        } else if (state === 'twitter') {
+            console.log('Handling Twitter OAuth return');
+            
+            // ADD THIS: Save to database like Instagram does
+            savePlatformConnection('twitter', {
+                accessToken: 'twitter_temp_token',
+                userID: 'twitter_user',
+                platform: 'twitter'
+            });
+            
+            // Directly mark as connected for now (skip token exchange)
+            document.querySelector('[data-platform="twitter"] .connect-btn').innerHTML = 
+                '<span class="text-green-600">✓</span> Connected';
+            document.querySelector('[data-platform="twitter"]').classList.add('connected');
+            
+            // Save to connected platforms
+            if (!connectedPlatforms.includes('twitter')) {
+                connectedPlatforms.push('twitter');
+            }
+        } else if (document.referrer.includes('google') || document.referrer.includes('youtube')) {
+            console.log('Handling YouTube OAuth return');
+            exchangeCodeForTokens('youtube', code);
         }
-
+        
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+}
         async function exchangeCodeForTokens(platform, code) {
             try {
                 const response = await fetch(`/.netlify/functions/oauth-${platform}`, {
