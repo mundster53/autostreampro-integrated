@@ -953,10 +953,13 @@ function handleOAuthReturn() {
                 connectedPlatforms.push('twitter');
             }
         } else if (state === 'youtube') {
-    console.log('Handling YouTube OAuth return');
-    // Call the correct YouTube auth function
-    exchangeYouTubeCode(code);
-}
+            console.log('Handling YouTube OAuth return');
+            // Call the correct YouTube auth function
+            exchangeYouTubeCode(code);
+        } else if (document.referrer.includes('google') || document.referrer.includes('youtube')) {
+            console.log('Handling YouTube OAuth return (legacy)');
+            exchangeCodeForTokens('youtube', code);
+        }
             
     } else if (document.referrer.includes('google') || document.referrer.includes('youtube')) {
     console.log('Handling YouTube OAuth return (legacy)');
