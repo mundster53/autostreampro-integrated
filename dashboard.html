@@ -491,6 +491,9 @@ console.log('ALL platform_connections records:', allData);
 if (allData && allData.length > 0) {
     console.log('First record structure:', allData[0]);
 }
+        console.log('First record user_id:', allData[0].user_id);
+console.log('First record platform_name:', allData[0].platform_name);
+console.log('Complete first record:', JSON.stringify(allData[0], null, 2));
 console.log('Raw data array:', data);
 console.log('Data length:', data ? data.length : 'null');
 if (data && data.length > 0) {
