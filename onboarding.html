@@ -906,9 +906,12 @@ function handleOAuthReturn() {
             if (!connectedPlatforms.includes('twitter')) {
                 connectedPlatforms.push('twitter');
             }
-        } else if (document.referrer.includes('google') || document.referrer.includes('youtube')) {
-            console.log('Handling YouTube OAuth return');
-            exchangeCodeForTokens('youtube', code);
+        } else if (state === 'youtube') {
+                console.log('Handling YouTube OAuth return');
+                exchangeCodeForTokens('youtube', code);
+    } else if (document.referrer.includes('google') || document.referrer.includes('youtube')) {
+    console.log('Handling YouTube OAuth return (legacy)');
+    exchangeCodeForTokens('youtube', code);
         }
         
         // Clean up URL
