@@ -497,13 +497,6 @@ function connectYoutube() {
     window.location.href = youtubeAuthUrl;
 }
 
-// Update your handleOAuthReturn() function - find the YouTube section and replace it:
-} else if (state === 'youtube') {
-    console.log('Handling YouTube OAuth return');
-    // Exchange code for real tokens
-    exchangeCodeForTokens('youtube', code);
-}
-
 // Make sure your exchangeCodeForTokens function includes this case:
 async function exchangeCodeForTokens(platform, code) {
     try {
