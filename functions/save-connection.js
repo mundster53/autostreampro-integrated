@@ -32,7 +32,7 @@ exports.handler = async (event, context) => {
     );
 
     const connectionData = {
-      user_id: 'test-user',
+      user_id: '99f0c4bb-9016-409e-83ef-2c827698a2d5',
       platform: platform,
       connected: true,
       auth_data: authData,
