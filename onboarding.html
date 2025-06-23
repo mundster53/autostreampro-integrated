@@ -488,38 +488,71 @@
             window.location.href = twitchAuthUrl;
         }
 
-        // Fix 2: Update connectYoutube() function
+        // Replace your connectYoutube() function with this:
 function connectYoutube() {
-    console.log('YouTube clicked');
-    console.log('Client ID:', youtubeClientId);
+    console.log('Connecting to YouTube with real OAuth...');
     
-    var youtubeUrl = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' + youtubeClientId + '&redirect_uri=https://autostreampro.com/auth/youtube.html&response_type=code&scope=https://www.googleapis.com/auth/youtube.upload+https://www.googleapis.com/auth/youtube.readonly&access_type=offline';
+    const youtubeAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${youtubeClientId}&redirect_uri=https://autostreampro.com/auth/youtube.html&response_type=code&scope=https://www.googleapis.com/auth/youtube.upload+https://www.googleapis.com/auth/youtube.readonly&access_type=offline&state=youtube`;
     
-    var popup = window.open(youtubeUrl, 'youtube_auth', 'width=600,height=600');
-    
-    var checkClosed = setInterval(function() {
-        if (popup.closed) {
-            clearInterval(checkClosed);
-            
-            // ADD THIS: Save to database like Instagram does
-            savePlatformConnection('youtube', {
-                accessToken: 'youtube_temp_token',
-                userID: 'youtube_user',
-                platform: 'youtube'
-            });
-            
-            document.querySelector('[data-platform="youtube"] .connect-btn').innerHTML = '<span class="text-green-600">✓</span> Connected';
-            document.querySelector('[data-platform="youtube"]').classList.add('connected');
-            
-            if (connectedPlatforms.indexOf('youtube') === -1) {
-                connectedPlatforms.push('youtube');
-            }
-            
-            console.log('YouTube connection completed');
-        }
-    }, 1000);
+    window.location.href = youtubeAuthUrl;
 }
 
+// Update your handleOAuthReturn() function - find the YouTube section and replace it:
+} else if (state === 'youtube') {
+    console.log('Handling YouTube OAuth return');
+    // Exchange code for real tokens
+    exchangeCodeForTokens('youtube', code);
+}
+
+// Make sure your exchangeCodeForTokens function includes this case:
+async function exchangeCodeForTokens(platform, code) {
+    try {
+        const response = await fetch(`/.netlify/functions/${platform}-auth`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ code })
+        });
+
+        const data = await response.json();
+        
+        if (data.success && data.access_token) {
+            console.log(`${platform} tokens received:`, data);
+            
+            // Save real tokens to database
+            await savePlatformConnection(platform, {
+                accessToken: data.access_token,
+                refreshToken: data.refresh_token,
+                userID: data.channel_id,
+                username: data.channel_title,
+                expiresIn: data.expires_in,
+                platform: platform,
+                realConnection: true
+            });
+            
+            // Update UI
+            const platformElement = document.querySelector(`[data-platform="${platform}"]`);
+            if (platformElement) {
+                const button = platformElement.querySelector('.connect-btn');
+                button.innerHTML = '<span class="text-green-600">✓</span> Connected';
+                platformElement.classList.add('connected');
+                
+                if (!connectedPlatforms.includes(platform)) {
+                    connectedPlatforms.push(platform);
+                }
+            }
+            
+            console.log(`${platform} connection completed successfully`);
+        } else {
+            console.error(`Failed to exchange ${platform} code:`, data);
+            alert(`${platform} connection failed. Please try again.`);
+        }
+    } catch (error) {
+        console.error(`Error exchanging ${platform} code:`, error);
+        alert(`${platform} connection failed. Please try again.`);
+    }
+}
         async function connectTwitter() {
     console.log('Connecting to Twitter/X with real API...');
     
