@@ -498,15 +498,28 @@
     </div>
 
     <script>
-        // Supabase initialization
-        const supabaseUrl = 'https://ksgehuprwrqvmmdngjoj.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzZ2VodXByd3Jxdm1tZG5nam9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyMzQxMDYsImV4cCI6MjA0OTgxMDEwNn0.Qr8aaP2VfHYQDHo7FMp6KWs6Jd0-U3y6F4HzKpWqJeI';
+        // Supabase initialization - FIXED: Using the correct Supabase instance
+        const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // Global variables
         let currentStep = 1;
         let selectedGames = [];
         let connectedPlatforms = [];
+        let currentUser = null;
+
+        // Helper function to get current user
+        async function getCurrentUser() {
+            const { data: { user }, error } = await supabase.auth.getUser();
+            if (!user) {
+                console.log('No user logged in, redirecting to login');
+                window.location.href = '/login.html';
+                return null;
+            }
+            currentUser = user;
+            return user;
+        }
 
         // OAuth Configuration
         const twitchClientId = 'mzjsqcwxj9mexsa8vaimtzanbe7pll';
@@ -738,15 +751,26 @@ async function exchangeYouTubeCode(code) {
             });
         }
 
-        // Save platform connection via serverless function (bypasses CSP)
+        // FIXED: Save platform connection with real user ID
         async function savePlatformConnection(platform, authData) {
             try {
+                // Get current user first
+                const user = await getCurrentUser();
+                if (!user) {
+                    console.error('No user logged in!');
+                    return;
+                }
+
                 const response = await fetch('/.netlify/functions/save-connection', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ platform, authData })
+                    body: JSON.stringify({ 
+                        platform, 
+                        authData,
+                        userId: user.id  // Pass the real user ID!
+                    })
                 });
 
                 const result = await response.json();
@@ -762,13 +786,17 @@ async function exchangeYouTubeCode(code) {
             }
         }
 
-        // Check if platform connections exist
+        // FIXED: Check platform connections with real user ID
         async function checkPlatformConnections() {
             try {
+                // Get current user first
+                const user = await getCurrentUser();
+                if (!user) return;
+
                 const { data, error } = await supabase
                     .from('platform_connections')
-                    .select('platform')
-                    .eq('user_id', 'test-user');
+                    .select('platform_name')
+                    .eq('user_id', user.id);  // Use real user ID!
 
                 if (error) {
                     console.error('Error checking platform connections:', error);
@@ -777,12 +805,12 @@ async function exchangeYouTubeCode(code) {
 
                 if (data) {
                     data.forEach(connection => {
-                        const platformElement = document.querySelector(`[data-platform="${connection.platform}"]`);
+                        const platformElement = document.querySelector(`[data-platform="${connection.platform_name}"]`);
                         if (platformElement) {
                             const button = platformElement.querySelector('.connect-btn');
                             button.innerHTML = '<span class="text-green-600">✓</span> Connected';
                             platformElement.classList.add('connected');
-                            connectedPlatforms.push(connection.platform);
+                            connectedPlatforms.push(connection.platform_name);
                         }
                     });
                 }
@@ -904,10 +932,41 @@ async function exchangeYouTubeCode(code) {
             }
         }
 
-        // Save configuration
+        // Add custom game function
+        function addCustomGame() {
+            const input = document.getElementById('customGameInput');
+            const gameName = input.value.trim();
+            
+            if (!gameName) {
+                alert('Please enter a game name');
+                return;
+            }
+            
+            // Create custom game element
+            const gameDiv = document.createElement('div');
+            gameDiv.className = 'game-option border-2 border-gray-200 rounded-lg p-3 cursor-pointer text-center selected';
+            gameDiv.onclick = function() { toggleGame(this); };
+            gameDiv.setAttribute('data-game', gameName.toLowerCase().replace(/\s+/g, '-'));
+            gameDiv.innerHTML = `<div class="font-semibold">${gameName}</div>`;
+            
+            // Add to container
+            document.getElementById('customGamesContainer').appendChild(gameDiv);
+            
+            // Add to selected games
+            selectedGames.push(gameName.toLowerCase().replace(/\s+/g, '-'));
+            
+            // Clear input
+            input.value = '';
+        }
+
+        // FIXED: Save configuration with real user ID
         async function saveConfiguration() {
+            // Get current user first
+            const user = await getCurrentUser();
+            if (!user) return;
+
             const config = {
-                user_id: 'test-user',
+                user_id: user.id,  // Use real user ID!
                 sensitivity: document.querySelector('input[name="sensitivity"]:checked').value,
                 clip_length: parseInt(document.querySelector('input[name="clipLength"]:checked').value),
                 selected_games: selectedGames,
@@ -1002,48 +1061,18 @@ function handleOAuthReturn() {
         // Clean up URL
         window.history.replaceState({}, document.title, window.location.pathname);
     }
-        async function exchangeCodeForTokens(platform, code) {
-            try {
-                const response = await fetch(`/.netlify/functions/oauth-${platform}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ code })
-                });
-
-                const data = await response.json();
-                
-                if (data.access_token) {
-                    console.log(`${platform} tokens received:`, data);
-                    
-                    // Save to Supabase
-                    await savePlatformConnection(platform, {
-                        accessToken: data.access_token,
-                        refreshToken: data.refresh_token,
-                        expiresIn: data.expires_in
-                    });
-                    
-                    // Update UI
-                    const platformElement = document.querySelector(`[data-platform="${platform}"]`);
-                    if (platformElement) {
-                        const button = platformElement.querySelector('.connect-btn');
-                        button.innerHTML = '<span class="text-green-600">✓</span> Connected';
-                        platformElement.classList.add('connected');
-                    }
-                } else {
-                    console.error(`Failed to exchange ${platform} code:`, data);
-                }
-            } catch (error) {
-                console.error(`Error exchanging ${platform} code:`, error);
-            }
-        }
 
         // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Page loaded');
-            checkPlatformConnections();
-            handleOAuthReturn();
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Page loaded, checking authentication...');
+            
+            // Check if user is logged in first
+            const user = await getCurrentUser();
+            if (user) {
+                console.log('User authenticated:', user.email);
+                checkPlatformConnections();
+                handleOAuthReturn();
+            }
         });
     </script>
 </body>
