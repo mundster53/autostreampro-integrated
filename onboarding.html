@@ -9,7 +9,7 @@
     <!-- Facebook SDK -->
     <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
     <script>
-      window.fbAsyncInit = function() {
+      window.fbAsyncInit = function() {streaming_connections
         FB.init({
           appId: '1369402897442291',
           cookie: true,
@@ -753,38 +753,56 @@ async function exchangeYouTubeCode(code) {
 
         // FIXED: Save platform connection with real user ID
         async function savePlatformConnection(platform, authData) {
-            try {
-                // Get current user first
-                const user = await getCurrentUser();
-                if (!user) {
-                    console.error('No user logged in!');
-                    return;
-                }
-
-                const response = await fetch('/.netlify/functions/save-connection', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        platform, 
-                        authData,
-                        userId: user.id  // Pass the real user ID!
-                    })
-                });
-
-                const result = await response.json();
-                
-                if (result.success) {
-                    console.log('Platform connection saved:', result.data);
-                    connectedPlatforms.push(platform);
-                } else {
-                    console.error('Error saving platform connection:', result.error);
-                }
-            } catch (error) {
-                console.error('Error saving platform connection:', error);
-            }
+    try {
+        // Get current user
+        const user = await getCurrentUser();
+        if (!user) {
+            console.error('No user logged in!');
+            return;
         }
+        
+        // Get the session token - THIS IS THE IMPORTANT PART!
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            console.error('No session found!');
+            return;
+        }
+        
+        const response = await fetch('/.netlify/functions/save-connection', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`  // THIS WAS MISSING!
+            },
+            body: JSON.stringify({ 
+                platform: platform,
+                platformUserId: authData.userID || authData.user_id || authData.open_id || platform,
+                accessToken: authData.accessToken || authData.access_token || authData.token,
+                refreshToken: authData.refreshToken || authData.refresh_token || '',
+                username: authData.username || authData.display_name || platform
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to save connection');
+        }
+        
+        console.log('Platform connection saved:', result);
+        
+        if (!connectedPlatforms.includes(platform)) {
+            connectedPlatforms.push(platform);
+        }
+        
+        // Refresh the connections display
+        await checkPlatformConnections();
+        
+    } catch (error) {
+        console.error('Error saving platform connection:', error);
+        alert(`Failed to save ${platform} connection. Please try again.`);
+    }
+}
 
         // FIXED: Check platform connections with real user ID
         async function checkPlatformConnections() {
