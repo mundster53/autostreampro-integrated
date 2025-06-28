@@ -249,6 +249,11 @@
             color: #991b1b;
         }
 
+        .coming-soon {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
         .loading {
             opacity: 0.6;
             pointer-events: none;
@@ -381,17 +386,17 @@
                     <div class="platform-status">
                         <div class="platform-icon instagram">I</div>
                         <div class="platform-name">Instagram</div>
-                        <div class="connection-status disconnected" id="instagram-status">Not Connected</div>
+                        <div class="connection-status coming-soon" id="instagram-status">Coming Soon</div>
                     </div>
                     <div class="platform-status">
                         <div class="platform-icon twitter">X</div>
                         <div class="platform-name">Twitter/X</div>
-                        <div class="connection-status disconnected" id="twitter-status">Not Connected</div>
+                        <div class="connection-status coming-soon" id="twitter-status">Coming Soon</div>
                     </div>
                     <div class="platform-status">
                         <div class="platform-icon tiktok">T</div>
                         <div class="platform-name">TikTok</div>
-                        <div class="connection-status disconnected" id="tiktok-status">Not Connected</div>
+                        <div class="connection-status coming-soon" id="tiktok-status">Coming Soon</div>
                     </div>
                 </div>
             </div>
@@ -477,77 +482,69 @@
         }
 
         // Load platform connections
-async function loadPlatformConnections() {
-    console.log('Loading platform connections with real data...');
-    
-    try {
-        const { data, error } = await supabase
-            .from('platform_connections')
-            .select('*')
-            .eq('user_id', '99f0c4bb-9016-409e-83ef-2c827698a2d5');
-        
-        console.log('Platform query result:', { data, error });
-        // Debug: Get ALL records to see what's in the table
-const { data: allData, error: allError } = await supabase
-    .from('platform_connections')
-    .select('*')
-    .limit(10);
-    
-console.log('ALL platform_connections records:', allData);
-if (allData && allData.length > 0) {
-    console.log('First record structure:', allData[0]);
-}
-        console.log('First record user_id:', allData[0].user_id);
-console.log('First record platform_name:', allData[0].platform_name);
-console.log('Complete first record:', JSON.stringify(allData[0], null, 2));
-console.log('Raw data array:', data);
-console.log('Data length:', data ? data.length : 'null');
-if (data && data.length > 0) {
-    console.log('First record:', data[0]);
-    console.log('First record user_id:', data[0].user_id);
-}
-        
-        if (!error && data && data.length > 0) {
-            console.log('Found platform data:', data);
+        async function loadPlatformConnections() {
+            console.log('Loading platform connections...');
             
-            const platforms = ['twitch', 'youtube', 'instagram', 'twitter','tiktok'];
-            let connectedCount = 0;
-            
-            platforms.forEach(platform => {
-                const isConnected = data.some(connection => 
-                    connection.platform_name === platform && connection.status === 'connected'
-                );
+            try {
+                // Get current user
+                const { data: { user }, error: authError } = await supabase.auth.getUser();
                 
-                const statusElement = document.getElementById(`${platform}-status`);
-                if (statusElement) {
-                    if (isConnected) {
-                        statusElement.textContent = 'Connected';
-                        statusElement.className = 'connection-status connected';
+                if (!user) {
+                    console.log('No user logged in');
+                    return;
+                }
+                
+                // Query the streaming_connections table with the current user's ID
+                const { data, error } = await supabase
+                    .from('streaming_connections')
+                    .select('*')
+                    .eq('user_id', user.id);
+                
+                console.log('Platform query result:', { data, error });
+                
+                if (!error && data && data.length > 0) {
+                    console.log('Found platform connections:', data);
+                    
+                    let connectedCount = 0;
+                    
+                    // Check Twitch
+                    const twitchConnected = data.some(conn => conn.platform === 'twitch' && conn.is_active);
+                    if (twitchConnected) {
+                        document.getElementById('twitch-status').textContent = 'Connected';
+                        document.getElementById('twitch-status').className = 'connection-status connected';
                         connectedCount++;
                     } else {
-                        statusElement.textContent = 'Visit Setup';
-                        statusElement.className = 'connection-status disconnected';
+                        document.getElementById('twitch-status').textContent = 'Visit Setup';
+                        document.getElementById('twitch-status').className = 'connection-status disconnected';
                     }
+                    
+                    // Check YouTube
+                    const youtubeConnected = data.some(conn => conn.platform === 'youtube' && conn.is_active);
+                    if (youtubeConnected) {
+                        document.getElementById('youtube-status').textContent = 'Connected';
+                        document.getElementById('youtube-status').className = 'connection-status connected';
+                        connectedCount++;
+                    } else {
+                        document.getElementById('youtube-status').textContent = 'Visit Setup';
+                        document.getElementById('youtube-status').className = 'connection-status disconnected';
+                    }
+                    
+                    // Instagram, Twitter, TikTok remain as "Coming Soon" (already set in HTML)
+                    
+                    document.getElementById('connectedPlatforms').textContent = connectedCount;
+                } else {
+                    console.log('No platform connections found');
+                    // Set all to disconnected except coming soon platforms
+                    document.getElementById('twitch-status').textContent = 'Visit Setup';
+                    document.getElementById('twitch-status').className = 'connection-status disconnected';
+                    document.getElementById('youtube-status').textContent = 'Visit Setup';
+                    document.getElementById('youtube-status').className = 'connection-status disconnected';
+                    document.getElementById('connectedPlatforms').textContent = '0';
                 }
-            });
-            
-            document.getElementById('connectedPlatforms').textContent = connectedCount;
-        } else {
-            console.log('No platform data found');
-            const platforms = ['twitch', 'youtube', 'instagram', 'tiktok'];
-            platforms.forEach(platform => {
-                const statusElement = document.getElementById(`${platform}-status`);
-                if (statusElement) {
-                    statusElement.textContent = 'Visit Setup';
-                    statusElement.className = 'connection-status disconnected';
-                }
-            });
-            document.getElementById('connectedPlatforms').textContent = '0';
+            } catch (error) {
+                console.error('Error loading platform connections:', error);
+            }
         }
-    } catch (error) {
-        console.error('Error loading platform connections:', error);
-    }
-}
 
         // Sign out function
         async function signOut() {
