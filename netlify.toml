@@ -1,6 +1,6 @@
 [build]
   publish = "."
-  functions = "functions"
+  functions = "netlify/functions"
   command = "npm install"
 
 [build.environment]
@@ -8,7 +8,7 @@
   NPM_VERSION = "8"
 
 [functions]
-  directory = "functions"
+  directory = "netlify/functions"
   node_bundler = "esbuild"
 
 [[redirects]]
