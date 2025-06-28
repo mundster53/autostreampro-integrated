@@ -753,7 +753,11 @@ async function exchangeYouTubeCode(code) {
 
         // FIXED: Save platform connection with real user ID
         async function savePlatformConnection(platform, authData) {
-    try {
+    	try { const { data: { session } } = await supabase.auth.getSession();
+	if (!session) {
+    	console.error('No session found!');
+    return;
+}
         // Get current user
         const user = await getCurrentUser();
         if (!user) {
@@ -812,7 +816,7 @@ async function exchangeYouTubeCode(code) {
                 if (!user) return;
 
                 const { data, error } = await supabase
-                    .from('platform_connections')
+                    .from('streaming_connections')
                     .select('platform_name')
                     .eq('user_id', user.id);  // Use real user ID!
 
