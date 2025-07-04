@@ -28,7 +28,7 @@
     "dotenv": "^16.3.0",
     "stripe": "^14.9.0",
     "twitter-api-v2": "^1.15.0",
-    "openai": "^4.20.0",
+    "openai": "^4.20.1",
     "replicate": "^0.22.0",
     "ffmpeg-static": "^5.2.0",
     "fluent-ffmpeg": "^2.1.2",
