@@ -384,7 +384,7 @@ async function generateClip(userId, streamData, supabase, headers) {
             title: `Epic ${streamData.game || 'Gaming'} Moment`,
             game: streamData.game || 'Unknown',
             duration: streamData.duration || 30,
-            viralityScore: Math.floor(Math.random() * 40) + 60, // 60-100
+            viralityScore: await calculateAIScore(streamData, userId, supabase), // 60-100
             status: 'generated',
             created_at: new Date().toISOString()
         };
