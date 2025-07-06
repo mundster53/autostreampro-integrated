@@ -24,7 +24,7 @@ exports.handler = async (event, context) => {
       .from('publishing_queue')
       .select('*')
       .eq('platform', 'youtube')
-      .eq('status', 'failed')
+      .eq('status', 'pending')
       .limit(5);
 
     if (error) throw error;
