@@ -1,11 +1,4 @@
 [build]
-  functions = ".netlify/functions"
-
-[[functions]]
-  path = ".netlify/functions/processQueue.js"
-  schedule = "*/5 * * * *"  # Run every 5 minutes
-
-[build]
   publish = "."
   functions = "netlify/functions"
   command = "npm install"
@@ -17,6 +10,10 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+
+  [[functions]]
+  path = ".netlify/functions/processQueue.js"
+  schedule = "*/5 * * * *"  # Run every 5 minutes
 
 [[redirects]]
   from = "/api/stripe/*"
