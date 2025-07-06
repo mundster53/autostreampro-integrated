@@ -6,15 +6,32 @@ const supabase = createClient(
 );
 
 exports.handler = async (event, context) => {
+  // Handle CORS preflight
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+      }
+    };
+  }
+
   if (event.httpMethod !== 'POST') {
     return { 
       statusCode: 405, 
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({ error: 'Method Not Allowed' })
     };
   }
 
   try {
     const { clipId } = JSON.parse(event.body || '{}');
+    console.log('Processing clip upload:', clipId);
 
     // Get clip data
     const { data: clip, error: clipError } = await supabase
@@ -24,82 +41,36 @@ exports.handler = async (event, context) => {
       .single();
 
     if (clipError || !clip) {
-      throw new Error('Clip not found');
+      throw new Error(`Clip not found: ${clipId}`);
     }
+
+    console.log('Found clip:', clip.title);
 
     // Get user's YouTube access token
     const { data: connection, error: connError } = await supabase
       .from('streaming_connections')
-      .select('access_token, refresh_token')
+      .select('access_token, refresh_token, platform_username')
       .eq('user_id', clip.user_id)
       .eq('platform', 'youtube')
+      .eq('is_active', true)
       .single();
 
     if (connError || !connection) {
       throw new Error('YouTube not connected for this user');
     }
 
-    // Prepare YouTube upload data
-    const uploadData = {
-      snippet: {
-        title: clip.title || `Gaming Highlight - ${clip.game}`,
-        description: `Epic ${clip.game} gameplay moment! 🎮\n\nGenerated automatically by AutoStreamPro\n\nDuration: ${clip.duration}s\nAI Score: ${(clip.ai_score * 100).toFixed(0)}%`,
-        tags: [clip.game, 'gaming', 'highlights', 'gameplay', 'autostreampro'],
-        categoryId: '20' // Gaming category
-      },
-      status: {
-        privacyStatus: 'public',
-        selfDeclaredMadeForKids: false
-      }
-    };
+    console.log('Found YouTube connection for:', connection.platform_username);
 
-    // Use YouTube Data API v3 via direct HTTP requests (to avoid googleapis bundling issues)
-    const youtubeUploadUrl = 'https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status';
-    
-    // Step 1: Initiate resumable upload
-    const initResponse = await fetch(youtubeUploadUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${connection.access_token}`,
-        'Content-Type': 'application/json',
-        'X-Upload-Content-Type': 'video/*'
-      },
-      body: JSON.stringify(uploadData)
-    });
-
-    if (!initResponse.ok) {
-      const error = await initResponse.text();
-      console.error('YouTube API error:', error);
-      throw new Error(`YouTube API error: ${initResponse.status}`);
+    // Check if video URL is accessible
+    const videoCheckResponse = await fetch(clip.video_url, { method: 'HEAD' });
+    if (!videoCheckResponse.ok) {
+      throw new Error(`Video file not accessible: ${clip.video_url}`);
     }
 
-    // Get upload URL from response headers
-    const uploadUrl = initResponse.headers.get('location');
-    
-    if (!uploadUrl) {
-      throw new Error('No upload URL received from YouTube');
-    }
+    // For now, let's return success without actually uploading to test the pipeline
+    const mockYouTubeId = `test_${Date.now()}`;
 
-    // Step 2: Upload video file
-    const videoResponse = await fetch(clip.video_url);
-    const videoBuffer = await videoResponse.arrayBuffer();
-
-    const uploadVideoResponse = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'video/*'
-      },
-      body: videoBuffer
-    });
-
-    if (!uploadVideoResponse.ok) {
-      throw new Error(`Video upload failed: ${uploadVideoResponse.status}`);
-    }
-
-    const youtubeResult = await uploadVideoResponse.json();
-    const youtubeVideoId = youtubeResult.id;
-
-    console.log(`Successfully uploaded to YouTube: ${youtubeVideoId}`);
+    console.log('Mock upload successful for:', clip.title);
 
     return {
       statusCode: 200,
@@ -109,10 +80,16 @@ exports.handler = async (event, context) => {
       },
       body: JSON.stringify({
         success: true,
-        youtubeId: youtubeVideoId,
-        message: 'Video uploaded to YouTube successfully!',
+        youtubeId: mockYouTubeId,
+        message: 'Mock upload successful - function working!',
         clipTitle: clip.title,
-        youtubeUrl: `https://www.youtube.com/watch?v=${youtubeVideoId}`
+        videoUrl: clip.video_url,
+        channelName: connection.platform_username,
+        debug: {
+          clipFound: true,
+          connectionFound: true,
+          videoAccessible: true
+        }
       })
     };
 
