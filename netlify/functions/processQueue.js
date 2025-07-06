@@ -1,4 +1,3 @@
-
 const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
@@ -7,86 +6,83 @@ const supabase = createClient(
 );
 
 exports.handler = async (event, context) => {
+  // Handle CORS preflight
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+      }
+    };
+  }
+
   try {
-    // Get pending YouTube uploads
+    console.log('Starting queue processing...');
+
+    // Get failed YouTube uploads to retry
     const { data: pendingUploads, error } = await supabase
       .from('publishing_queue')
       .select('*')
       .eq('platform', 'youtube')
-      .eq('status', 'pending')
-      .lte('scheduled_for', new Date().toISOString())
-      .limit(5); // Process 5 at a time
+      .eq('status', 'failed')
+      .limit(5);
 
     if (error) throw error;
 
+    console.log(`Found ${pendingUploads.length} failed uploads to retry`);
+
     for (const upload of pendingUploads) {
       try {
-        // Update attempts
+        console.log(`Processing upload: ${upload.clip_id}`);
+
+        // Reset status and increment attempts
         await supabase
           .from('publishing_queue')
-          .update({ attempts: upload.attempts + 1 })
+          .update({ 
+            status: 'pending',
+            attempts: upload.attempts + 1 
+          })
           .eq('id', upload.id);
 
         // Call YouTube upload function
-        const uploadResult = await fetch(`${process.env.NETLIFY_URL}/.netlify/functions/upload-to-youtube`, {
+        const uploadResult = await fetch(`https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/upload-to-youtube`, {
           method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
           body: JSON.stringify({
-            clipId: upload.clip_id,
-            userId: 'e067a518-c578-4b11-bdfd-470ff92d3d69', // Duncan's user ID
-            accessToken: 'youtube_access_token_here' // You'll need to get this from OAuth
+            clipId: upload.clip_id
           })
         });
 
         if (uploadResult.ok) {
-          // Mark as completed
-          await supabase
-            .from('publishing_queue')
-            .update({ 
-              status: 'completed',
-              completed_at: new Date().toISOString()
-            })
-            .eq('id', upload.id);
-
-          // Add to published_content
           const response = await uploadResult.json();
-          await supabase
-            .from('published_content')
-            .insert({
-              clip_id: upload.clip_id,
-              platform: 'youtube',
-              external_id: response.youtubeId,
-              published_at: new Date().toISOString()
-            });
+          
+          if (response.success) {
+            // Mark as completed
+            await supabase
+              .from('publishing_queue')
+              .update({ 
+                status: 'completed',
+                completed_at: new Date().toISOString()
+              })
+              .eq('id', upload.id);
+
+            // Add to published_content
+            await supabase
+              .from('published_content')
+              .insert({
+                clip_id: upload.clip_id,
+                platform: 'youtube',
+                external_id: response.youtubeId,
+                published_at: new Date().toISOString()
+              });
+
+            console.log(`Successfully processed: ${upload.clip_id}`);
+          } else {
+            throw new Error(response.error || 'Upload failed');
+          }
         } else {
-          throw new Error('Upload failed');
-        }
-
-      } catch (uploadError) {
-        // Mark as failed
-        await supabase
-          .from('publishing_queue')
-          .update({ 
-            status: 'failed',
-            last_error: uploadError.message
-          })
-          .eq('id', upload.id);
-      }
-    }
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        processed: pendingUploads.length,
-        message: 'Queue processed successfully'
-      })
-    };
-
-  } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        error: error.message
-      })
-    };
-  }
-};
+          const errorText = await uploadResult.text()
