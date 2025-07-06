@@ -63,14 +63,18 @@ exports.handler = async (event, context) => {
               })
               .eq('id', upload.id);
 
-            await supabase
-              .from('published_content')
-              .insert({
-                clip_id: upload.clip_id,
-                platform: 'youtube',
-                external_id: response.youtubeId,
-                published_at: new Date().toISOString()
-              });
+            // CORRECT - Fixed column names and added required fields:
+await supabase
+            .from('published_content')
+            .insert({
+              clip_id: upload.clip_id,
+              platform: 'youtube',
+              platform_post_id: response.youtubeId,  // ✅ Correct column name
+              platform_url: response.youtubeUrl || `https://www.youtube.com/watch?v=${response.youtubeId}`,
+              published_at: new Date().toISOString(),
+              last_metrics_update: new Date().toISOString(),
+              metrics: {}  // Empty JSON object for now
+  });
 
             console.log(`Successfully processed: ${upload.clip_id}`);
           } else {
