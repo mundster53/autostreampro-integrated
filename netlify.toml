@@ -12,7 +12,7 @@
   node_bundler = "esbuild"
 
   [[functions]]
-  path = ".netlify/functions/processQueue.js"
+  path = "netlify/functions/processQueue.js"
   schedule = "*/5 * * * *"  # Run every 5 minutes
 
 [[redirects]]
