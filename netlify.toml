@@ -11,10 +11,6 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
-  [functions]
-  path = "netlify/functions/processQueue.js"
-  schedule = "*/5 * * * *"  # Run every 5 minutes
-
 [[redirects]]
   from = "/api/stripe/*"
   to = "/.netlify/functions/:splat"
