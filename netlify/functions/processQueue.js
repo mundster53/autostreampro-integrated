@@ -6,7 +6,6 @@ const supabase = createClient(
 );
 
 exports.handler = async (event, context) => {
-  // Handle CORS preflight
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -21,7 +20,6 @@ exports.handler = async (event, context) => {
   try {
     console.log('Starting queue processing...');
 
-    // Get failed YouTube uploads to retry
     const { data: pendingUploads, error } = await supabase
       .from('publishing_queue')
       .select('*')
@@ -35,9 +33,6 @@ exports.handler = async (event, context) => {
 
     for (const upload of pendingUploads) {
       try {
-        console.log(`Processing upload: ${upload.clip_id}`);
-
-        // Reset status and increment attempts
         await supabase
           .from('publishing_queue')
           .update({ 
@@ -46,7 +41,6 @@ exports.handler = async (event, context) => {
           })
           .eq('id', upload.id);
 
-        // Call YouTube upload function
         const uploadResult = await fetch(`https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/upload-to-youtube`, {
           method: 'POST',
           headers: {
@@ -61,28 +55,8 @@ exports.handler = async (event, context) => {
           const response = await uploadResult.json();
           
           if (response.success) {
-            // Mark as completed
             await supabase
               .from('publishing_queue')
               .update({ 
                 status: 'completed',
-                completed_at: new Date().toISOString()
-              })
-              .eq('id', upload.id);
-
-            // Add to published_content
-            await supabase
-              .from('published_content')
-              .insert({
-                clip_id: upload.clip_id,
-                platform: 'youtube',
-                external_id: response.youtubeId,
-                published_at: new Date().toISOString()
-              });
-
-            console.log(`Successfully processed: ${upload.clip_id}`);
-          } else {
-            throw new Error(response.error || 'Upload failed');
-          }
-        } else {
-          const errorText = await uploadResult.text()
+                completed_at: new Date()
