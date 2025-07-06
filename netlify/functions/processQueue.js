@@ -59,4 +59,64 @@ exports.handler = async (event, context) => {
               .from('publishing_queue')
               .update({ 
                 status: 'completed',
-                completed_at: new Date()
+                completed_at: new Date().toISOString()
+              })
+              .eq('id', upload.id);
+
+            await supabase
+              .from('published_content')
+              .insert({
+                clip_id: upload.clip_id,
+                platform: 'youtube',
+                external_id: response.youtubeId,
+                published_at: new Date().toISOString()
+              });
+
+            console.log(`Successfully processed: ${upload.clip_id}`);
+          } else {
+            throw new Error(response.error || 'Upload failed');
+          }
+        } else {
+          const errorText = await uploadResult.text();
+          throw new Error(`HTTP ${uploadResult.status}: ${errorText}`);
+        }
+
+      } catch (uploadError) {
+        console.error(`Upload error for ${upload.clip_id}:`, uploadError.message);
+        
+        await supabase
+          .from('publishing_queue')
+          .update({ 
+            status: 'failed',
+            last_error: uploadError.message
+          })
+          .eq('id', upload.id);
+      }
+    }
+
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        processed: pendingUploads.length,
+        message: 'Queue processed successfully'
+      })
+    };
+
+  } catch (error) {
+    console.error('Queue processing error:', error);
+    return {
+      statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        error: error.message
+      })
+    };
+  }
+};
