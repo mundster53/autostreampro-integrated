@@ -63,35 +63,6 @@ async function getTwitchMP4Url(clip) {
   // Return URL and debug info - modify the error handling in the main function
   throw new Error(`DEBUG INFO: ${JSON.stringify(debugInfo, null, 2)}`);
 }
-    
-    const gqlData = await gqlResponse.json();
-    console.log('GQL Response:', JSON.stringify(gqlData, null, 2));
-    
-    if (gqlData.data?.clip?.videoQualities?.[0]) {
-      const url = gqlData.data.clip.videoQualities[0].sourceURL;
-      console.log('GQL URL found:', url);
-      return url;
-    }
-  } catch (e) {
-    console.error('GQL method failed:', e);
-  }
-  
-  // Method 2: Try constructing from thumbnail
-  if (clip.thumbnail_url) {
-    const match = clip.thumbnail_url.match(/\/([A-Za-z0-9_-]+)\/\d+-offset-\d+-preview/);
-    if (match) {
-      const videoId = match[1];
-      const url = `https://clips-media-assets2.twitch.tv/${videoId}.mp4`;
-      console.log('Thumbnail method URL:', url);
-      return url;
-    }
-  }
-  
-  // Method 3: Try pattern from source_id
-  const url = `https://clips-media-assets2.twitch.tv/AT-cm%7C${clip.source_id}.mp4`;
-  console.log('Fallback URL:', url);
-  return url;
-}
 
 exports.handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
