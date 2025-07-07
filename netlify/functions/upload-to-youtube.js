@@ -53,7 +53,56 @@ const { data: connection, error: connError } = await supabase
 if (connError || !connection) {
   throw new Error('YouTube not connected for this user');
 }
-
+    
+// Handle Twitch clips
+if (clip.video_url && clip.video_url.includes('clips.twitch.tv/')) {
+    console.log('Processing Twitch clip:', clip.video_url);
+    
+    try {
+        // Fetch the clip page to extract MP4 URL
+        const pageResponse = await fetch(clip.video_url);
+        
+        if (!pageResponse.ok) {
+            throw new Error(`Failed to fetch Twitch clip page: ${pageResponse.status}`);
+        }
+        
+        const html = await pageResponse.text();
+        
+        // Look for MP4 URL in the page
+        // Twitch embeds the video URL in various formats
+        const patterns = [
+            /https:\/\/production\.assets\.clips\.twitchcdn\.net\/[^"'\s]+\.mp4/,
+            /https:\/\/clips-media-assets[^"'\s]+\.mp4/,
+            /"clip_video_url":"([^"]+)"/,
+            /content="([^"]+\.mp4)"/
+        ];
+        
+        let mp4Url = null;
+        
+        for (const pattern of patterns) {
+            const match = html.match(pattern);
+            if (match) {
+                mp4Url = match[1] || match[0];
+                // Clean up escaped characters
+                mp4Url = mp4Url.replace(/\\/g, '');
+                break;
+            }
+        }
+        
+        if (mp4Url) {
+            console.log('Original URL:', clip.video_url);
+            console.log('Extracted MP4 URL:', mp4Url);
+            clip.video_url = mp4Url;
+        } else {
+            throw new Error('Could not extract MP4 URL from Twitch clip page');
+        }
+        
+    } catch (error) {
+        console.error('Error processing Twitch clip:', error);
+        throw new Error(`Failed to process Twitch clip: ${error.message}`);
+    }
+}
+    
 // Check if token is expired or will expire in next 5 minutes
 const now = new Date();
 const expiresAt = connection.expires_at ? new Date(connection.expires_at) : null;
