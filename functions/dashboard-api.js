@@ -378,16 +378,83 @@ async function generateClip(userId, streamData, supabase, headers) {
     try {
         console.log('Generating clip for user:', userId, streamData);
 
-        // Create new clip record
+        // Create clip with pending score
         const clipData = {
-            supabase_user_id: userId,
-            title: `Epic ${streamData.game || 'Gaming'} Moment`,
+            user_id: userId,
+            source_platform: 'twitch',
+            source_id: streamData.clipId || `clip_${Date.now()}`,
+            title: streamData.title || `Epic ${streamData.game || 'Gaming'} Moment`,
             game: streamData.game || 'Unknown',
             duration: streamData.duration || 30,
-            viralityScore: await calculateAIScore(streamData, userId, supabase), // 60-100
-            status: 'generated',
+            thumbnail_url: streamData.thumbnailUrl,
+            video_url: streamData.videoUrl,
+            ai_score: 0, // Will be updated by real analysis
+            status: 'analyzing', // New status
             created_at: new Date().toISOString()
         };
+
+        const { data, error } = await supabase
+            .from('clips')
+            .insert(clipData)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        // Trigger real AI analysis
+        const analysisResult = await fetch(`${process.env.NETLIFY_URL}/.netlify/functions/analyzeClipContent`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clipId: data.id })
+        });
+
+        const analysis = await analysisResult.json();
+
+        // Only add to publishing queue if score is good
+        if (analysis.shouldUpload) {
+            await supabase
+                .from('publishing_queue')
+                .insert({
+                    clip_id: data.id,
+                    platform: 'youtube',
+                    status: 'pending',
+                    priority: Math.floor(analysis.score * 10) // Higher score = higher priority
+                });
+            
+            console.log(`Clip ${data.id} scored ${analysis.score} - WILL UPLOAD`);
+        } else {
+            console.log(`Clip ${data.id} scored ${analysis.score} - SKIPPING`);
+            
+            // Update status to rejected
+            await supabase
+                .from('clips')
+                .update({ status: 'rejected_low_score' })
+                .eq('id', data.id);
+        }
+
+        return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({
+                success: true,
+                message: 'Clip analyzed successfully',
+                clip: data,
+                analysis: analysis
+            })
+        };
+
+    } catch (error) {
+        console.error('Error generating clip:', error);
+        return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({
+                error: 'Failed to generate clip',
+                message: error.message
+            })
+        };
+    }
+}
 
         const { data, error } = await supabase
             .from('clips')
