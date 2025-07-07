@@ -6,7 +6,6 @@ const supabase = createClient(
 );
 
 exports.handler = async (event, context) => {
-  // Handle CORS
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -22,30 +21,21 @@ exports.handler = async (event, context) => {
     const { refreshToken, userId } = JSON.parse(event.body || '{}');
 
     console.log('Refreshing YouTube token for user:', userId);
+    console.log('CLIENT_ID:', process.env.YOUTUBE_CLIENT_ID);
+    console.log('CLIENT_SECRET exists:', !!process.env.YOUTUBE_CLIENT_SECRET);
 
-    // Use refresh token to get new access token
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      // Temporary debugging
-console.log('CLIENT_ID:', process.env.YOUTUBE_CLIENT_ID);
-console.log('CLIENT_SECRET exists:', !!process.env.YOUTUBE_CLIENT_SECRET);
-
-// Use refresh token to get new access token
-const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded'
-  },
-  body: new URLSearchParams({
-    client_id: process.env.YOUTUBE_CLIENT_ID,
-    client_secret: process.env.YOUTUBE_CLIENT_SECRET,
-    refresh_token: refreshToken,
-    grant_type: 'refresh_token'
-  })
-});
+      body: new URLSearchParams({
+        client_id: process.env.YOUTUBE_CLIENT_ID,
+        client_secret: process.env.YOUTUBE_CLIENT_SECRET,
+        refresh_token: refreshToken,
+        grant_type: 'refresh_token'
+      })
+    });
 
     const tokenData = await tokenResponse.json();
 
@@ -53,10 +43,8 @@ const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       throw new Error(`Token refresh failed: ${tokenData.error_description || tokenData.error}`);
     }
 
-    // Calculate expiry time (tokens typically expire in 1 hour)
     const expiresAt = new Date(Date.now() + ((tokenData.expires_in || 3600) * 1000));
 
-    // Update database with new access token
     const { error: updateError } = await supabase
       .from('streaming_connections')
       .update({
@@ -93,12 +81,4 @@ const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       statusCode: 500,
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        success: false,
-        error: error.message
-      })
-    };
-  }
-};
+        'Content-
