@@ -20,12 +20,34 @@ exports.handler = async (event, context) => {
   try {
     console.log('Starting queue processing...');
 
-    const { data: pendingUploads, error } = await supabase
-      .from('publishing_queue')
-      .select('*')
-      .eq('platform', 'youtube')
-      .eq('status', 'pending')
-      .limit(5);
+    // Get pending YouTube uploads with good AI scores only
+const { data: pendingUploads, error } = await supabase
+  .from('publishing_queue')
+  .select(`
+    *,
+    clips!inner (
+      ai_score,
+      title,
+      game,
+      video_url,
+      user_id
+    )
+  `)
+  .eq('platform', 'youtube')
+  .eq('status', 'pending')
+  .gte('clips.ai_score', 0.40) // Only process clips with score >= 0.40
+  .order('clips.ai_score', { ascending: false }) // Process best clips first
+  .limit(5);
+
+if (error) throw error;
+
+console.log(`Found ${pendingUploads.length} high-scoring clips to process`);
+
+// Now when processing, you can access clip data directly
+for (const upload of pendingUploads) {
+  console.log(`Processing clip: ${upload.clips.title} (Score: ${upload.clips.ai_score})`);
+  // ... rest of processing logic
+}
 
     if (error) throw error;
 
