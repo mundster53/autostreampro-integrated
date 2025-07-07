@@ -184,31 +184,54 @@ class StreamMonitor {
     }
 
     async saveClip(userId, twitchClip) {
-        try {
-            // Check if clip already exists
-            const { data: existing } = await this.supabase
-                .from('clips')
-                .select('id')
-                .eq('source_id', twitchClip.id)
-                .single();
+    try {
+        // Check if clip already exists
+        const { data: existing } = await this.supabase
+            .from('clips')
+            .select('id')
+            .eq('source_id', twitchClip.id)
+            .single();
 
-            if (existing) return; // Already processed
+        if (existing) return; // Already processed
 
-            // Save new clip
-            const { data, error } = await this.supabase
-                .from('clips')
-                .insert({
-                    user_id: userId,
-                    source_platform: 'twitch',
-                    source_id: twitchClip.id,
-                    title: twitchClip.title,
-                    game: twitchClip.game_id,
-                    duration: twitchClip.duration,
-                    thumbnail_url: twitchClip.thumbnail_url,
-                    video_url: twitchClip.thumbnail_url.replace('-preview-480x272.jpg', '.mp4'),
-                    status: 'pending',
-                    created_at: twitchClip.created_at
-                });
+        // Construct proper video URL
+        let videoUrl = `https://clips.twitch.tv/${twitchClip.id}`;
+        
+        // Store embed URL as backup
+        let embedUrl = twitchClip.embed_url || `https://clips.twitch.tv/embed?clip=${twitchClip.id}`;
+        
+        // Try to get direct MP4 if available
+        // Twitch provides this in some API responses
+        if (twitchClip.thumbnail_url) {
+            // For now, keep the clip URL, we'll handle MP4 extraction during upload
+            console.log(`[StreamMonitor] Clip thumbnail: ${twitchClip.thumbnail_url}`);
+        }
+
+        // Save new clip with correct URLs
+        const { data, error } = await this.supabase
+            .from('clips')
+            .insert({
+                user_id: userId,
+                source_platform: 'twitch',
+                source_id: twitchClip.id,
+                title: twitchClip.title,
+                game: twitchClip.game_id,
+                duration: twitchClip.duration,
+                thumbnail_url: twitchClip.thumbnail_url,
+                video_url: videoUrl,  // ← FIXED: Now uses clip URL format
+                embed_url: embedUrl,  // ← NEW: Store embed URL too
+                status: 'pending',
+                created_at: twitchClip.created_at
+            });
+
+        if (error) throw error;
+
+        console.log(`[StreamMonitor] Saved clip: ${twitchClip.title}`);
+
+    } catch (error) {
+        console.error('[StreamMonitor] Error saving clip:', error);
+    }
+}
 
             if (error) throw error;
 
