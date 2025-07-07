@@ -151,31 +151,49 @@ async function analyzeThumbnailWithGPT4(thumbnailUrl, game) {
 }
 
 function analyzeMetadata(clip) {
-  let score = 0.3; // Base score
+  let score = 0.35; // Higher base score
   
-  // Title analysis
+  // Title analysis - more keywords and better matching
   const excitingWords = ['insane', 'crazy', 'epic', 'clutch', 'ace', 'pentakill', 
                         'quadra', 'triple', '1v4', '1v5', 'comeback', 'perfect',
-                        'flawless', 'destroyed', 'obliterated', 'unbelievable'];
+                        'flawless', 'destroyed', 'obliterated', 'unbelievable',
+                        'super', 'earth', 'victory', 'win', 'best', 'amazing',
+                        'wild', 'savage', 'godlike', 'legendary'];
   
   const titleLower = (clip.title || '').toLowerCase();
+  let titleBoosts = 0;
+  
   for (const word of excitingWords) {
     if (titleLower.includes(word)) {
-      score += 0.1;
+      titleBoosts++;
+      score += 0.08; // Each word adds 8%
     }
   }
   
   // Duration analysis (15-45 seconds is optimal)
   if (clip.duration >= 15 && clip.duration <= 45) {
-    score += 0.1;
+    score += 0.15; // Increased from 0.1
+  } else if (clip.duration > 10 && clip.duration <= 60) {
+    score += 0.05; // Partial credit
   } else if (clip.duration > 60) {
-    score -= 0.1; // Too long
+    score -= 0.05; // Reduced penalty
   }
   
-  // Game-specific boosts
-  const viralGames = ['valorant', 'fortnite', 'warzone', 'apex', 'league of legends'];
-  if (viralGames.some(game => (clip.game || '').toLowerCase().includes(game))) {
-    score += 0.1;
+  // Game-specific boosts - expanded list
+  const viralGames = ['valorant', 'fortnite', 'warzone', 'apex', 'league of legends',
+                     'overwatch', 'helldivers', 'destiny', 'call of duty', 'battlefield',
+                     'counter-strike', 'cs:', 'rocket league', 'minecraft', 'among us'];
+  
+  const gameLower = (clip.game || '').toLowerCase();
+  
+  if (viralGames.some(game => gameLower.includes(game))) {
+    score += 0.15; // Increased from 0.1
+  }
+  
+  // Special boost for action games
+  if (gameLower.includes('helldivers') || gameLower.includes('warzone') || 
+      gameLower.includes('apex') || gameLower.includes('valorant')) {
+    score += 0.1; // Action game bonus
   }
   
   return Math.max(0, Math.min(1, score));
