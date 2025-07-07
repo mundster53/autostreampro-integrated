@@ -69,7 +69,7 @@ for (const upload of pendingUploads) {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            clipId: upload.clip_id
+            clipId: upload.clips.id
           })
         });
 
