@@ -36,7 +36,6 @@ async function getTwitchMP4Url(clip) {
   
   // Method 2: Try constructing from thumbnail
   if (clip.thumbnail_url) {
-    // Extract video ID from thumbnail
     const match = clip.thumbnail_url.match(/\/([A-Za-z0-9_-]+)\/\d+-offset-\d+-preview/);
     if (match) {
       const videoId = match[1];
@@ -85,131 +84,55 @@ exports.handler = async (event, context) => {
     }
 
     // Get user's YouTube connection with refresh capabilities
-const { data: connection, error: connError } = await supabase
-  .from('streaming_connections')
-  .select('access_token, refresh_token, platform_username, expires_at, user_id')
-  .eq('user_id', clip.user_id)
-  .eq('platform', 'youtube')
-  .eq('is_active', true)
-  .single();
+    const { data: connection, error: connError } = await supabase
+      .from('streaming_connections')
+      .select('access_token, refresh_token, platform_username, expires_at, user_id')
+      .eq('user_id', clip.user_id)
+      .eq('platform', 'youtube')
+      .eq('is_active', true)
+      .single();
 
-if (connError || !connection) {
-  throw new Error('YouTube not connected for this user');
-}
-    
-// Handle Twitch clips
-// Handle Twitch clips with temporary download
-if (clip.video_url && clip.video_url.includes('clips.twitch.tv/')) {
-    console.log('Processing Twitch clip:', clip.video_url);
-    
-    try {
-        // Get MP4 URL using Twitch GQL API
-        const mp4Url = await getTwitchMP4Url(clip);
-        console.log('Got Twitch MP4 URL:', mp4Url);
-        
-        // Download directly to memory
-        const videoResponse = await fetch(mp4Url);
-        if (!videoResponse.ok) {
-            throw new Error(`Failed to download Twitch clip: ${videoResponse.status}`);
-        }
-        
-        const videoBuffer = await videoResponse.arrayBuffer();
-        console.log('Downloaded Twitch clip, size:', videoBuffer.byteLength);
-        
-        // Continue with YouTube upload using this buffer
-        // (Skip the regular video fetch since we have the buffer)
-        
-    } catch (error) {
-        console.error('Twitch clip download error:', error);
-        throw new Error(`Failed to process Twitch clip: ${error.message}`);
+    if (connError || !connection) {
+      throw new Error('YouTube not connected for this user');
     }
-} 
-
-else {
-    // Regular video fetch for non-Twitch URLs
-    const videoResponse = await fetch(clip.video_url);
-    const videoBuffer = await videoResponse.arrayBuffer();
-}
-        
-        if (!pageResponse.ok) {
-            throw new Error(`Failed to fetch Twitch clip page: ${pageResponse.status}`);
-        }
-        
-        const html = await pageResponse.text();
-        
-        // Look for MP4 URL in the page
-        // Twitch embeds the video URL in various formats
-        const patterns = [
-            /https:\/\/production\.assets\.clips\.twitchcdn\.net\/[^"'\s]+\.mp4/,
-            /https:\/\/clips-media-assets[^"'\s]+\.mp4/,
-            /"clip_video_url":"([^"]+)"/,
-            /content="([^"]+\.mp4)"/
-        ];
-        
-        let mp4Url = null;
-        
-        for (const pattern of patterns) {
-            const match = html.match(pattern);
-            if (match) {
-                mp4Url = match[1] || match[0];
-                // Clean up escaped characters
-                mp4Url = mp4Url.replace(/\\/g, '');
-                break;
-            }
-        }
-        
-        if (mp4Url) {
-            console.log('Original URL:', clip.video_url);
-            console.log('Extracted MP4 URL:', mp4Url);
-            clip.video_url = mp4Url;
-        } else {
-            throw new Error('Could not extract MP4 URL from Twitch clip page');
-        }
-        
-    } catch (error) {
-        console.error('Error processing Twitch clip:', error);
-        throw new Error(`Failed to process Twitch clip: ${error.message}`);
-    }
-}
     
-// Check if token is expired or will expire in next 5 minutes
-const now = new Date();
-const expiresAt = connection.expires_at ? new Date(connection.expires_at) : null;
-const isExpiredSoon = !expiresAt || (expiresAt.getTime() - now.getTime()) < (5 * 60 * 1000);
+    // Check if token is expired or will expire in next 5 minutes
+    const now = new Date();
+    const expiresAt = connection.expires_at ? new Date(connection.expires_at) : null;
+    const isExpiredSoon = !expiresAt || (expiresAt.getTime() - now.getTime()) < (5 * 60 * 1000);
 
-let accessToken = connection.access_token;
+    let accessToken = connection.access_token;
 
-if (isExpiredSoon) {
-  console.log('Token expired or expiring soon, refreshing...');
-  
-  // Call refresh token function
-  const refreshResponse = await fetch(`https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/refreshYouTubeToken`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      refreshToken: connection.refresh_token,
-      userId: connection.user_id
-    })
-  });
+    if (isExpiredSoon) {
+      console.log('Token expired or expiring soon, refreshing...');
+      
+      // Call refresh token function
+      const refreshResponse = await fetch(`https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/refreshYouTubeToken`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          refreshToken: connection.refresh_token,
+          userId: connection.user_id
+        })
+      });
 
-  if (refreshResponse.ok) {
-    const refreshResult = await refreshResponse.json();
-    accessToken = refreshResult.newToken;
-    console.log('Token refreshed successfully');
-  } else {
-    throw new Error('Failed to refresh YouTube token - user needs to reconnect');
-  }
-}
+      if (refreshResponse.ok) {
+        const refreshResult = await refreshResponse.json();
+        accessToken = refreshResult.newToken;
+        console.log('Token refreshed successfully');
+      } else {
+        throw new Error('Failed to refresh YouTube token - user needs to reconnect');
+      }
+    }
 
-console.log('Found YouTube connection for:', connection.platform_username);
-
+    console.log('Found YouTube connection for:', connection.platform_username);
 
     // Simple test with real YouTube metadata API call
     const testResponse = await fetch('https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true', {
       headers: {
-        'Authorization': `Bearer ${accessToken}`  // Uses the refreshed token`
+        'Authorization': `Bearer ${accessToken}`
       }
     });
 
@@ -218,154 +141,139 @@ console.log('Found YouTube connection for:', connection.platform_username);
     }
 
     // Real YouTube video upload
-console.log('Starting real YouTube upload for:', clip.title);
-console.log('Video URL:', clip.video_url);
+    console.log('Starting real YouTube upload for:', clip.title);
+    console.log('Video URL:', clip.video_url);
 
-// Fetch the video file
-// After token refresh logic ends...
+    // Declare videoBuffer BEFORE the if/else
+    let videoBuffer;
 
-// Declare videoBuffer BEFORE the if/else
-let videoBuffer;
-
-// Handle Twitch clips with temporary download
-if (clip.video_url && clip.video_url.includes('clips.twitch.tv/')) {
-    console.log('Processing Twitch clip:', clip.video_url);
-    
-    try {
-        // Get MP4 URL using Twitch GQL API
-        const mp4Url = await getTwitchMP4Url(clip);
-        console.log('Got Twitch MP4 URL:', mp4Url);
+    // Handle Twitch clips with temporary download
+    if (clip.video_url && clip.video_url.includes('clips.twitch.tv/')) {
+        console.log('Processing Twitch clip:', clip.video_url);
         
-        // Download directly to memory
-        const videoResponse = await fetch(mp4Url);
+        try {
+            const mp4Url = await getTwitchMP4Url(clip);
+            console.log('Got Twitch MP4 URL:', mp4Url);
+            
+            const videoResponse = await fetch(mp4Url);
+            if (!videoResponse.ok) {
+                throw new Error(`Failed to download Twitch clip: ${videoResponse.status}`);
+            }
+            
+            videoBuffer = await videoResponse.arrayBuffer();
+            console.log('Downloaded Twitch clip, size:', videoBuffer.byteLength);
+            
+        } catch (error) {
+            console.error('Twitch clip download error:', error);
+            throw new Error(`Failed to process Twitch clip: ${error.message}`);
+        }
+    } else {
+        // Regular video fetch for non-Twitch URLs
+        console.log('Fetching video from:', clip.video_url);
+        const videoResponse = await fetch(clip.video_url);
         if (!videoResponse.ok) {
-            throw new Error(`Failed to download Twitch clip: ${videoResponse.status}`);
+            throw new Error(`Failed to fetch video: ${videoResponse.status}`);
         }
         
         videoBuffer = await videoResponse.arrayBuffer();
-        console.log('Downloaded Twitch clip, size:', videoBuffer.byteLength);
-        
-    } catch (error) {
-        console.error('Twitch clip download error:', error);
-        throw new Error(`Failed to process Twitch clip: ${error.message}`);
+        console.log('Video size:', videoBuffer.byteLength, 'bytes');
     }
-} else {
-    // Regular video fetch for non-Twitch URLs
-    console.log('Fetching video from:', clip.video_url);
-    const videoResponse = await fetch(clip.video_url);
-    if (!videoResponse.ok) {
-        throw new Error(`Failed to fetch video: ${videoResponse.status}`);
-    }
-    
-    videoBuffer = await videoResponse.arrayBuffer();
-    console.log('Video size:', videoBuffer.byteLength, 'bytes');
-}
 
-// NOW continue with the YouTube upload preparation
-// Prepare video metadata
-const metadata = {
-    snippet: {
+    // Prepare video metadata
+    const metadata = {
+      snippet: {
         title: clip.title || `${clip.game} Gaming Highlight`,
-        // ... rest of your metadata
+        description: `🎮 Epic ${clip.game} gameplay moment!\n\nAI Score: ${Math.round(clip.ai_score * 100)}%\nDuration: ${clip.duration}s\n\n🤖 Auto-generated by AutoStreamPro\n#${clip.game.replace(/\s+/g, '')} #Gaming #Highlights`,
+        tags: [clip.game, 'gaming', 'highlights', 'gameplay', 'autostreampro'],
+        categoryId: '20' // Gaming category
+      },
+      status: {
+        privacyStatus: 'public',
+        selfDeclaredMadeForKids: false
+      }
+    };
 
-const videoBuffer = await videoResponse.arrayBuffer();
-console.log('Video size:', videoBuffer.byteLength, 'bytes');
+    // YouTube multipart upload
+    const boundary = '-------314159265358979323846';
+    const delimiter = '\r\n--' + boundary + '\r\n';
+    const closeDelim = '\r\n--' + boundary + '--';
 
-// Prepare video metadata
-const metadata = {
-  snippet: {
-    title: clip.title || `${clip.game} Gaming Highlight`,
-    description: `🎮 Epic ${clip.game} gameplay moment!\n\nAI Score: ${Math.round(clip.ai_score * 100)}%\nDuration: ${clip.duration}s\n\n🤖 Auto-generated by AutoStreamPro\n#${clip.game.replace(/\s+/g, '')} #Gaming #Highlights`,
-    tags: [clip.game, 'gaming', 'highlights', 'gameplay', 'autostreampro'],
-    categoryId: '20' // Gaming category
-  },
-  status: {
-    privacyStatus: 'public',
-    selfDeclaredMadeForKids: false
-  }
-};
+    const metadataBody = delimiter + 
+      'Content-Type: application/json; charset=UTF-8\r\n\r\n' + 
+      JSON.stringify(metadata);
 
-// YouTube multipart upload
-const boundary = '-------314159265358979323846';
-const delimiter = '\r\n--' + boundary + '\r\n';
-const closeDelim = '\r\n--' + boundary + '--';
+    const videoBody = delimiter + 
+      'Content-Type: video/*\r\n' +
+      'Content-Transfer-Encoding: binary\r\n\r\n';
 
-const metadataBody = delimiter + 
-  'Content-Type: application/json; charset=UTF-8\r\n\r\n' + 
-  JSON.stringify(metadata);
+    // Combine parts
+    const multipartBody = new Uint8Array(
+      new TextEncoder().encode(metadataBody).length +
+      new TextEncoder().encode(videoBody).length +
+      videoBuffer.byteLength +
+      new TextEncoder().encode(closeDelim).length
+    );
 
-const videoBody = delimiter + 
-  'Content-Type: video/*\r\n' +
-  'Content-Transfer-Encoding: binary\r\n\r\n';
+    let offset = 0;
+    const encoder = new TextEncoder();
 
-// Combine parts
-const multipartBody = new Uint8Array(
-  new TextEncoder().encode(metadataBody).length +
-  new TextEncoder().encode(videoBody).length +
-  videoBuffer.byteLength +
-  new TextEncoder().encode(closeDelim).length
-);
+    // Add metadata
+    const metadataBytes = encoder.encode(metadataBody);
+    multipartBody.set(metadataBytes, offset);
+    offset += metadataBytes.length;
 
-let offset = 0;
-const encoder = new TextEncoder();
+    // Add video header
+    const videoHeaderBytes = encoder.encode(videoBody);
+    multipartBody.set(videoHeaderBytes, offset);
+    offset += videoHeaderBytes.length;
 
-// Add metadata
-const metadataBytes = encoder.encode(metadataBody);
-multipartBody.set(metadataBytes, offset);
-offset += metadataBytes.length;
+    // Add video data
+    multipartBody.set(new Uint8Array(videoBuffer), offset);
+    offset += videoBuffer.byteLength;
 
-// Add video header
-const videoHeaderBytes = encoder.encode(videoBody);
-multipartBody.set(videoHeaderBytes, offset);
-offset += videoHeaderBytes.length;
+    // Add closing delimiter
+    const closeBytes = encoder.encode(closeDelim);
+    multipartBody.set(closeBytes, offset);
 
-// Add video data
-multipartBody.set(new Uint8Array(videoBuffer), offset);
-offset += videoBuffer.byteLength;
+    console.log('Uploading to YouTube...');
 
-// Add closing delimiter
-const closeBytes = encoder.encode(closeDelim);
-multipartBody.set(closeBytes, offset);
+    // Upload to YouTube
+    const uploadUrl = 'https://www.googleapis.com/upload/youtube/v3/videos?uploadType=multipart&part=snippet,status';
+    const uploadResponse = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'multipart/related; boundary=' + boundary
+      },
+      body: multipartBody
+    });
 
-console.log('Uploading to YouTube...');
+    if (!uploadResponse.ok) {
+      const errorText = await uploadResponse.text();
+      console.error('YouTube upload failed:', uploadResponse.status, errorText);
+      throw new Error(`YouTube upload failed: ${uploadResponse.status}`);
+    }
 
-// Upload to YouTube
-const uploadUrl = 'https://www.googleapis.com/upload/youtube/v3/videos?uploadType=multipart&part=snippet,status';
-const uploadResponse = await fetch(uploadUrl, {
-  method: 'POST',
-  headers: {
-    'Authorization': `Bearer ${accessToken}`,
-    'Content-Type': 'multipart/related; boundary=' + boundary
-  },
-  body: multipartBody
-});
+    const uploadResult = await uploadResponse.json();
+    const realYouTubeId = uploadResult.id;
 
-if (!uploadResponse.ok) {
-  const errorText = await uploadResponse.text();
-  console.error('YouTube upload failed:', uploadResponse.status, errorText);
-  throw new Error(`YouTube upload failed: ${uploadResponse.status}`);
-}
+    console.log('Successfully uploaded to YouTube! Video ID:', realYouTubeId);
 
-const uploadResult = await uploadResponse.json();
-const realYouTubeId = uploadResult.id;
-
-console.log('Successfully uploaded to YouTube! Video ID:', realYouTubeId);
-
-return {
-  statusCode: 200,
-  headers: {
-    'Access-Control-Allow-Origin': '*',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    success: true,
-    youtubeId: realYouTubeId,
-    message: 'Video uploaded to YouTube successfully!',
-    clipTitle: clip.title,
-    youtubeUrl: `https://www.youtube.com/watch?v=${realYouTubeId}`,
-    channelName: connection.platform_username
-  })
-};
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        success: true,
+        youtubeId: realYouTubeId,
+        message: 'Video uploaded to YouTube successfully!',
+        clipTitle: clip.title,
+        youtubeUrl: `https://www.youtube.com/watch?v=${realYouTubeId}`,
+        channelName: connection.platform_username
+      })
+    };
 
   } catch (error) {
     return {
