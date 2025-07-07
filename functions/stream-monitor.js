@@ -205,7 +205,7 @@ class StreamMonitor {
                     game: twitchClip.game_id,
                     duration: twitchClip.duration,
                     thumbnail_url: twitchClip.thumbnail_url,
-                    video_url: twitchClip.url,
+                    video_url: twitchClip.thumbnail_url.replace('-preview-480x272.jpg', '.mp4'),
                     status: 'pending',
                     created_at: twitchClip.created_at
                 });
