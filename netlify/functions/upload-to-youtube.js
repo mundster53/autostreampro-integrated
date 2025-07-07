@@ -6,9 +6,13 @@ const supabase = createClient(
 );
 
 async function getTwitchMP4Url(clip) {
-  console.log('Trying to get MP4 for clip:', clip.source_id);
+  const debugInfo = {
+    source_id: clip.source_id,
+    thumbnail_url: clip.thumbnail_url,
+    tried_urls: []
+  };
   
-  // Method 1: Try using Twitch GQL API (most reliable)
+  // Method 1: Try using Twitch GQL API
   try {
     const gqlResponse = await fetch('https://gql.twitch.tv/gql', {
       method: 'POST',
@@ -27,6 +31,38 @@ async function getTwitchMP4Url(clip) {
         }`
       })
     });
+    
+    const gqlData = await gqlResponse.json();
+    debugInfo.gql_response = gqlData;
+    
+    if (gqlData.data?.clip?.videoQualities?.[0]) {
+      const url = gqlData.data.clip.videoQualities[0].sourceURL;
+      debugInfo.tried_urls.push({ method: 'GQL', url: url });
+      return url;
+    }
+  } catch (e) {
+    debugInfo.gql_error = e.message;
+  }
+  
+  // Method 2: Try constructing from thumbnail
+  if (clip.thumbnail_url) {
+    const match = clip.thumbnail_url.match(/\/([A-Za-z0-9_-]+)\/\d+-offset-\d+-preview/);
+    if (match) {
+      const videoId = match[1];
+      const url = `https://clips-media-assets2.twitch.tv/${videoId}.mp4`;
+      debugInfo.tried_urls.push({ method: 'Thumbnail', url: url });
+      debugInfo.thumbnail_video_id = videoId;
+      return url;
+    }
+  }
+  
+  // Method 3: Try pattern from source_id
+  const url = `https://clips-media-assets2.twitch.tv/AT-cm%7C${clip.source_id}.mp4`;
+  debugInfo.tried_urls.push({ method: 'Fallback', url: url });
+  
+  // Return URL and debug info - modify the error handling in the main function
+  throw new Error(`DEBUG INFO: ${JSON.stringify(debugInfo, null, 2)}`);
+}
     
     const gqlData = await gqlResponse.json();
     console.log('GQL Response:', JSON.stringify(gqlData, null, 2));
