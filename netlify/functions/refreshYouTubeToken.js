@@ -29,10 +29,10 @@ exports.handler = async (event, context) => {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      // Temporary debugging
+      // Temporary debugging (fixed syntax)
 console.log('CLIENT_ID:', process.env.YOUTUBE_CLIENT_ID);
 console.log('CLIENT_SECRET exists:', !!process.env.YOUTUBE_CLIENT_SECRET);
-console.log('CLIENT_SECRET first 10 chars:', process.env.YOUTUBE_CLIENT_SECRET?.substring(0, 10));
+console.log('CLIENT_SECRET first 10 chars:', process.env.YOUTUBE_CLIENT_SECRET ? process.env.YOUTUBE_CLIENT_SECRET.substring(0, 10) : 'undefined');
 
 body: new URLSearchParams({
   client_id: process.env.YOUTUBE_CLIENT_ID,
