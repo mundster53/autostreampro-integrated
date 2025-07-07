@@ -29,13 +29,17 @@ exports.handler = async (event, context) => {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: new URLSearchParams({
-        client_id: process.env.YOUTUBE_CLIENT_ID,
-        client_secret: process.env.YOUTUBE_CLIENT_SECRET,
-        refresh_token: refreshToken,
-        grant_type: 'refresh_token'
-      })
-    });
+      // Temporary debugging
+console.log('CLIENT_ID:', process.env.YOUTUBE_CLIENT_ID);
+console.log('CLIENT_SECRET exists:', !!process.env.YOUTUBE_CLIENT_SECRET);
+console.log('CLIENT_SECRET first 10 chars:', process.env.YOUTUBE_CLIENT_SECRET?.substring(0, 10));
+
+body: new URLSearchParams({
+  client_id: process.env.YOUTUBE_CLIENT_ID,
+  client_secret: process.env.YOUTUBE_CLIENT_SECRET,
+  refresh_token: refreshToken,
+  grant_type: 'refresh_token'
+})
 
     const tokenData = await tokenResponse.json();
 
