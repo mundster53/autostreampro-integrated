@@ -5,6 +5,49 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
+async function getTwitchMP4Url(clip) {
+  // Method 1: Try using Twitch GQL API (most reliable)
+  try {
+    const gqlResponse = await fetch('https://gql.twitch.tv/gql', {
+      method: 'POST',
+      headers: {
+        'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query: `{
+          clip(slug: "${clip.source_id}") {
+            videoQualities {
+              sourceURL
+              quality
+            }
+          }
+        }`
+      })
+    });
+    
+    const gqlData = await gqlResponse.json();
+    if (gqlData.data?.clip?.videoQualities?.[0]) {
+      return gqlData.data.clip.videoQualities[0].sourceURL;
+    }
+  } catch (e) {
+    console.error('GQL method failed:', e);
+  }
+  
+  // Method 2: Try constructing from thumbnail
+  if (clip.thumbnail_url) {
+    // Extract video ID from thumbnail
+    const match = clip.thumbnail_url.match(/\/([A-Za-z0-9_-]+)\/\d+-offset-\d+-preview/);
+    if (match) {
+      const videoId = match[1];
+      return `https://clips-media-assets2.twitch.tv/${videoId}.mp4`;
+    }
+  }
+  
+  // Method 3: Try pattern from source_id
+  return `https://clips-media-assets2.twitch.tv/AT-cm%7C${clip.source_id}.mp4`;
+}
+
 exports.handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
     return {
@@ -55,12 +98,38 @@ if (connError || !connection) {
 }
     
 // Handle Twitch clips
+// Handle Twitch clips with temporary download
 if (clip.video_url && clip.video_url.includes('clips.twitch.tv/')) {
     console.log('Processing Twitch clip:', clip.video_url);
     
     try {
-        // Fetch the clip page to extract MP4 URL
-        const pageResponse = await fetch(clip.video_url);
+        // Get MP4 URL using Twitch GQL API
+        const mp4Url = await getTwitchMP4Url(clip);
+        console.log('Got Twitch MP4 URL:', mp4Url);
+        
+        // Download directly to memory
+        const videoResponse = await fetch(mp4Url);
+        if (!videoResponse.ok) {
+            throw new Error(`Failed to download Twitch clip: ${videoResponse.status}`);
+        }
+        
+        const videoBuffer = await videoResponse.arrayBuffer();
+        console.log('Downloaded Twitch clip, size:', videoBuffer.byteLength);
+        
+        // Continue with YouTube upload using this buffer
+        // (Skip the regular video fetch since we have the buffer)
+        
+    } catch (error) {
+        console.error('Twitch clip download error:', error);
+        throw new Error(`Failed to process Twitch clip: ${error.message}`);
+    }
+} 
+
+else {
+    // Regular video fetch for non-Twitch URLs
+    const videoResponse = await fetch(clip.video_url);
+    const videoBuffer = await videoResponse.arrayBuffer();
+}
         
         if (!pageResponse.ok) {
             throw new Error(`Failed to fetch Twitch clip page: ${pageResponse.status}`);
@@ -153,10 +222,51 @@ console.log('Starting real YouTube upload for:', clip.title);
 console.log('Video URL:', clip.video_url);
 
 // Fetch the video file
-const videoResponse = await fetch(clip.video_url);
-if (!videoResponse.ok) {
-  throw new Error(`Failed to fetch video: ${videoResponse.status}`);
+// After token refresh logic ends...
+
+// Declare videoBuffer BEFORE the if/else
+let videoBuffer;
+
+// Handle Twitch clips with temporary download
+if (clip.video_url && clip.video_url.includes('clips.twitch.tv/')) {
+    console.log('Processing Twitch clip:', clip.video_url);
+    
+    try {
+        // Get MP4 URL using Twitch GQL API
+        const mp4Url = await getTwitchMP4Url(clip);
+        console.log('Got Twitch MP4 URL:', mp4Url);
+        
+        // Download directly to memory
+        const videoResponse = await fetch(mp4Url);
+        if (!videoResponse.ok) {
+            throw new Error(`Failed to download Twitch clip: ${videoResponse.status}`);
+        }
+        
+        videoBuffer = await videoResponse.arrayBuffer();
+        console.log('Downloaded Twitch clip, size:', videoBuffer.byteLength);
+        
+    } catch (error) {
+        console.error('Twitch clip download error:', error);
+        throw new Error(`Failed to process Twitch clip: ${error.message}`);
+    }
+} else {
+    // Regular video fetch for non-Twitch URLs
+    console.log('Fetching video from:', clip.video_url);
+    const videoResponse = await fetch(clip.video_url);
+    if (!videoResponse.ok) {
+        throw new Error(`Failed to fetch video: ${videoResponse.status}`);
+    }
+    
+    videoBuffer = await videoResponse.arrayBuffer();
+    console.log('Video size:', videoBuffer.byteLength, 'bytes');
 }
+
+// NOW continue with the YouTube upload preparation
+// Prepare video metadata
+const metadata = {
+    snippet: {
+        title: clip.title || `${clip.game} Gaming Highlight`,
+        // ... rest of your metadata
 
 const videoBuffer = await videoResponse.arrayBuffer();
 console.log('Video size:', videoBuffer.byteLength, 'bytes');
