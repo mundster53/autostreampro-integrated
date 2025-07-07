@@ -29,17 +29,23 @@ exports.handler = async (event, context) => {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      // Temporary debugging (fixed syntax)
+      // Temporary debugging
 console.log('CLIENT_ID:', process.env.YOUTUBE_CLIENT_ID);
 console.log('CLIENT_SECRET exists:', !!process.env.YOUTUBE_CLIENT_SECRET);
-console.log('CLIENT_SECRET first 10 chars:', process.env.YOUTUBE_CLIENT_SECRET ? process.env.YOUTUBE_CLIENT_SECRET.substring(0, 10) : 'undefined');
 
-body: new URLSearchParams({
-  client_id: process.env.YOUTUBE_CLIENT_ID,
-  client_secret: process.env.YOUTUBE_CLIENT_SECRET,
-  refresh_token: refreshToken,
-  grant_type: 'refresh_token'
-})
+// Use refresh token to get new access token
+const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded'
+  },
+  body: new URLSearchParams({
+    client_id: process.env.YOUTUBE_CLIENT_ID,
+    client_secret: process.env.YOUTUBE_CLIENT_SECRET,
+    refresh_token: refreshToken,
+    grant_type: 'refresh_token'
+  })
+});
 
     const tokenData = await tokenResponse.json();
 
