@@ -94,7 +94,7 @@ console.log('Found YouTube connection for:', connection.platform_username);
     // Simple test with real YouTube metadata API call
     const testResponse = await fetch('https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true', {
       headers: {
-        'Authorization': `Bearer ${connection.access_token}`
+        ''Authorization': `Bearer ${accessToken}`  // Uses the refreshed token`
       }
     });
 
