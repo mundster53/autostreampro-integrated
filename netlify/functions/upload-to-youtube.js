@@ -41,13 +41,51 @@ exports.handler = async (event, context) => {
       throw new Error(`Clip not found: ${clipId}`);
     }
 
-    const { data: connection, error: connError } = await supabase
-      .from('streaming_connections')
-      .select('access_token, platform_username')
-      .eq('user_id', clip.user_id)
-      .eq('platform', 'youtube')
-      .eq('is_active', true)
-      .single();
+    // Get user's YouTube connection with refresh capabilities
+const { data: connection, error: connError } = await supabase
+  .from('streaming_connections')
+  .select('access_token, refresh_token, platform_username, expires_at, user_id')
+  .eq('user_id', clip.user_id)
+  .eq('platform', 'youtube')
+  .eq('is_active', true)
+  .single();
+
+if (connError || !connection) {
+  throw new Error('YouTube not connected for this user');
+}
+
+// Check if token is expired or will expire in next 5 minutes
+const now = new Date();
+const expiresAt = connection.expires_at ? new Date(connection.expires_at) : null;
+const isExpiredSoon = !expiresAt || (expiresAt.getTime() - now.getTime()) < (5 * 60 * 1000);
+
+let accessToken = connection.access_token;
+
+if (isExpiredSoon) {
+  console.log('Token expired or expiring soon, refreshing...');
+  
+  // Call refresh token function
+  const refreshResponse = await fetch(`https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/refreshYouTubeToken`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      refreshToken: connection.refresh_token,
+      userId: connection.user_id
+    })
+  });
+
+  if (refreshResponse.ok) {
+    const refreshResult = await refreshResponse.json();
+    accessToken = refreshResult.newToken;
+    console.log('Token refreshed successfully');
+  } else {
+    throw new Error('Failed to refresh YouTube token - user needs to reconnect');
+  }
+}
+
+console.log('Found YouTube connection for:', connection.platform_username);
 
     if (connError || !connection) {
       throw new Error('YouTube not connected for this user');
