@@ -189,7 +189,7 @@ if (finalScore >= 0.40) {
             
         console.log('[VIRAL] Used dynamic fallback:', selectedTitle);  // ← MOVE THIS UP HERE
     }  // closes viral catch
-};  // closes viral if
+}  // closes viral if
 
     // Return successful response  ← ADD FROM HERE
     return {
@@ -201,7 +201,7 @@ if (finalScore >= 0.40) {
         analysis: fullAnalysis,
         shouldUpload: finalScore >= 0.40
       })
-    }; // ← TO HERE
+    }
     
         // Fallback to pattern-based generation
         // Dynamic description generation
