@@ -186,12 +186,10 @@ if (finalScore >= 0.40) {
                                  `🔔 Turn on notifications for ${timeKey} drops!`
             })
             .eq('id', clipId);
-            
-        console.log('[VIRAL] Used dynamic fallback:', selectedTitle);
-    }
+      
 }
         console.log('[VIRAL] Used dynamic fallback:', selectedTitle);
-    }  // closes viral catch
+  
 }  // closes viral if
 
     // Return successful response  ← ADD FROM HERE
