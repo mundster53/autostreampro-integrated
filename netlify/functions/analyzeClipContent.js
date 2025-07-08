@@ -137,6 +137,37 @@ if (finalScore >= 0.40) {
         console.error('[VIRAL] Error generating viral content:', viralError);
         
         // Fallback to pattern-based generation
+        const gameTitle = clip.game || 'Gaming';
+        const scorePercent = Math.round(finalScore * 100);
+        
+        try {
+            await supabase
+                .from('clips')
+                .update({
+                    viral_title: `INSANE ${gameTitle} Moment You Won't BELIEVE! 🤯`,
+                    viral_tags: [gameTitle.toLowerCase(), 'gaming', 'viral', 'epic', 'insane', 'clutch', 'highlights', 'mustwatch', 'gamingclips', 'autostreampro'],
+                    viral_description: `🔥 This ${gameTitle} clip is absolutely UNBELIEVABLE!\n\n` +
+                                     `Watch as this player pulls off one of the most insane plays you'll ever see. ` +
+                                     `With an AI score of ${scorePercent}%, this clip is certified VIRAL material!\n\n` +
+                                     `👍 SMASH that LIKE button!\n` +
+                                     `🔔 SUBSCRIBE for daily viral gaming moments!\n` +
+                                     `💬 Drop your reaction below!`
+                })
+                .eq('id', clipId);
+                
+            console.log('[VIRAL] Used fallback viral content');
+        } catch (fallbackError) {
+            console.error('[VIRAL] Even fallback failed:', fallbackError);
+        }
+    }
+}  // ← This closing bracket was missing!
+            
+        console.log('[VIRAL] Database update result:', updateResult);
+        
+    } catch (viralError) {
+        console.error('[VIRAL] Error generating viral content:', viralError);
+        
+        // Fallback to pattern-based generation
         const fallbackContent = {
             title: `INSANE ${clip.game || 'Gaming'} Moment You Won't BELIEVE! 🤯`,
             tags: [
