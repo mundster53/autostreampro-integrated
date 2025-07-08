@@ -190,7 +190,24 @@ if (finalScore >= 0.40) {
         console.log('[VIRAL] Used dynamic fallback:', selectedTitle);
     }
 }
-            
+        console.log('[VIRAL] Used dynamic fallback:', selectedTitle);
+    }  // closes viral catch
+}  // closes viral if
+
+    // Return successful response  ← ADD FROM HERE
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        success: true,
+        clipId: clipId,
+        score: finalScore,
+        analysis: fullAnalysis,
+        shouldUpload: finalScore >= 0.40
+      })
+    };  // ← TO HERE
+    
+  } catch (error) {  // ← This line should already exist
+    console.error('Analysis error:', error);    
         console.log('[VIRAL] Database update result:', updateResult);
         
     } catch (viralError) {
