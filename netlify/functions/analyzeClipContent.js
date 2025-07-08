@@ -70,8 +70,6 @@ exports.handler = async (event, context) => {
         ai_analysis: fullAnalysis
       })
       .eq('id', clipId);
-
-// Then your actual viral generation code...
     
 // Generate viral content if score is good
 if (finalScore >= 0.40) {
