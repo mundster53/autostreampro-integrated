@@ -205,13 +205,7 @@ if (finalScore >= 0.40) {
       })
     };  // ← TO HERE
     
-  } catch (error) {  // ← This line should already exist
-    console.error('Analysis error:', error);    
-        console.log('[VIRAL] Database update result:', updateResult);
-        
-    } catch (viralError) {
-        console.error('[VIRAL] Error generating viral content:', viralError);
-        
+  }     
         // Fallback to pattern-based generation
         const fallbackContent = {
             title: `INSANE ${clip.game || 'Gaming'} Moment You Won't BELIEVE! 🤯`,
