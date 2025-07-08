@@ -186,11 +186,9 @@ if (finalScore >= 0.40) {
                                  `🔔 Turn on notifications for ${timeKey} drops!`
             })
             .eq('id', clipId);
-      
-}
-        console.log('[VIRAL] Used dynamic fallback:', selectedTitle);
-}
-  
+            
+        console.log('[VIRAL] Used dynamic fallback:', selectedTitle);  // ← MOVE THIS UP HERE
+    }  // closes viral catch
 }  // closes viral if
 
     // Return successful response  ← ADD FROM HERE
@@ -203,7 +201,7 @@ if (finalScore >= 0.40) {
         analysis: fullAnalysis,
         shouldUpload: finalScore >= 0.40
       })
-    }  // ← TO HERE
+    }; // ← TO HERE
     
         // Fallback to pattern-based generation
         const fallbackContent = {
