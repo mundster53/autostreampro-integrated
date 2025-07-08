@@ -4,6 +4,66 @@
 
 const fetch = require('node-fetch');
 const ClipCreator = require('../services/clip-creator');
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+
+class StreamMonitor {
+    constructor(supabase) {
+        this.supabase = supabase;
+        this.clipCreator = new ClipCreator(supabase);
+        
+        // Initialize R2 client
+        this.r2 = new S3Client({
+            region: 'auto',
+            endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+            credentials: {
+                accessKeyId: process.env.R2_ACCESS_KEY_ID,
+                secretAccessKey: process.env.R2_SECRET_ACCESS_KEY
+            }
+        });
+    }
+
+    async downloadToTempStorage(twitchClip) {
+        try {
+            // Get Twitch MP4 URL
+            const mp4Url = await this.getTwitchDownloadUrl(twitchClip);
+            
+            // Download clip
+            const response = await fetch(mp4Url);
+            const buffer = await response.buffer();
+            
+            // Upload to R2
+            const key = `clips/${twitchClip.id}.mp4`;
+            await this.r2.send(new PutObjectCommand({
+                Bucket: 'autostreampro-temp-clips',
+                Key: key,
+                Body: buffer,
+                ContentType: 'video/mp4',
+                Metadata: {
+                    'twitch-id': twitchClip.id,
+                    'auto-delete': '24h'
+                }
+            }));
+            
+            // Return R2 URL
+            return `https://temp-clips.autostreampro.com/${key}`;
+            
+        } catch (error) {
+            console.error('[StreamMonitor] Failed to store clip:', error);
+            return null;
+        }
+    }
+
+    async deleteFromTempStorage(clipId) {
+        try {
+            await this.r2.send(new DeleteObjectCommand({
+                Bucket: 'autostreampro-temp-clips',
+                Key: `clips/${clipId}.mp4`
+            }));
+        } catch (error) {
+            console.error('[StreamMonitor] Failed to delete temp clip:', error);
+        }
+    }
+}
 
 class StreamMonitor {
     constructor(supabase) {
@@ -184,109 +244,31 @@ class StreamMonitor {
     }
 
     async saveClip(userId, twitchClip) {
-    try {
-        // Check if clip already exists
-        const { data: existing } = await this.supabase
-            .from('clips')
-            .select('id')
-            .eq('source_id', twitchClip.id)
-            .single();
-            
-        if (existing) return; // Already processed
-        
-        // Try to download clip to permanent storage IMMEDIATELY
-        let videoUrl = `https://clips.twitch.tv/${twitchClip.id}`; // Default fallback
-        
         try {
-            // Download the Twitch clip NOW while it's fresh
-            console.log(`[StreamMonitor] Downloading clip: ${twitchClip.id}`);
-            
-            // Get the actual MP4 URL from Twitch
-            const mp4Url = await this.getTwitchMP4Url(twitchClip);
-            
-            // Upload to your storage (Cloudinary example)
-            const cloudinaryUrl = await this.uploadToCloudinary(mp4Url, twitchClip.id);
-            
-            if (cloudinaryUrl) {
-                videoUrl = cloudinaryUrl; // Use YOUR URL!
-                console.log(`[StreamMonitor] Clip saved to Cloudinary: ${cloudinaryUrl}`);
-            }
-        } catch (downloadError) {
-            console.error(`[StreamMonitor] Failed to download clip:`, downloadError);
-            // Continue with Twitch URL as fallback
-        }
-        
-        // Store embed URL as backup
-        let embedUrl = twitchClip.embed_url || `https://clips.twitch.tv/embed?clip=${twitchClip.id}`;
-        
-        // Save new clip with YOUR video URL
-        const { data, error } = await this.supabase
-            .from('clips')
-            .insert({
-                user_id: userId,
-                source_platform: 'twitch',
-                source_id: twitchClip.id,
-                title: twitchClip.title,
-                game: twitchClip.game_id,
-                duration: twitchClip.duration,
-                thumbnail_url: twitchClip.thumbnail_url,
-                video_url: videoUrl,  // ← This will be YOUR Cloudinary URL!
-                embed_url: embedUrl,
-                status: 'pending',
-                created_at: twitchClip.created_at
-            });
+            // Check if clip already exists
+            const { data: existing } = await this.supabase
+                .from('clips')
+                .select('id')
+                .eq('source_id', twitchClip.id)
+                .single();
 
-        if (error) throw error;
-        console.log(`[StreamMonitor] Saved clip: ${twitchClip.title}`);
+            if (existing) return; // Already processed
 
-    } catch (error) {
-        console.error('[StreamMonitor] Error saving clip:', error);
-    }
-}
-
-    async getTwitchMP4Url(twitchClip) {
-    // Try to get MP4 URL using Twitch's download API
-    // This might require Twitch authentication
-    if (twitchClip.thumbnail_url) {
-        // Simple approach - extract from thumbnail
-        return twitchClip.thumbnail_url.replace('-preview-480x272.jpg', '.mp4');
-    }
-    throw new Error('Cannot determine MP4 URL');
-}
-
-async uploadToCloudinary(videoUrl, clipId) {
-    // Example using fetch to download and Cloudinary API
-    // You'll need to set up Cloudinary account and get API keys
-    
-    // For now, return null to skip
-    return null;
-    
-    /* Real implementation would be:
-    const cloudinary = require('cloudinary').v2;
-    cloudinary.config({
-        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-        api_key: process.env.CLOUDINARY_API_KEY,
-        api_secret: process.env.CLOUDINARY_API_SECRET
-    });
-    
-    const result = await cloudinary.uploader.upload(videoUrl, {
-        resource_type: 'video',
-        public_id: `clips/${clipId}`,
-        folder: 'twitch-clips'
-    });
-    
-    return result.secure_url;
-    */
-}
-
-        if (error) throw error;
-
-        console.log(`[StreamMonitor] Saved clip: ${twitchClip.title}`);
-
-    } catch (error) {
-        console.error('[StreamMonitor] Error saving clip:', error);
-    }
-}
+            // Save new clip
+            const { data, error } = await this.supabase
+                .from('clips')
+                .insert({
+                    user_id: userId,
+                    source_platform: 'twitch',
+                    source_id: twitchClip.id,
+                    title: twitchClip.title,
+                    game: twitchClip.game_id,
+                    duration: twitchClip.duration,
+                    thumbnail_url: twitchClip.thumbnail_url,
+                    video_url: twitchClip.thumbnail_url.replace('-preview-480x272.jpg', '.mp4'),
+                    status: 'pending',
+                    created_at: twitchClip.created_at
+                });
 
             if (error) throw error;
 
