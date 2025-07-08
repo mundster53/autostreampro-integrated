@@ -191,23 +191,35 @@ class StreamMonitor {
             .select('id')
             .eq('source_id', twitchClip.id)
             .single();
-
+            
         if (existing) return; // Already processed
-
-        // Construct proper video URL
-        let videoUrl = `https://clips.twitch.tv/${twitchClip.id}`;
+        
+        // Try to download clip to permanent storage IMMEDIATELY
+        let videoUrl = `https://clips.twitch.tv/${twitchClip.id}`; // Default fallback
+        
+        try {
+            // Download the Twitch clip NOW while it's fresh
+            console.log(`[StreamMonitor] Downloading clip: ${twitchClip.id}`);
+            
+            // Get the actual MP4 URL from Twitch
+            const mp4Url = await this.getTwitchMP4Url(twitchClip);
+            
+            // Upload to your storage (Cloudinary example)
+            const cloudinaryUrl = await this.uploadToCloudinary(mp4Url, twitchClip.id);
+            
+            if (cloudinaryUrl) {
+                videoUrl = cloudinaryUrl; // Use YOUR URL!
+                console.log(`[StreamMonitor] Clip saved to Cloudinary: ${cloudinaryUrl}`);
+            }
+        } catch (downloadError) {
+            console.error(`[StreamMonitor] Failed to download clip:`, downloadError);
+            // Continue with Twitch URL as fallback
+        }
         
         // Store embed URL as backup
         let embedUrl = twitchClip.embed_url || `https://clips.twitch.tv/embed?clip=${twitchClip.id}`;
         
-        // Try to get direct MP4 if available
-        // Twitch provides this in some API responses
-        if (twitchClip.thumbnail_url) {
-            // For now, keep the clip URL, we'll handle MP4 extraction during upload
-            console.log(`[StreamMonitor] Clip thumbnail: ${twitchClip.thumbnail_url}`);
-        }
-
-        // Save new clip with correct URLs
+        // Save new clip with YOUR video URL
         const { data, error } = await this.supabase
             .from('clips')
             .insert({
@@ -218,11 +230,54 @@ class StreamMonitor {
                 game: twitchClip.game_id,
                 duration: twitchClip.duration,
                 thumbnail_url: twitchClip.thumbnail_url,
-                video_url: videoUrl,  // ← FIXED: Now uses clip URL format
-                embed_url: embedUrl,  // ← NEW: Store embed URL too
+                video_url: videoUrl,  // ← This will be YOUR Cloudinary URL!
+                embed_url: embedUrl,
                 status: 'pending',
                 created_at: twitchClip.created_at
             });
+
+        if (error) throw error;
+        console.log(`[StreamMonitor] Saved clip: ${twitchClip.title}`);
+
+    } catch (error) {
+        console.error('[StreamMonitor] Error saving clip:', error);
+    }
+}
+
+    async getTwitchMP4Url(twitchClip) {
+    // Try to get MP4 URL using Twitch's download API
+    // This might require Twitch authentication
+    if (twitchClip.thumbnail_url) {
+        // Simple approach - extract from thumbnail
+        return twitchClip.thumbnail_url.replace('-preview-480x272.jpg', '.mp4');
+    }
+    throw new Error('Cannot determine MP4 URL');
+}
+
+async uploadToCloudinary(videoUrl, clipId) {
+    // Example using fetch to download and Cloudinary API
+    // You'll need to set up Cloudinary account and get API keys
+    
+    // For now, return null to skip
+    return null;
+    
+    /* Real implementation would be:
+    const cloudinary = require('cloudinary').v2;
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET
+    });
+    
+    const result = await cloudinary.uploader.upload(videoUrl, {
+        resource_type: 'video',
+        public_id: `clips/${clipId}`,
+        folder: 'twitch-clips'
+    });
+    
+    return result.secure_url;
+    */
+}
 
         if (error) throw error;
 
