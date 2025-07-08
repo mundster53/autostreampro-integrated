@@ -244,32 +244,6 @@ if (finalScore >= 0.40) {
         console.log('[VIRAL] Used fallback viral content');
     }
 }
-            
-        console.log('[VIRAL] Database update result:', updateResult);
-        
-        if (updateResult.error) {
-            console.error('[VIRAL] Database update error:', updateResult.error);
-        } else {
-            console.log('[VIRAL] Successfully updated viral content');
-        }
-        
-    } catch (viralError) {
-        console.error('[VIRAL] Error generating viral content:', viralError);
-        console.error('[VIRAL] Error details:', {
-            message: viralError.message,
-            stack: viralError.stack,
-            response: viralError.response?.data
-        });
-        
-        // Update with error info for debugging
-        await supabase
-            .from('clips')
-            .update({
-                viral_title: `ERROR: ${viralError.message?.substring(0, 50)}`
-            })
-            .eq('id', clipId);
-    }
-}
     
     return {
       statusCode: 200,
