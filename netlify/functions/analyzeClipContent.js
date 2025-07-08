@@ -70,128 +70,52 @@ exports.handler = async (event, context) => {
         ai_analysis: fullAnalysis
       })
       .eq('id', clipId);
-    
+
 // Generate viral content if score is good
-if (finalScore >= 0.40) {
-    console.log(`[VIRAL] Starting viral generation for clip ${clipId} with score ${finalScore}`);
-    
-    try {
-        console.log('[VIRAL] Generating viral content...');
+    if (finalScore >= 0.40) {
+      try {
+        console.log('Generating viral content for clip:', clipId);
         
         const viralResponse = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: [{
-                role: "system",
-                content: `You are a viral gaming content expert. Create UNIQUE, non-repetitive titles. Each title must be different. Never use template patterns.`
-            }, {
-                role: "user",
-                content: `Game: ${clip.game || 'Unknown Game'}
-                Original: ${clip.title || 'Gaming Clip'}
-                Score: ${finalScore}
-                Duration: ${clip.duration}s
-                Timestamp: ${new Date().toISOString()}
-                
-                Create a UNIQUE viral title based on:
-                - The game's specific mechanics/themes
-                - Current gaming trends
-                - Time of day/season
-                - Emotional hooks
-                
-                Return ONLY valid JSON:
-                {
-                  "title": "Unique viral title, max 60 chars",
-                  "tags": ["10 specific tags, not generic"],
-                  "description": "Unique 2-3 paragraphs"
-                }`
-            }],
-            max_tokens: 400,
-            temperature: 0.9  // Higher = more creative
+          model: "gpt-4",
+          messages: [{
+            role: "system",
+            content: `You are a viral gaming content expert. Create titles that get views but are NOT misleading.`
+          }, {
+            role: "user",
+            content: `Game: ${clip.game}
+            Original: ${clip.title}
+            Score: ${finalScore}
+            
+            Return JSON with:
+            - title: One viral title (max 60 chars, use CAPS strategically)
+            - tags: Array of 10 tags (include game name first)
+            - description: 2-3 paragraphs with emojis`
+          }],
+          response_format: { type: "json_object" },
+          max_tokens: 300
         });
         
-        const responseContent = viralResponse.choices[0].message.content.trim();
-        const viralContent = JSON.parse(responseContent);
+        const viralContent = JSON.parse(viralResponse.choices[0].message.content);
         
+        // Update clip with viral content
         await supabase
-            .from('clips')
-            .update({
-                viral_title: viralContent.title,
-                viral_tags: viralContent.tags,
-                viral_description: viralContent.description
-            })
-            .eq('id', clipId);
-            
-        console.log('[VIRAL] Generated unique title:', viralContent.title);
+          .from('clips')
+          .update({
+            viral_title: viralContent.title,
+            viral_tags: viralContent.tags,
+            viral_description: viralContent.description
+          })
+          .eq('id', clipId);
+          
+        console.log('Viral content generated:', viralContent.title);
         
-    } catch (viralError) {
-        console.error('[VIRAL] OpenAI failed, using dynamic fallback:', viralError);
-        
-        // DYNAMIC FALLBACK - Not Templates!
-        const gameTitle = clip.game || 'Gaming';
-        const scorePercent = Math.round(finalScore * 100);
-        
-        // Dynamic elements
-        const timeOfDay = new Date().getHours();
-        const dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][new Date().getDay()];
-        const randomSeed = Math.floor(Math.random() * 1000000);
-        
-        // Dynamic title patterns based on multiple factors
-        const titlePatterns = [
-            `${dayOfWeek}'s Most ${scorePercent > 80 ? 'LEGENDARY' : 'WILD'} ${gameTitle} Play`,
-            `${scorePercent}% Viewers Said This ${gameTitle} Clip is ${scorePercent > 70 ? 'IMPOSSIBLE' : 'UNREAL'}`,
-            `The ${gameTitle} Move That Made ${timeOfDay < 12 ? 'Morning' : timeOfDay < 18 ? 'Afternoon' : 'Night'} Gamers GASP`,
-            `Why ${Math.floor(randomSeed/1000)} ${gameTitle} Pros Are Studying This Clip`,
-            `${gameTitle}: The ${clip.duration}s That Changed EVERYTHING`,
-            `Everyone's Talking About This ${gameTitle} ${timeOfDay < 6 ? 'Late Night' : timeOfDay < 12 ? 'Morning' : 'Prime Time'} Moment`,
-            `${gameTitle} Community in SHOCK After Seeing This`,
-            `"No Way That's Real" - ${gameTitle} Clip Goes ${scorePercent > 60 ? 'MEGA' : 'ULTRA'} Viral`
-        ];
-        
-        // Pick based on clip ID hash for consistency
-        const titleIndex = parseInt(clipId.substring(0, 8), 16) % titlePatterns.length;
-        const selectedTitle = titlePatterns[titleIndex];
-        
-        // Dynamic tags based on game, time, score
-        const dynamicTags = [
-            gameTitle.toLowerCase(),
-            `${gameTitle.toLowerCase()}clips`,
-            timeOfDay < 12 ? 'morninggaming' : timeOfDay < 18 ? 'afternoongaming' : 'nightgaming',
-            scorePercent > 80 ? 'legendary' : scorePercent > 60 ? 'epic' : 'viral',
-            `gaming${new Date().getFullYear()}`,
-            dayOfWeek.toLowerCase() + 'gaming',
-            `top${scorePercent}percent`,
-            clip.duration < 30 ? 'shortclips' : 'highlights',
-            'mustwatch',
-            'autostreampro'
-        ];
-        
-        // Dynamic description
-        const descriptions = {
-            morning: `☀️ Start your day with this INCREDIBLE ${gameTitle} moment!`,
-            afternoon: `🌤️ Your afternoon just got ${scorePercent}% better with this ${gameTitle} play!`,
-            evening: `🌙 End your day watching the ${gameTitle} clip everyone's talking about!`
-        };
-        
-        const timeKey = timeOfDay < 12 ? 'morning' : timeOfDay < 18 ? 'afternoon' : 'evening';
-        
-        await supabase
-            .from('clips')
-            .update({
-                viral_title: selectedTitle,
-                viral_tags: dynamicTags,
-                viral_description: `${descriptions[timeKey]}\n\n` +
-                                 `Scored ${scorePercent}% by our AI system, this ${clip.duration}-second masterpiece ` +
-                                 `is exactly why the ${gameTitle} community loves ${dayOfWeek}s.\n\n` +
-                                 `🎮 Follow for daily ${gameTitle} content\n` +
-                                 `📊 AI-curated gaming highlights\n` +
-                                 `🔔 Turn on notifications for ${timeKey} drops!`
-            })
-            .eq('id', clipId);
-            
-        console.log('[VIRAL] Used dynamic fallback:', selectedTitle);  // ← MOVE THIS UP HERE
-    }  // closes viral catch
-}  // closes viral if
-
-    // Return successful response  ← ADD FROM HERE
+      } catch (viralError) {
+        console.error('Viral generation failed:', viralError);
+        // Continue without viral content - don't break the flow
+      }
+    }
+    
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -201,57 +125,19 @@ if (finalScore >= 0.40) {
         analysis: fullAnalysis,
         shouldUpload: finalScore >= 0.40
       })
-    }
+    };
     
-        // Fallback to pattern-based generation
-        // Dynamic description generation
-const descriptionElements = {
-  openings: [
-    `${timeOfDay < 12 ? '☀️ Morning' : timeOfDay < 18 ? '🌤️ Afternoon' : '🌙 Evening'} gamers are losing their minds over this ${clip.duration}-second ${gameTitle} masterpiece.`,
-    `${dayOfWeek} just became legendary thanks to this ${gameTitle} player.`,
-    `After ${randomSeed % 100} failed attempts, this ${gameTitle} player finally achieved the impossible.`,
-    `The ${gameTitle} community watched this clip ${Math.floor(randomSeed/100)} times and still can't believe it happened.`,
-    `This ${scorePercent}% rated ${gameTitle} moment proves why ${dayOfWeek}s are the best gaming days.`
-  ],
-  
-  middleContent: [
-    `What starts as a typical ${gameTitle} session quickly escalates into something nobody expected. The precision, timing, and pure skill displayed here is why this clip scored ${scorePercent}% on our viral AI system.`,
-    `In just ${clip.duration} seconds, this player rewrites what's possible in ${gameTitle}. Our AI detected ${titleBoosts || 1} viral elements that make this unmissable.`,
-    `The ${gameTitle} developers probably never imagined someone would pull this off. With a ${scorePercent}% viral score, this is the kind of content that creates legends.`,
-    `Every frame of this ${clip.duration}-second journey showcases why ${gameTitle} remains one of gaming's most ${scorePercent > 70 ? 'spectacular' : 'surprising'} experiences.`
-  ],
-  
-  closings: [
-    `Join ${Math.floor(randomSeed/1000)} other ${gameTitle} fans who've already shared this ${timeKey} gaming miracle.`,
-    `Follow for more ${scorePercent > 60 ? 'legendary' : 'incredible'} ${gameTitle} moments that define ${new Date().getFullYear()} gaming.`,
-    `This is why we analyze thousands of clips - to find ${gameTitle} gold like this. Next ${dayOfWeek}'s drop will be even better!`,
-    `Be part of the ${gameTitle} revolution. We're posting ${timeKey} highlights that are reshaping the meta.`
-  ]
+  } catch (error) {
+    console.error('Analysis error:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        success: false,
+        error: error.message
+      })
+    };
+  }
 };
-
-// Randomly select from each category based on clip ID for consistency
-const openingIndex = parseInt(clipId.substring(8, 10), 16) % descriptionElements.openings.length;
-const middleIndex = parseInt(clipId.substring(10, 12), 16) % descriptionElements.middleContent.length;
-const closingIndex = parseInt(clipId.substring(12, 14), 16) % descriptionElements.closings.length;
-
-const dynamicDescription = `${descriptionElements.openings[openingIndex]}\n\n` +
-                          `${descriptionElements.middleContent[middleIndex]}\n\n` +
-                          `${descriptionElements.closings[closingIndex]}\n\n` +
-                          `🎮 ${gameTitle} | 📊 AI Score: ${scorePercent}% | ⏱️ ${clip.duration}s\n` +
-                          `#${gameTitle.replace(/\s+/g, '')} #Gaming${new Date().getFullYear()}`;
-
-await supabase
-  .from('clips')
-  .update({
-    viral_title: selectedTitle,
-    viral_tags: dynamicTags,
-    viral_description: dynamicDescription
-  })
-  .eq('id', clipId);
-            
-        console.log('[VIRAL] Used fallback viral content');
-    }
-}
 
 async function analyzeThumbnailWithGPT4(thumbnailUrl, game) {
   try {
