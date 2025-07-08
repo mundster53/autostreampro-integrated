@@ -203,9 +203,8 @@ if (finalScore >= 0.40) {
         analysis: fullAnalysis,
         shouldUpload: finalScore >= 0.40
       })
-    };  // ← TO HERE
+    }  // ← TO HERE
     
-  }     
         // Fallback to pattern-based generation
         const fallbackContent = {
             title: `INSANE ${clip.game || 'Gaming'} Moment You Won't BELIEVE! 🤯`,
