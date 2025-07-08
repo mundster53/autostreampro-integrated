@@ -166,14 +166,6 @@ if (finalScore >= 0.40) {
             .eq('id', clipId);
     }
 }
-          
-        console.log('Viral content generated:', viralContent.title);
-        
-      } catch (viralError) {
-        console.error('Viral generation failed:', viralError);
-        // Continue without viral content - don't break the flow
-      }
-    }
     
     return {
       statusCode: 200,
