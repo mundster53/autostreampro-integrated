@@ -189,6 +189,7 @@ if (finalScore >= 0.40) {
       
 }
         console.log('[VIRAL] Used dynamic fallback:', selectedTitle);
+}
   
 }  // closes viral if
 
