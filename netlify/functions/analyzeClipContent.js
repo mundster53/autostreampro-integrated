@@ -84,41 +84,88 @@ if (finalScore >= 0.40) {
 // Then your actual viral generation code...
     
 // Generate viral content if score is good
-    if (finalScore >= 0.40) {
-      try {
-        console.log('Generating viral content for clip:', clipId);
+if (finalScore >= 0.40) {
+    console.log(`[VIRAL] Starting viral generation for clip ${clipId} with score ${finalScore}`);
+    
+    try {
+        // First, let's test if OpenAI is working at all
+        console.log('[VIRAL] Testing OpenAI connection...');
         
-        const viralResponse = await openai.chat.completions.create({
-          model: "gpt-4",
-          messages: [{
-            role: "system",
-            content: `You are a viral gaming content expert. Create titles that get views but are NOT misleading.`
-          }, {
-            role: "user",
-            content: `Game: ${clip.game}
-            Original: ${clip.title}
-            Score: ${finalScore}
-            
-            Return JSON with:
-            - title: One viral title (max 60 chars, use CAPS strategically)
-            - tags: Array of 10 tags (include game name first)
-            - description: 2-3 paragraphs with emojis`
-          }],
-          response_format: { type: "json_object" },
-          max_tokens: 300
+        const testResponse = await openai.chat.completions.create({
+            model: "gpt-4",
+            messages: [{
+                role: "user",
+                content: "Say 'test successful' in JSON format with a 'status' field"
+            }],
+            response_format: { type: "json_object" },
+            max_tokens: 50
         });
         
+        console.log('[VIRAL] OpenAI test response:', testResponse.choices[0].message.content);
+        
+        // Now try the actual viral generation
+        console.log('[VIRAL] Generating viral content...');
+        
+        const viralResponse = await openai.chat.completions.create({
+            model: "gpt-4",
+            messages: [{
+                role: "system",
+                content: `You are a viral gaming content expert. Create titles that get views but are NOT misleading.`
+            }, {
+                role: "user",
+                content: `Game: ${clip.game || 'Unknown Game'}
+                Original: ${clip.title || 'Gaming Clip'}
+                Score: ${finalScore}
+                
+                Return JSON with:
+                - title: One viral title (max 60 chars, use CAPS strategically)
+                - tags: Array of 10 tags (include game name first)
+                - description: 2-3 paragraphs with emojis`
+            }],
+            response_format: { type: "json_object" },
+            max_tokens: 300
+        });
+        
+        console.log('[VIRAL] Raw response:', viralResponse.choices[0].message.content);
+        
         const viralContent = JSON.parse(viralResponse.choices[0].message.content);
+        console.log('[VIRAL] Parsed content:', viralContent);
         
         // Update clip with viral content
+        const updateResult = await supabase
+            .from('clips')
+            .update({
+                viral_title: viralContent.title,
+                viral_tags: viralContent.tags,
+                viral_description: viralContent.description
+            })
+            .eq('id', clipId);
+            
+        console.log('[VIRAL] Database update result:', updateResult);
+        
+        if (updateResult.error) {
+            console.error('[VIRAL] Database update error:', updateResult.error);
+        } else {
+            console.log('[VIRAL] Successfully updated viral content');
+        }
+        
+    } catch (viralError) {
+        console.error('[VIRAL] Error generating viral content:', viralError);
+        console.error('[VIRAL] Error details:', {
+            message: viralError.message,
+            stack: viralError.stack,
+            response: viralError.response?.data
+        });
+        
+        // Update with error info for debugging
         await supabase
-          .from('clips')
-          .update({
-            viral_title: viralContent.title,
-            viral_tags: viralContent.tags,
-            viral_description: viralContent.description
-          })
-          .eq('id', clipId);
+            .from('clips')
+            .update({
+                viral_title: `ERROR: ${viralError.message?.substring(0, 50)}`
+            })
+            .eq('id', clipId);
+    }
+}
           
         console.log('Viral content generated:', viralContent.title);
         
