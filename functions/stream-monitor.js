@@ -40,7 +40,7 @@ class StreamMonitor {
                 ContentType: 'video/mp4',
                 Metadata: {
                     'twitch-id': twitchClip.id,
-                    'auto-delete': '24h'
+                    'auto-delete': '1d'
                 }
             }));
             
@@ -244,40 +244,47 @@ class StreamMonitor {
     }
 
     async saveClip(userId, twitchClip) {
-        try {
-            // Check if clip already exists
-            const { data: existing } = await this.supabase
-                .from('clips')
-                .select('id')
-                .eq('source_id', twitchClip.id)
-                .single();
-
-            if (existing) return; // Already processed
-
-            // Save new clip
-            const { data, error } = await this.supabase
-                .from('clips')
-                .insert({
-                    user_id: userId,
-                    source_platform: 'twitch',
-                    source_id: twitchClip.id,
-                    title: twitchClip.title,
-                    game: twitchClip.game_id,
-                    duration: twitchClip.duration,
-                    thumbnail_url: twitchClip.thumbnail_url,
-                    video_url: twitchClip.thumbnail_url.replace('-preview-480x272.jpg', '.mp4'),
-                    status: 'pending',
-                    created_at: twitchClip.created_at
-                });
-
-            if (error) throw error;
-
-            console.log(`[StreamMonitor] Saved clip: ${twitchClip.title}`);
-
-        } catch (error) {
-            console.error('[StreamMonitor] Error saving clip:', error);
+    try {
+        // Check if clip already exists
+        const { data: existing } = await this.supabase
+            .from('clips')
+            .select('id')
+            .eq('source_id', twitchClip.id)
+            .single();
+            
+        if (existing) return; // Already processed
+        
+        // Download to R2 temporary storage
+        console.log(`[StreamMonitor] Downloading clip to R2: ${twitchClip.id}`);
+        let videoUrl = await this.downloadToTempStorage(twitchClip);
+        
+        if (!videoUrl) {
+            // Fallback if R2 download fails
+            videoUrl = twitchClip.thumbnail_url.replace('-preview-480x272.jpg', '.mp4');
+            console.log('[StreamMonitor] R2 download failed, using thumbnail URL pattern');
         }
+        
+        // Save new clip
+        const { data, error } = await this.supabase
+            .from('clips')
+            .insert({
+                user_id: userId,
+                source_platform: 'twitch',
+                source_id: twitchClip.id,
+                title: twitchClip.title,
+                game: twitchClip.game_id,
+                duration: twitchClip.duration,
+                thumbnail_url: twitchClip.thumbnail_url,
+                video_url: videoUrl,  // ← Now uses R2 URL!
+                status: 'pending',
+                created_at: twitchClip.created_at
+            });
+            
+        if (error) throw error;
+        console.log(`[StreamMonitor] Saved clip: ${twitchClip.title} with URL: ${videoUrl}`);
+        
+    } catch (error) {
+        console.error('[StreamMonitor] Error saving clip:', error);
     }
 }
-
 module.exports = StreamMonitor;
