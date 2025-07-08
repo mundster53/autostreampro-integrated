@@ -88,58 +88,90 @@ if (finalScore >= 0.40) {
     console.log(`[VIRAL] Starting viral generation for clip ${clipId} with score ${finalScore}`);
     
     try {
-        // First, let's test if OpenAI is working at all
-        console.log('[VIRAL] Testing OpenAI connection...');
-        
-        const testResponse = await openai.chat.completions.create({
-            model: "gpt-4",
-            messages: [{
-                role: "user",
-                content: "Say 'test successful' in JSON format with a 'status' field"
-            }],
-            response_format: { type: "json_object" },
-            max_tokens: 50
-        });
-        
-        console.log('[VIRAL] OpenAI test response:', testResponse.choices[0].message.content);
-        
-        // Now try the actual viral generation
         console.log('[VIRAL] Generating viral content...');
         
         const viralResponse = await openai.chat.completions.create({
-            model: "gpt-4",
+            model: "gpt-3.5-turbo",  // Changed from gpt-4
             messages: [{
                 role: "system",
-                content: `You are a viral gaming content expert. Create titles that get views but are NOT misleading.`
+                content: `You are a viral gaming content expert. Create titles that get views but are NOT misleading. Always respond with valid JSON only.`
             }, {
                 role: "user",
                 content: `Game: ${clip.game || 'Unknown Game'}
                 Original: ${clip.title || 'Gaming Clip'}
                 Score: ${finalScore}
                 
-                Return JSON with:
-                - title: One viral title (max 60 chars, use CAPS strategically)
-                - tags: Array of 10 tags (include game name first)
-                - description: 2-3 paragraphs with emojis`
+                Return ONLY valid JSON (no other text) with:
+                {
+                  "title": "One viral title (max 60 chars, use CAPS strategically)",
+                  "tags": ["array", "of", "10", "tags", "include", "game", "name", "first"],
+                  "description": "2-3 paragraphs with emojis"
+                }`
             }],
-            response_format: { type: "json_object" },
-            max_tokens: 300
+            // REMOVED response_format parameter
+            max_tokens: 400,
+            temperature: 0.8
         });
         
         console.log('[VIRAL] Raw response:', viralResponse.choices[0].message.content);
         
-        const viralContent = JSON.parse(viralResponse.choices[0].message.content);
+        // Clean the response and parse JSON
+        const responseContent = viralResponse.choices[0].message.content.trim();
+        const viralContent = JSON.parse(responseContent);
+        
         console.log('[VIRAL] Parsed content:', viralContent);
         
         // Update clip with viral content
         const updateResult = await supabase
             .from('clips')
             .update({
-                viral_title: viralContent.title,
-                viral_tags: viralContent.tags,
-                viral_description: viralContent.description
+                viral_title: viralContent.title || 'EPIC Gaming Moment!',
+                viral_tags: viralContent.tags || ['gaming', 'viral', 'epic'],
+                viral_description: viralContent.description || 'Check out this amazing gaming moment!'
             })
             .eq('id', clipId);
+            
+        console.log('[VIRAL] Database update result:', updateResult);
+        
+    } catch (viralError) {
+        console.error('[VIRAL] Error generating viral content:', viralError);
+        
+        // Fallback to pattern-based generation
+        const fallbackContent = {
+            title: `INSANE ${clip.game || 'Gaming'} Moment You Won't BELIEVE! 🤯`,
+            tags: [
+                clip.game || 'gaming',
+                'viral',
+                'epic',
+                'clutch',
+                'insane',
+                'highlights',
+                'mustwatch',
+                'gamingmoments',
+                'clips',
+                'autostreampro'
+            ],
+            description: `🔥 This ${clip.game || 'gaming'} clip is absolutely UNBELIEVABLE!\n\n` +
+                         `Watch as this player pulls off one of the most insane plays you'll ever see. ` +
+                         `With an AI score of ${Math.round(finalScore * 100)}%, this clip is certified VIRAL material!\n\n` +
+                         `👍 SMASH that LIKE button!\n` +
+                         `🔔 SUBSCRIBE for daily viral gaming moments!\n` +
+                         `💬 Drop your reaction below!`
+        };
+        
+        // Use fallback content
+        await supabase
+            .from('clips')
+            .update({
+                viral_title: fallbackContent.title,
+                viral_tags: fallbackContent.tags,
+                viral_description: fallbackContent.description
+            })
+            .eq('id', clipId);
+            
+        console.log('[VIRAL] Used fallback viral content');
+    }
+}
             
         console.log('[VIRAL] Database update result:', updateResult);
         
