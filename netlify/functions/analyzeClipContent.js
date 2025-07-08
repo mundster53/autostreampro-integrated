@@ -189,7 +189,7 @@ if (finalScore >= 0.40) {
             
         console.log('[VIRAL] Used dynamic fallback:', selectedTitle);  // ← MOVE THIS UP HERE
     }  // closes viral catch
-}  // closes viral if
+};  // closes viral if
 
     // Return successful response  ← ADD FROM HERE
     return {
