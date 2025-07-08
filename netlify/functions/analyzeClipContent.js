@@ -71,6 +71,51 @@ exports.handler = async (event, context) => {
       })
       .eq('id', clipId);
 
+// Generate viral content if score is good
+    if (finalScore >= 0.40) {
+      try {
+        console.log('Generating viral content for clip:', clipId);
+        
+        const viralResponse = await openai.chat.completions.create({
+          model: "gpt-4",
+          messages: [{
+            role: "system",
+            content: `You are a viral gaming content expert. Create titles that get views but are NOT misleading.`
+          }, {
+            role: "user",
+            content: `Game: ${clip.game}
+            Original: ${clip.title}
+            Score: ${finalScore}
+            
+            Return JSON with:
+            - title: One viral title (max 60 chars, use CAPS strategically)
+            - tags: Array of 10 tags (include game name first)
+            - description: 2-3 paragraphs with emojis`
+          }],
+          response_format: { type: "json_object" },
+          max_tokens: 300
+        });
+        
+        const viralContent = JSON.parse(viralResponse.choices[0].message.content);
+        
+        // Update clip with viral content
+        await supabase
+          .from('clips')
+          .update({
+            viral_title: viralContent.title,
+            viral_tags: viralContent.tags,
+            viral_description: viralContent.description
+          })
+          .eq('id', clipId);
+          
+        console.log('Viral content generated:', viralContent.title);
+        
+      } catch (viralError) {
+        console.error('Viral generation failed:', viralError);
+        // Continue without viral content - don't break the flow
+      }
+    }
+    
     return {
       statusCode: 200,
       body: JSON.stringify({
