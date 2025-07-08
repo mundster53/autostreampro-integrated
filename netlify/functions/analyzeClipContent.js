@@ -91,76 +91,117 @@ if (finalScore >= 0.40) {
         console.log('[VIRAL] Generating viral content...');
         
         const viralResponse = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",  // Changed from gpt-4
+            model: "gpt-3.5-turbo",
             messages: [{
                 role: "system",
-                content: `You are a viral gaming content expert. Create titles that get views but are NOT misleading. Always respond with valid JSON only.`
+                content: `You are a viral gaming content expert. Create UNIQUE, non-repetitive titles. Each title must be different. Never use template patterns.`
             }, {
                 role: "user",
                 content: `Game: ${clip.game || 'Unknown Game'}
                 Original: ${clip.title || 'Gaming Clip'}
                 Score: ${finalScore}
+                Duration: ${clip.duration}s
+                Timestamp: ${new Date().toISOString()}
                 
-                Return ONLY valid JSON (no other text) with:
+                Create a UNIQUE viral title based on:
+                - The game's specific mechanics/themes
+                - Current gaming trends
+                - Time of day/season
+                - Emotional hooks
+                
+                Return ONLY valid JSON:
                 {
-                  "title": "One viral title (max 60 chars, use CAPS strategically)",
-                  "tags": ["array", "of", "10", "tags", "include", "game", "name", "first"],
-                  "description": "2-3 paragraphs with emojis"
+                  "title": "Unique viral title, max 60 chars",
+                  "tags": ["10 specific tags, not generic"],
+                  "description": "Unique 2-3 paragraphs"
                 }`
             }],
-            // REMOVED response_format parameter
             max_tokens: 400,
-            temperature: 0.8
+            temperature: 0.9  // Higher = more creative
         });
         
-        console.log('[VIRAL] Raw response:', viralResponse.choices[0].message.content);
-        
-        // Clean the response and parse JSON
         const responseContent = viralResponse.choices[0].message.content.trim();
         const viralContent = JSON.parse(responseContent);
         
-        console.log('[VIRAL] Parsed content:', viralContent);
-        
-        // Update clip with viral content
-        const updateResult = await supabase
+        await supabase
             .from('clips')
             .update({
-                viral_title: viralContent.title || 'EPIC Gaming Moment!',
-                viral_tags: viralContent.tags || ['gaming', 'viral', 'epic'],
-                viral_description: viralContent.description || 'Check out this amazing gaming moment!'
+                viral_title: viralContent.title,
+                viral_tags: viralContent.tags,
+                viral_description: viralContent.description
             })
             .eq('id', clipId);
             
-        console.log('[VIRAL] Database update result:', updateResult);
+        console.log('[VIRAL] Generated unique title:', viralContent.title);
         
     } catch (viralError) {
-        console.error('[VIRAL] Error generating viral content:', viralError);
+        console.error('[VIRAL] OpenAI failed, using dynamic fallback:', viralError);
         
-        // Fallback to pattern-based generation
+        // DYNAMIC FALLBACK - Not Templates!
         const gameTitle = clip.game || 'Gaming';
         const scorePercent = Math.round(finalScore * 100);
         
-        try {
-            await supabase
-                .from('clips')
-                .update({
-                    viral_title: `INSANE ${gameTitle} Moment You Won't BELIEVE! 🤯`,
-                    viral_tags: [gameTitle.toLowerCase(), 'gaming', 'viral', 'epic', 'insane', 'clutch', 'highlights', 'mustwatch', 'gamingclips', 'autostreampro'],
-                    viral_description: `🔥 This ${gameTitle} clip is absolutely UNBELIEVABLE!\n\n` +
-                                     `Watch as this player pulls off one of the most insane plays you'll ever see. ` +
-                                     `With an AI score of ${scorePercent}%, this clip is certified VIRAL material!\n\n` +
-                                     `👍 SMASH that LIKE button!\n` +
-                                     `🔔 SUBSCRIBE for daily viral gaming moments!\n` +
-                                     `💬 Drop your reaction below!`
-                })
-                .eq('id', clipId);
-                
-            console.log('[VIRAL] Used fallback viral content');
-        } catch (fallbackError) {
-            console.error('[VIRAL] Even fallback failed:', fallbackError);
-        }
+        // Dynamic elements
+        const timeOfDay = new Date().getHours();
+        const dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][new Date().getDay()];
+        const randomSeed = Math.floor(Math.random() * 1000000);
+        
+        // Dynamic title patterns based on multiple factors
+        const titlePatterns = [
+            `${dayOfWeek}'s Most ${scorePercent > 80 ? 'LEGENDARY' : 'WILD'} ${gameTitle} Play`,
+            `${scorePercent}% Viewers Said This ${gameTitle} Clip is ${scorePercent > 70 ? 'IMPOSSIBLE' : 'UNREAL'}`,
+            `The ${gameTitle} Move That Made ${timeOfDay < 12 ? 'Morning' : timeOfDay < 18 ? 'Afternoon' : 'Night'} Gamers GASP`,
+            `Why ${Math.floor(randomSeed/1000)} ${gameTitle} Pros Are Studying This Clip`,
+            `${gameTitle}: The ${clip.duration}s That Changed EVERYTHING`,
+            `Everyone's Talking About This ${gameTitle} ${timeOfDay < 6 ? 'Late Night' : timeOfDay < 12 ? 'Morning' : 'Prime Time'} Moment`,
+            `${gameTitle} Community in SHOCK After Seeing This`,
+            `"No Way That's Real" - ${gameTitle} Clip Goes ${scorePercent > 60 ? 'MEGA' : 'ULTRA'} Viral`
+        ];
+        
+        // Pick based on clip ID hash for consistency
+        const titleIndex = parseInt(clipId.substring(0, 8), 16) % titlePatterns.length;
+        const selectedTitle = titlePatterns[titleIndex];
+        
+        // Dynamic tags based on game, time, score
+        const dynamicTags = [
+            gameTitle.toLowerCase(),
+            `${gameTitle.toLowerCase()}clips`,
+            timeOfDay < 12 ? 'morninggaming' : timeOfDay < 18 ? 'afternoongaming' : 'nightgaming',
+            scorePercent > 80 ? 'legendary' : scorePercent > 60 ? 'epic' : 'viral',
+            `gaming${new Date().getFullYear()}`,
+            dayOfWeek.toLowerCase() + 'gaming',
+            `top${scorePercent}percent`,
+            clip.duration < 30 ? 'shortclips' : 'highlights',
+            'mustwatch',
+            'autostreampro'
+        ];
+        
+        // Dynamic description
+        const descriptions = {
+            morning: `☀️ Start your day with this INCREDIBLE ${gameTitle} moment!`,
+            afternoon: `🌤️ Your afternoon just got ${scorePercent}% better with this ${gameTitle} play!`,
+            evening: `🌙 End your day watching the ${gameTitle} clip everyone's talking about!`
+        };
+        
+        const timeKey = timeOfDay < 12 ? 'morning' : timeOfDay < 18 ? 'afternoon' : 'evening';
+        
+        await supabase
+            .from('clips')
+            .update({
+                viral_title: selectedTitle,
+                viral_tags: dynamicTags,
+                viral_description: `${descriptions[timeKey]}\n\n` +
+                                 `Scored ${scorePercent}% by our AI system, this ${clip.duration}-second masterpiece ` +
+                                 `is exactly why the ${gameTitle} community loves ${dayOfWeek}s.\n\n` +
+                                 `🎮 Follow for daily ${gameTitle} content\n` +
+                                 `📊 AI-curated gaming highlights\n` +
+                                 `🔔 Turn on notifications for ${timeKey} drops!`
+            })
+            .eq('id', clipId);
+            
+        console.log('[VIRAL] Used dynamic fallback:', selectedTitle);
     }
-}  // ← This closing bracket was missing!
+}
             
         console.log('[VIRAL] Database update result:', updateResult);
         
