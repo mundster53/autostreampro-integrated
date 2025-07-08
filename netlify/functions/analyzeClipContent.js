@@ -204,37 +204,50 @@ if (finalScore >= 0.40) {
     }; // ← TO HERE
     
         // Fallback to pattern-based generation
-        const fallbackContent = {
-            title: `INSANE ${clip.game || 'Gaming'} Moment You Won't BELIEVE! 🤯`,
-            tags: [
-                clip.game || 'gaming',
-                'viral',
-                'epic',
-                'clutch',
-                'insane',
-                'highlights',
-                'mustwatch',
-                'gamingmoments',
-                'clips',
-                'autostreampro'
-            ],
-            description: `🔥 This ${clip.game || 'gaming'} clip is absolutely UNBELIEVABLE!\n\n` +
-                         `Watch as this player pulls off one of the most insane plays you'll ever see. ` +
-                         `With an AI score of ${Math.round(finalScore * 100)}%, this clip is certified VIRAL material!\n\n` +
-                         `👍 SMASH that LIKE button!\n` +
-                         `🔔 SUBSCRIBE for daily viral gaming moments!\n` +
-                         `💬 Drop your reaction below!`
-        };
-        
-        // Use fallback content
-        await supabase
-            .from('clips')
-            .update({
-                viral_title: fallbackContent.title,
-                viral_tags: fallbackContent.tags,
-                viral_description: fallbackContent.description
-            })
-            .eq('id', clipId);
+        // Dynamic description generation
+const descriptionElements = {
+  openings: [
+    `${timeOfDay < 12 ? '☀️ Morning' : timeOfDay < 18 ? '🌤️ Afternoon' : '🌙 Evening'} gamers are losing their minds over this ${clip.duration}-second ${gameTitle} masterpiece.`,
+    `${dayOfWeek} just became legendary thanks to this ${gameTitle} player.`,
+    `After ${randomSeed % 100} failed attempts, this ${gameTitle} player finally achieved the impossible.`,
+    `The ${gameTitle} community watched this clip ${Math.floor(randomSeed/100)} times and still can't believe it happened.`,
+    `This ${scorePercent}% rated ${gameTitle} moment proves why ${dayOfWeek}s are the best gaming days.`
+  ],
+  
+  middleContent: [
+    `What starts as a typical ${gameTitle} session quickly escalates into something nobody expected. The precision, timing, and pure skill displayed here is why this clip scored ${scorePercent}% on our viral AI system.`,
+    `In just ${clip.duration} seconds, this player rewrites what's possible in ${gameTitle}. Our AI detected ${titleBoosts || 1} viral elements that make this unmissable.`,
+    `The ${gameTitle} developers probably never imagined someone would pull this off. With a ${scorePercent}% viral score, this is the kind of content that creates legends.`,
+    `Every frame of this ${clip.duration}-second journey showcases why ${gameTitle} remains one of gaming's most ${scorePercent > 70 ? 'spectacular' : 'surprising'} experiences.`
+  ],
+  
+  closings: [
+    `Join ${Math.floor(randomSeed/1000)} other ${gameTitle} fans who've already shared this ${timeKey} gaming miracle.`,
+    `Follow for more ${scorePercent > 60 ? 'legendary' : 'incredible'} ${gameTitle} moments that define ${new Date().getFullYear()} gaming.`,
+    `This is why we analyze thousands of clips - to find ${gameTitle} gold like this. Next ${dayOfWeek}'s drop will be even better!`,
+    `Be part of the ${gameTitle} revolution. We're posting ${timeKey} highlights that are reshaping the meta.`
+  ]
+};
+
+// Randomly select from each category based on clip ID for consistency
+const openingIndex = parseInt(clipId.substring(8, 10), 16) % descriptionElements.openings.length;
+const middleIndex = parseInt(clipId.substring(10, 12), 16) % descriptionElements.middleContent.length;
+const closingIndex = parseInt(clipId.substring(12, 14), 16) % descriptionElements.closings.length;
+
+const dynamicDescription = `${descriptionElements.openings[openingIndex]}\n\n` +
+                          `${descriptionElements.middleContent[middleIndex]}\n\n` +
+                          `${descriptionElements.closings[closingIndex]}\n\n` +
+                          `🎮 ${gameTitle} | 📊 AI Score: ${scorePercent}% | ⏱️ ${clip.duration}s\n` +
+                          `#${gameTitle.replace(/\s+/g, '')} #Gaming${new Date().getFullYear()}`;
+
+await supabase
+  .from('clips')
+  .update({
+    viral_title: selectedTitle,
+    viral_tags: dynamicTags,
+    viral_description: dynamicDescription
+  })
+  .eq('id', clipId);
             
         console.log('[VIRAL] Used fallback viral content');
     }
