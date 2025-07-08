@@ -252,18 +252,6 @@ await supabase
         console.log('[VIRAL] Used fallback viral content');
     }
 }
-    
-  } catch (error) {
-    console.error('Analysis error:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        success: false,
-        error: error.message
-      })
-    };
-  }
-};
 
 async function analyzeThumbnailWithGPT4(thumbnailUrl, game) {
   try {
