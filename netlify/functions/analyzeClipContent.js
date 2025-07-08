@@ -71,6 +71,18 @@ exports.handler = async (event, context) => {
       })
       .eq('id', clipId);
 
+// TEST: Update viral_title to confirm code reaches here
+if (finalScore >= 0.40) {
+  await supabase
+    .from('clips')
+    .update({ 
+      viral_title: `TEST - Score: ${finalScore}`
+    })
+    .eq('id', clipId);
+}
+
+// Then your actual viral generation code...
+    
 // Generate viral content if score is good
     if (finalScore >= 0.40) {
       try {
