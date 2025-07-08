@@ -21,6 +21,7 @@
   "author": "AutoStreamPro",
   "license": "MIT",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.0.0"
     "@netlify/functions": "^2.0.0",
     "@supabase/supabase-js": "^2.38.0",
     "googleapis": "^128.0.0",
