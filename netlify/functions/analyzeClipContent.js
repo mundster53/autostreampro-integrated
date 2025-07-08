@@ -253,17 +253,6 @@ await supabase
     }
 }
     
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        success: true,
-        clipId: clipId,
-        score: finalScore,
-        analysis: fullAnalysis,
-        shouldUpload: finalScore >= 0.40
-      })
-    };
-    
   } catch (error) {
     console.error('Analysis error:', error);
     return {
