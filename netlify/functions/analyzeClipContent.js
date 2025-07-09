@@ -71,6 +71,31 @@ exports.handler = async (event, context) => {
       })
       .eq('id', clipId);
 
+// Automatically generate viral content for good clips
+if (finalScore >= 0.40) {
+  console.log('Score is good! Triggering viral content generation...');
+  
+  try {
+    // Call our separate viral generation function
+    const viralResponse = await fetch(`https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/generateViralContent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clipId: clipId })
+    });
+    
+    const viralResult = await viralResponse.json();
+    
+    if (viralResult.success) {
+      console.log('Viral content generated successfully!');
+    } else {
+      console.log('Viral generation skipped:', viralResult.message);
+    }
+  } catch (viralError) {
+    // Don't let viral generation failure break the main flow
+    console.error('Viral generation failed, but continuing:', viralError);
+  }
+}
+    
 // Generate viral content if score is good
     if (finalScore >= 0.40) {
       try {
