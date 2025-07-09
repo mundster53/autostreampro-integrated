@@ -19,20 +19,50 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { clipId } = JSON.parse(event.body || '{}');
+  const { clipId } = JSON.parse(event.body || '{}');
+  
+  // Get clip data
+  const { data: clip, error } = await supabase
+    .from('clips')
+    .select('*')
+    .eq('id', clipId)
+    .single();
     
-    // Get clip data
-    const { data: clip, error } = await supabase
-      .from('clips')
-      .select('*')
-      .eq('id', clipId)
-      .single();
+  if (error || !clip) {
+    throw new Error('Clip not found');
+  }
+  
+  // CHECK IF ALREADY ANALYZED - ADD THIS ENTIRE SECTION
+  if (clip.ai_score !== null) {
+    console.log('Clip already analyzed. Score:', clip.ai_score);
+    
+    // If high score but no viral content, generate it
+    if (clip.ai_score >= 0.40 && !clip.viral_title) {
+      console.log('Generating missing viral content...');
       
-    if (error || !clip) {
-      throw new Error('Clip not found');
+      const viralResponse = await fetch(`https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/generateViralContent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clipId: clipId })
+      });
     }
-
-    console.log('Analyzing clip:', clip.title);
+    
+    // Return existing analysis
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        success: true,
+        clipId: clipId,
+        score: clip.ai_score,
+        analysis: clip.ai_analysis,
+        shouldUpload: clip.ai_score >= 0.40,
+        message: 'Using existing analysis'
+      })
+    };
+  }
+  // END OF NEW SECTION
+  
+  console.log('Analyzing clip:', clip.title);  // ← THIS LINE STAYS
 
     // Step 1: Analyze thumbnail with GPT-4 Vision
     let visualScore = 0;
