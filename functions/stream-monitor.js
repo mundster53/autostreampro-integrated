@@ -115,6 +115,90 @@ class StreamMonitor {  // ONLY ONE CLASS DECLARATION!
         }
     }
 
+// NEW: Continuous monitoring with retroactive clipping
+async startContinuousMonitoring(connection, streamData) {
+    const streamerId = connection.platform_user_id;
+    const userId = connection.user_id;
+    
+    console.log(`[ContinuousMonitor] Starting for ${streamerId}`);
+    
+    // Initialize monitoring data
+    if (!this.activeMonitors) {
+        this.activeMonitors = new Map();
+    }
+    
+    const monitor = {
+        streamerId,
+        userId,
+        streamId: streamData.id,
+        startTime: Date.now(),
+        lastClipTime: 0,
+        checkInterval: null
+    };
+    
+    // Check every second for viral moments
+    monitor.checkInterval = setInterval(async () => {
+        await this.checkForViralMoment(monitor);
+    }, 1000); // EVERY SECOND!
+    
+    this.activeMonitors.set(streamerId, monitor);
+}
+
+// Check if something viral just happened
+async checkForViralMoment(monitor) {
+    const now = Date.now();
+    const streamDuration = (now - monitor.startTime) / 1000 / 60; // minutes
+    
+    // Skip first 5 minutes (ads)
+    if (streamDuration < 5) return;
+    
+    // Minimum 2 minutes between clips
+    if (now - monitor.lastClipTime < 120000) return;
+    
+    // In the future, add viral detection here:
+    // - Audio spike detection
+    // - Chat explosion detection  
+    // - Visual change detection
+    
+    // For now, create clips at smart intervals
+    if (streamDuration % 2 < 0.1) { // Every 2 minutes
+        console.log(`[ContinuousMonitor] Creating retroactive clip!`);
+        await this.createRetroactiveClip(monitor);
+    }
+}
+
+// Create a clip of what JUST HAPPENED
+async createRetroactiveClip(monitor) {
+    try {
+        console.log(`[ContinuousMonitor] Capturing the LAST 30-60 seconds...`);
+        
+        // When you create a Twitch clip NOW, it captures the PAST!
+        const clip = await this.clipCreator.createClipForStream(
+            monitor.userId,
+            monitor.streamerId,
+            monitor.streamId
+        );
+        
+        if (clip) {
+            console.log(`[ContinuousMonitor] ✅ Captured viral moment from the past!`);
+            await this.saveClip(monitor.userId, clip);
+            monitor.lastClipTime = Date.now();
+        }
+    } catch (error) {
+        console.error('[ContinuousMonitor] Error creating retroactive clip:', error);
+    }
+}
+
+// Stop monitoring when stream ends
+stopContinuousMonitoring(streamerId) {
+    const monitor = this.activeMonitors?.get(streamerId);
+    if (monitor && monitor.checkInterval) {
+        clearInterval(monitor.checkInterval);
+        this.activeMonitors.delete(streamerId);
+        console.log(`[ContinuousMonitor] Stopped monitoring ${streamerId}`);
+    }
+}
+    
     async checkUserStream(connection) {
         try {
             const token = await this.getAppToken();
@@ -175,24 +259,18 @@ class StreamMonitor {  // ONLY ONE CLASS DECLARATION!
                 const stream = data.data[0];
                 console.log(`[StreamMonitor] User ${connection.user_id} is LIVE - ${stream.game_name}`);
                 
-                // Create clips every 10 minutes
-                const lastClip = this.lastClipTime[connection.user_id] || 0;
-                const timeSinceLastClip = Date.now() - lastClip;
+                  // START CONTINUOUS MONITORING!
+    if (!this.activeMonitors?.has(connection.platform_user_id)) {
+        await this.startContinuousMonitoring(connection, stream);
+    }
+    
+    // Still check for manual clips
+    await this.checkForClips(connection.user_id, connection.platform_user_id);
                 
-                if (timeSinceLastClip > 10 * 60 * 1000) { // 10 minutes
-                    console.log('[StreamMonitor] Creating automatic clip...');
-                    
-                    const clip = await this.clipCreator.createClipForStream(
-                        connection.user_id,
-                        connection.platform_user_id,
-                        stream.id
-                    );
-                    
-                    if (clip) {
-                        await this.saveClip(connection.user_id, clip);
-                        this.lastClipTime[connection.user_id] = Date.now();
-                    }
-                }
+} else {
+    // Stream ended - stop monitoring
+    this.stopContinuousMonitoring(connection.platform_user_id);
+}
                 
                 // Also check for manual clips
                 await this.checkForClips(connection.user_id, connection.platform_user_id);
