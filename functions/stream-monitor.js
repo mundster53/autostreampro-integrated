@@ -6,10 +6,15 @@ const fetch = require('node-fetch');
 const ClipCreator = require('../services/clip-creator');
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 
-class StreamMonitor {
+class StreamMonitor {  // ONLY ONE CLASS DECLARATION!
     constructor(supabase) {
         this.supabase = supabase;
+        this.twitchClientId = process.env.TWITCH_CLIENT_ID;
+        this.twitchClientSecret = process.env.TWITCH_CLIENT_SECRET;
+        this.appToken = null;
+        this.tokenExpiry = null;
         this.clipCreator = new ClipCreator(supabase);
+        this.lastClipTime = {};
         
         // Initialize R2 client
         this.r2 = new S3Client({
@@ -62,28 +67,6 @@ class StreamMonitor {
         } catch (error) {
             console.error('[StreamMonitor] Failed to delete temp clip:', error);
         }
-    }
-}
-
-class StreamMonitor {
-    constructor(supabase) {
-        this.supabase = supabase;
-        this.twitchClientId = process.env.TWITCH_CLIENT_ID;
-        this.twitchClientSecret = process.env.TWITCH_CLIENT_SECRET;
-        this.appToken = null;
-        this.tokenExpiry = null;
-        this.clipCreator = new ClipCreator(supabase);
-        this.lastClipTime = {};
-
-        // Add this inside your existing constructor
-this.r2 = new S3Client({
-    region: 'auto',
-    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-    credentials: {
-        accessKeyId: process.env.R2_ACCESS_KEY_ID,
-        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY
-    }
-});
     }
 
     async getAppToken() {
