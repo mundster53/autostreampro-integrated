@@ -1,0 +1,33 @@
+# Create demo-features.html
+cat > demo-features.html << 'EOF'
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="demo-features.css">
+</head>
+<body>
+    <div class="demo-features-container">
+        <div class="activity-feed">
+            <h3>Live Activity</h3>
+            <div id="activityList">
+                <p>Loading activities...</p>
+            </div>
+        </div>
+        
+        <div class="processing-queue">
+            <h3>Clip Queue</h3>
+            <div id="queueList">
+                <p>Loading queue...</p>
+            </div>
+        </div>
+        
+        <button onclick="processNextClip()" class="process-now-btn">
+            Process Next Clip Now
+        </button>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="demo-features.js"></script>
+</body>
+</html>
+EOF
