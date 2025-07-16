@@ -445,6 +445,19 @@ const googleClientId = '17381198225-gn5qnqdlhuehbhlva9ro046r5qbssfrn.apps.google
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
             const state = urlParams.get('state');
+
+// ADD THIS FOR TIKTOK
+    if (urlParams.get('tiktok') === 'connected') {
+        await savePlatformConnection('tiktok', {
+            accessToken: 'demo-token',
+            refreshToken: 'demo-refresh',
+            userID: 'demo-user',
+            username: 'TikTokUser'
+        });
+        // Clean URL
+        window.history.replaceState({}, document.title, '/onboarding.html');
+        return;
+    }
             
             if (!code || !state) return;
             
