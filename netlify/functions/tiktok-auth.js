@@ -6,7 +6,7 @@ exports.handler = async (event, context) => {
     };
 
     // NEW: Add type checking
-    const { type, code, state } = event.queryStringParameters || {};
+    const { type, state } = event.queryStringParameters || {};
     
     // NEW: If no code, redirect to TikTok OAuth
     if (!code) {
