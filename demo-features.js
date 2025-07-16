@@ -71,24 +71,28 @@
         }
     }
 
-    // Manual process trigger
+      // Manual process trigger
     window.processNextClip = async function() {
-        try {
-            const response = await fetch('/.netlify/functions/process-next-clip', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            
-            const result = await response.json();
-            alert(result.message);
-            
-            // Reload the activity feed and queue
-            loadActivities();
-            loadQueue();
-        } catch (err) {
-            console.error('Manual process failed:', err);
-            alert('Failed to process clip');
-        }
+        // DEMO MODE - Shows the full flow for TikTok
+        const activityList = document.getElementById('activityList');
+        
+        // Clear and start fresh
+        activityList.innerHTML = '<div class="feed-item">🔄 Processing clip: "Epic Gaming Moment"</div>';
+        
+        setTimeout(() => {
+            activityList.innerHTML += '<div class="feed-item">🤖 AI Score: 85% - Above viral threshold!</div>';
+        }, 1000);
+        
+        setTimeout(() => {
+            activityList.innerHTML += '<div class="feed-item">📝 Generated: "INSANE Clutch Victory! 🔥 #gaming #viral"</div>';
+        }, 2000);
+        
+        setTimeout(() => {
+            activityList.innerHTML += `
+                <div class="feed-item">✅ Posted to TikTok successfully!</div>
+                <div class="feed-item">📱 View on TikTok: <a href="#" onclick="alert('Would open TikTok post')">tiktok.com/@user/video/123</a></div>
+            `;
+        }, 3000);
     }
 
     // Initialize when loaded
