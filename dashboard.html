@@ -541,6 +541,14 @@
                         document.getElementById('youtube-status').textContent = 'Visit Setup';
                         document.getElementById('youtube-status').className = 'connection-status disconnected';
                     }
+
+                    // Check TikTok
+                    const tiktokConnected = data.some(conn => conn.platform === 'tiktok' && conn.is_active);
+                    if (tiktokConnected) {
+                        document.getElementById('tiktok-status').textContent = 'Connected';
+                        document.getElementById('tiktok-status').className = 'connection-status connected';
+                        connectedCount++;
+                    }
                     
                     // Instagram, Twitter, TikTok remain as "Coming Soon" (already set in HTML)
                     
