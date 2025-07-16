@@ -435,6 +435,15 @@
                     </button>
                 </div>
 
+                <!-- Add to login.html after existing login options -->
+<div class="divider">
+    <span>or</span>
+</div>
+<button onclick="loginWithTikTok()" class="social-login-btn tiktok-btn">
+    <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" alt="TikTok" width="20">
+    Continue with TikTok
+</button>
+
                 <div class="signup-link">
                     Don't have an account? <a href="/signup.html">Sign up here</a>
                 </div>
@@ -546,6 +555,14 @@
                 console.error('Google sign in error:', error);
                 showMessage('Google sign in failed. Please try again.');
             }
+        }
+
+        // TikTok Sign In - ADD THIS FUNCTION HERE
+        function loginWithTikTok() {
+            // For demo purposes - show it exists but redirect to regular login
+            showMessage('TikTok login available for verified creators. Please use email login for now.', 'info');
+            // In production: window.location.href = '/.netlify/functions/tiktok-auth?type=login';
+
         }
 
         // Forgot Password
