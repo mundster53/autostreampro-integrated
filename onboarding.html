@@ -274,13 +274,14 @@
                 </div>
                 
                 <!-- TikTok -->
-                <div class="platform-card" data-platform="tiktok">
-                    <div class="platform-icon tiktok-icon">T</div>
-                    <div class="platform-name">TikTok</div>
-                    <button class="connect-btn" disabled>
-                        <span class="coming-soon">Coming Soon</span>
-                    </button>
-                </div>
+            <div class="platform-card tiktok">
+                <h3>TikTok</h3>
+                <p>Auto-post viral clips</p>
+            <!-- Change this button -->
+                <button class="connect-btn" onclick="connectTikTok()">
+                    Connect TikTok
+                    </button>    
+</div>
             </div>
         </div>
         
@@ -386,6 +387,11 @@ const googleClientId = '17381198225-gn5qnqdlhuehbhlva9ro046r5qbssfrn.apps.google
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent&state=youtube`;
             window.location.href = authUrl;
         });
+
+        // Connect TikTok
+        document.getElementById('tiktokBtn').addEventListener('click', () => {
+            window.location.href = '/.netlify/functions/tiktok-auth';
+        });
         
         // Save platform connection
         async function savePlatformConnection(platform, data) {
@@ -482,6 +488,28 @@ const googleClientId = '17381198225-gn5qnqdlhuehbhlva9ro046r5qbssfrn.apps.google
                     }
                 } catch (error) {
                     showError('Failed to connect YouTube');
+                }
+            }
+
+            if (state === 'tiktok') {
+                try {
+                    const response = await fetch('/.netlify/functions/tiktok-auth', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ code })
+                    });
+                    
+                    const data = await response.json();
+                    if (data.access_token) {
+                        await savePlatformConnection('tiktok', {
+                            accessToken: data.access_token,
+                            refreshToken: data.refresh_token,
+                            userID: data.user_id,
+                            username: data.username
+                        });
+                    }
+                } catch (error) {
+                    showError('Failed to connect TikTok');
                 }
             }
             
