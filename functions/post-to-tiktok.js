@@ -99,7 +99,7 @@ exports.handler = async (event, context) => {
         // TIKTOK API - Video Upload Process
         // Step 1: Initialize video upload
         const initResponse = await axios.post(
-            'https://open.tiktokapis.com/v2/post/publish/video/init/',
+            'https://sandbox.tiktokapis.com/v2/post/publish/video/init/',
             {
                 post_info: {
                     title: clip.title || 'Check out this gaming moment!',
@@ -145,7 +145,7 @@ exports.handler = async (event, context) => {
 
         // Step 3: Finalize the upload
         const publishResponse = await axios.post(
-            'https://open.tiktokapis.com/v2/post/publish/status/fetch/',
+            'https://sandbox.tiktokapis.com/v2/post/publish/status/fetch/',
             {
                 publish_id: publish_id
             },
