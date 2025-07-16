@@ -1,14 +1,40 @@
 exports.handler = async (event, context) => {
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: {
+ // Enable CORS
+    const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'GET, POST'
-      }
     };
-  }
+
+    // NEW: Add type checking
+    const { type, code, state } = event.queryStringParameters || {};
+    
+    // NEW: If no code, redirect to TikTok OAuth
+    if (!code) {
+        const IS_SANDBOX = true;
+        const authDomain = IS_SANDBOX ? 'https://sandbox-auth.tiktok.com' : 'https://www.tiktok.com';
+        const redirectUri = 'https://autostreampro.com/.netlify/functions/tiktok-auth';
+        const clientKey = process.env.TIKTOK_CLIENT_KEY;
+        
+        if (type === 'login') {
+            // Login Kit flow
+            const scope = 'user.info.basic,user.info.profile';
+            const authUrl = `${authDomain}/v2/auth/authorize?client_key=${clientKey}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=tiktok-login`;
+            
+            return {
+                statusCode: 302,
+                headers: { Location: authUrl, ...headers }
+            };
+        } else {
+            // Content Posting flow
+            const scope = 'video.upload,video.publish';
+            const authUrl = `${authDomain}/v2/auth/authorize?client_key=${clientKey}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=tiktok-content`;
+            
+            return {
+                statusCode: 302,
+                headers: { Location: authUrl, ...headers }
+            };
+        }
+    }
 
   const { code } = event.queryStringParameters;
   
