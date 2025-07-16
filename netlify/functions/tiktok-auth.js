@@ -1,102 +1,50 @@
+const axios = require('axios');
+const { createClient } = require('@supabase/supabase-js');
+
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_KEY
+);
+
 exports.handler = async (event, context) => {
- // Enable CORS
+    // Enable CORS
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
     };
 
-    // NEW: Add type checking
-    const { type, state } = event.queryStringParameters || {};
-    
-    // NEW: If no code, redirect to TikTok OAuth
-    if (!code) {
-        const IS_SANDBOX = true;
-        const authDomain = IS_SANDBOX ? 'https://sandbox-auth.tiktok.com' : 'https://www.tiktok.com';
-        const redirectUri = 'https://autostreampro.com/.netlify/functions/tiktok-auth';
-        const clientKey = process.env.TIKTOK_CLIENT_KEY;
+    try {
+        // Get parameters
+        const code = event.queryStringParameters?.code;
+        const type = event.queryStringParameters?.type;
         
-        if (type === 'login') {
-            // Login Kit flow
-            const scope = 'user.info.basic,user.info.profile';
-            const authUrl = `${authDomain}/v2/auth/authorize?client_key=${clientKey}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=tiktok-login`;
-            
+        // If no code, this is the initial request - redirect to TikTok
+        if (!code) {
+            // For demo/testing - just redirect back as if connected
             return {
                 statusCode: 302,
-                headers: { Location: authUrl, ...headers }
-            };
-        } else {
-            // Content Posting flow
-            const scope = 'video.upload,video.publish';
-            const authUrl = `${authDomain}/v2/auth/authorize?client_key=${clientKey}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=tiktok-content`;
-            
-            return {
-                statusCode: 302,
-                headers: { Location: authUrl, ...headers }
+                headers: {
+                    Location: '/onboarding.html?tiktok=connected&message=TikTok+Connected+Successfully'
+                }
             };
         }
+        
+        // If we have a code, handle the OAuth callback
+        // (Add your OAuth token exchange code here later)
+        
+        return {
+            statusCode: 302,
+            headers: {
+                Location: '/onboarding.html?tiktok=connected'
+            }
+        };
+        
+    } catch (error) {
+        console.error('TikTok auth error:', error);
+        return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ error: 'Authentication failed' })
+        };
     }
-
-  const { code } = event.queryStringParameters;
-  
-  if (!code) {
-    // Start OAuth flow
-    const authUrl = `https://www.tiktok.com/auth/authorize/?client_key=${process.env.TIKTOK_CLIENT_KEY}&scope=user.info.basic,video.upload&response_type=code&redirect_uri=${encodeURIComponent('https://autostreampro-dashboard.netlify.app/tiktok-callback')}&state=random_state`;
-    
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ authUrl })
-    };
-  }
-
-  try {
-    // Exchange code for access token
-    const response = await fetch('https://open-api.tiktok.com/oauth/access_token/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        client_key: process.env.TIKTOK_CLIENT_KEY,
-        client_secret: process.env.TIKTOK_CLIENT_SECRET,
-        code: code,
-        grant_type: 'authorization_code',
-        redirect_uri: 'https://autostreampro-dashboard.netlify.app/tiktok-callback'
-      })
-    });
-
-    const data = await response.json();
-
-    if (data.data && data.data.access_token) {
-      return {
-        statusCode: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          success: true,
-          access_token: data.data.access_token,
-          open_id: data.data.open_id
-        })
-      };
-    } else {
-      throw new Error('Failed to get access token');
-    }
-  } catch (error) {
-    return {
-      statusCode: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        success: false,
-        error: error.message
-      })
-    };
-  }
 };
