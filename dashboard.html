@@ -166,24 +166,24 @@
         }
 
 <!-- Threshold Control -->
-<div class="threshold-control">
-    <h2>Viral Score Threshold</h2>
-    <p>Only clips scoring above this threshold will be automatically posted to your social media channels.</p>
+<div class="threshold-control" style="background: #f5f5f5; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+    <h2 style="margin-bottom: 10px; color: #1f2937;">Viral Score Threshold</h2>
+    <p style="color: #64748b; margin-bottom: 20px;">Only clips scoring above this threshold will be automatically posted to your social media channels.</p>
     
-    <div class="threshold-slider-container">
+    <div style="display: flex; align-items: center; gap: 20px; margin: 20px 0;">
         <span>0%</span>
-        <input type="range" min="0" max="100" value="40" id="thresholdSlider">
+        <input type="range" min="0" max="100" value="40" id="thresholdSlider" style="flex: 1; height: 8px;">
         <span>100%</span>
-        <div class="threshold-value" id="thresholdValue">40%</div>
+        <div id="thresholdValue" style="font-size: 36px; font-weight: bold; color: #4CAF50; min-width: 100px; text-align: center;">40%</div>
     </div>
     
-    <div class="threshold-hints">
+    <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 14px; color: #666; background: #e8f5e9; padding: 15px; border-radius: 8px;">
         <span>🎮 New Streamer: 30%</span>
         <span>📈 Growing: 40%</span>
         <span>⭐ Established: 60%</span>
     </div>
     
-    <button class="save-btn" onclick="saveThreshold()">Save Threshold</button>
+    <button onclick="saveThreshold()" style="background: #4CAF50; color: white; border: none; padding: 10px 30px; border-radius: 6px; font-size: 16px; cursor: pointer; margin-top: 20px;">Save Threshold</button>
 </div>
 
         /* Clips Table */
