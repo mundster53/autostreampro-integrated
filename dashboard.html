@@ -165,49 +165,32 @@
             color: #1f2937;
         }
 
-        /* Threshold Control */
-        .threshold-control {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            padding: 1rem;
-            background: #f8fafc;
-            border-radius: 10px;
-        }
+        <!-- Threshold Control -->
+<div class="threshold-control">
+    <span class="threshold-label">Viral Threshold:</span>
+    <input type="range" min="0" max="100" value="40" id="thresholdSlider">
+    <div class="threshold-value" id="thresholdValue">40%</div>
+    <button onclick="saveThreshold()" style="background: #4CAF50; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">Save</button>
+</div>
 
-        .threshold-label {
-            font-size: 0.9rem;
-            color: #64748b;
-        }
-
-        #thresholdSlider {
-            flex: 1;
-            height: 6px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: #e2e8f0;
-            border-radius: 3px;
-            outline: none;
-        }
-
-        #thresholdSlider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            background: #4CAF50;
-            cursor: pointer;
-            border-radius: 50%;
-        }
-
-        .threshold-value {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #4CAF50;
-            min-width: 50px;
-            text-align: center;
-        }
+<!-- Threshold Recommendations -->
+<div class="threshold-recommendations">
+    <div class="recommendation-item">
+        <span class="rec-icon">🎮</span>
+        <span class="rec-label">New Streamer:</span>
+        <span class="rec-value">30%</span>
+    </div>
+    <div class="recommendation-item">
+        <span class="rec-icon">📈</span>
+        <span class="rec-label">Growing:</span>
+        <span class="rec-value">40%</span>
+    </div>
+    <div class="recommendation-item">
+        <span class="rec-icon">⭐</span>
+        <span class="rec-label">Established:</span>
+        <span class="rec-value">60%</span>
+    </div>
+</div>
 
         /* Clips Table */
         .clips-table-container {
@@ -496,8 +479,51 @@
 
         .toast.success { background: #10b981; }
         .toast.error { background: #ef4444; }
+
+        .toast.success { background: #10b981; }
+        .toast.error { background: #ef4444; }
+
+        /* ADD THE NEW CSS HERE - Threshold Recommendations */
+        .threshold-recommendations {
+            display: flex;
+            gap: 2rem;
+            margin-top: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .recommendation-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .rec-icon {
+            font-size: 1rem;
+        }
+
+        .rec-label {
+            color: #64748b;
+        }
+
+        .rec-value {
+            font-weight: 600;
+            color: #059669;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .threshold-recommendations {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
     </style>
 </head>
+    
 <body>
     <div class="container">
         <header>
