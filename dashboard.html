@@ -165,31 +165,25 @@
             color: #1f2937;
         }
 
-        <!-- Threshold Control -->
+<!-- Threshold Control -->
 <div class="threshold-control">
-    <span class="threshold-label">Viral Threshold:</span>
-    <input type="range" min="0" max="100" value="40" id="thresholdSlider">
-    <div class="threshold-value" id="thresholdValue">40%</div>
-    <button onclick="saveThreshold()" style="background: #4CAF50; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">Save</button>
-</div>
-
-<!-- Threshold Recommendations -->
-<div class="threshold-recommendations">
-    <div class="recommendation-item">
-        <span class="rec-icon">🎮</span>
-        <span class="rec-label">New Streamer:</span>
-        <span class="rec-value">30%</span>
+    <h2>Viral Score Threshold</h2>
+    <p>Only clips scoring above this threshold will be automatically posted to your social media channels.</p>
+    
+    <div class="threshold-slider-container">
+        <span>0%</span>
+        <input type="range" min="0" max="100" value="40" id="thresholdSlider">
+        <span>100%</span>
+        <div class="threshold-value" id="thresholdValue">40%</div>
     </div>
-    <div class="recommendation-item">
-        <span class="rec-icon">📈</span>
-        <span class="rec-label">Growing:</span>
-        <span class="rec-value">40%</span>
+    
+    <div class="threshold-hints">
+        <span>🎮 New Streamer: 30%</span>
+        <span>📈 Growing: 40%</span>
+        <span>⭐ Established: 60%</span>
     </div>
-    <div class="recommendation-item">
-        <span class="rec-icon">⭐</span>
-        <span class="rec-label">Established:</span>
-        <span class="rec-value">60%</span>
-    </div>
+    
+    <button class="save-btn" onclick="saveThreshold()">Save Threshold</button>
 </div>
 
         /* Clips Table */
