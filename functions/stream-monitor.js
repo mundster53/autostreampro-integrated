@@ -198,7 +198,6 @@ stopContinuousMonitoring(streamerId) {
         console.log(`[ContinuousMonitor] Stopped monitoring ${streamerId}`);
     }
 }
-    
     async checkUserStream(connection) {
         try {
             const token = await this.getAppToken();
@@ -215,6 +214,27 @@ stopContinuousMonitoring(streamerId) {
             );
 
             const data = await response.json();
+
+            // ⬇️ ADD THE NEW CODE RIGHT HERE ⬇️
+        
+        if (data.data && data.data.length > 0) {
+            // Stream is LIVE!
+            const streamData = data.data[0];
+            console.log(`[StreamMonitor] ${streamData.user_name} is live playing ${streamData.game_name}`);
+            
+            // START CONTINUOUS MONITORING IF NOT ALREADY MONITORING
+            if (!this.activeMonitors?.has(connection.platform_user_id)) {
+                await this.startContinuousMonitoring(connection, streamData);
+            }
+        } else {
+            // Stream is OFFLINE
+            console.log(`[StreamMonitor] User ${connection.platform_user_id} is offline`);
+            
+            // STOP monitoring if it was running
+            this.stopContinuousMonitoring(connection.platform_user_id);
+        }
+        
+        // ⬆️ END OF NEW CODE ⬆️
 
 // If we get 401, try to refresh user's token
         if (response.status === 401 && connection.refresh_token) {
