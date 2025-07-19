@@ -643,12 +643,45 @@
             document.getElementById('thresholdValue').textContent = e.target.value + '%';
         });
 
-        // Placeholder for save threshold (integrate with your existing functions)
-        async function saveThreshold() {
-            const threshold = document.getElementById('thresholdSlider').value;
-            showToast(`Threshold set to ${threshold}%`, 'success');
-            // Your existing save logic here
-        }
+        // Load user's saved threshold when dashboard loads
+async function loadUserThreshold() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    
+    const { data: prefs } = await supabase
+        .from('user_preferences')
+        .select('viral_threshold')
+        .eq('user_id', user.id)
+        .single();
+    
+    if (prefs && prefs.viral_threshold) {
+        const threshold = Math.round(prefs.viral_threshold * 100);
+        document.getElementById('thresholdSlider').value = threshold;
+        document.getElementById('thresholdValue').textContent = threshold + '%';
+    }
+}
+
+// Actually save the threshold
+async function saveThreshold() {
+    try {
+        const threshold = document.getElementById('thresholdSlider').value / 100;
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        const { error } = await supabase
+            .from('user_preferences')
+            .upsert({
+                user_id: user.id,
+                viral_threshold: threshold
+            }, { onConflict: 'user_id' });
+        
+        if (error) throw error;
+        
+        showToast(`Threshold saved: ${threshold * 100}%`, 'success');
+    } catch (error) {
+        showToast('Failed to save threshold', 'error');
+        console.error('Save threshold error:', error);
+    }
+}
 
         // Check authentication and load dashboard
         async function loadDashboard() {
