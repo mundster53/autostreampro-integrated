@@ -37,7 +37,7 @@ exports.handler = async (event, context) => {
     console.log('Clip already analyzed. Score:', clip.ai_score);
     
     // If high score but no viral content, generate it
-    if (clip.ai_score >= 0.40 && !clip.viral_title) {
+    if (clip.ai_score >= viralThreshold) && !clip.viral_title) {
       console.log('Generating missing viral content...');
       
       const viralResponse = await fetch(`https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/generateViralContent`, {
@@ -55,7 +55,7 @@ exports.handler = async (event, context) => {
         clipId: clipId,
         score: clip.ai_score,
         analysis: clip.ai_analysis,
-        shouldUpload: clip.ai_score >= 0.40,
+        shouldUpload: clip.ai_score >= viralThreshold),
         message: 'Using existing analysis'
       })
     };
@@ -63,6 +63,17 @@ exports.handler = async (event, context) => {
   // END OF NEW SECTION
   
   console.log('Analyzing clip:', clip.title);  // ← THIS LINE STAYS
+
+    // Get user's custom threshold
+const { data: userSettings } = await supabase
+  .from('user_preferences')
+  .select('viral_threshold')
+  .eq('user_id', clip.user_id)
+  .single();
+
+// Use custom threshold or default to 0.40
+const viralThreshold = userSettings?.viral_threshold || 0.40;
+console.log(`Using viral threshold: ${viralThreshold}`);
 
     // Step 1: Analyze thumbnail with GPT-4 Vision
     let visualScore = 0;
@@ -102,7 +113,7 @@ exports.handler = async (event, context) => {
       .eq('id', clipId);
 
 // Automatically generate viral content for good clips
-if (finalScore >= 0.40) {
+if (finalScore >= viralThreshold)) {
   console.log('Score is good! Triggering viral content generation...');
   
   try {
@@ -117,6 +128,30 @@ if (finalScore >= 0.40) {
     
     if (viralResult.success) {
       console.log('Viral content generated successfully!');
+      // ⬇️ ADD THE YOUTUBE UPLOAD TRIGGER HERE ⬇️
+  
+  // TRIGGER YOUTUBE UPLOAD
+  console.log('Now triggering YouTube upload...');
+  
+  try {
+    const uploadResponse = await fetch(`https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/upload-to-youtube`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clipId: clipId })
+    });
+    
+    const uploadResult = await uploadResponse.json();
+    
+    if (uploadResult.success) {
+      console.log('YouTube upload successful!', uploadResult);
+    } else {
+      console.error('YouTube upload failed:', uploadResult.error);
+    }
+  } catch (uploadError) {
+    console.error('YouTube upload error:', uploadError);
+  }
+  
+  // ⬆️ END OF YOUTUBE UPLOAD TRIGGER ⬆️
     } else {
       console.log('Viral generation skipped:', viralResult.message);
     }
@@ -152,7 +187,7 @@ if (finalScore >= 0.40) {
         clipId: clipId,
         score: finalScore,
         analysis: fullAnalysis,
-        shouldUpload: finalScore >= 0.40
+        shouldUpload: finalScore >= viralThreshold)
       })
     };
     
