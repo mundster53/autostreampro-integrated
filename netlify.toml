@@ -66,6 +66,9 @@
   to = "/onboarding.html"
   status = 200
 
+[functions."monitor-kick-streams-scheduled"]
+  schedule = "*/5 * * * *"
+
 [[headers]]
   for = "/*"
   [headers.values]
