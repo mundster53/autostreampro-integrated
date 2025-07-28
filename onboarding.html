@@ -247,20 +247,19 @@
                 </div>
                 
                 <!-- YouTube -->
-                <div class="platform-card" data-platform="youtube">
+                    <div class="platform-card" data-platform="youtube">
                     <div class="platform-icon youtube-icon">Y</div>
                     <div class="platform-name">YouTube</div>
                     <button class="connect-btn" id="youtubeBtn">
-                        Connect YouTube
+                    Connect YouTube
                     </button>
-                </div>
-
-                <div class="success-message" id="youtubeSuccess" style="display: none;">
+                    <div class="success-message" id="youtubeSuccess" style="display: none;">
                     ✓ Connected as <span id="youtubeUsername"></span>
                     <button onclick="disconnectYouTube()" style="margin-left: 10px; font-size: 12px;">
                     Disconnect
-                    </button>
-                </div>
+                        </button>
+                    </div>
+</div>
                 
                 <!-- Instagram -->
                 <div class="platform-card" data-platform="instagram">
@@ -282,27 +281,21 @@
                 
                 <!-- Kick -->
                 <div class="platform-card" data-platform="kick">
-                    <div class="platform-icon">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M4 3h7v7.5L7.5 14H4V3zm0 11h3.5L11 17.5V21H4v-7zm13-7.5V3h7v11h-3.5L17 10.5zm0 7L20.5 10H24v11h-7v-3.5z"/>
-                    </svg>
-                </div>
-                    
-                    <h3>Kick</h3>
-                    <p>Monitor Kick streams</p>
-                    <button class="platform-button" id="kickConnect" onclick="connectKick()">
+                    <div class="platform-icon kick-icon">K</div>
+                    <div class="platform-name">Kick</div>
+                    <button class="connect-btn" id="kickBtn" onclick="connectKick()">
                     Connect Kick
                     </button>
-                <div class="success-message" id="kickSuccess" style="display: none;">
+                    <div class="success-message" id="kickSuccess" style="display: none;">
                     ✓ Connected as <span id="kickUsername"></span>
                 </div>
-                    
 </div>
-               <div class="platform-card" data-platform="tiktok">
-    <h3>TikTok</h3>
-    <p>Auto-post viral clips</p>
-    <button class="connect-btn" id="tiktokBtn">Connect TikTok</button>
-</div> 
+               
+                <div class="platform-card" data-platform="tiktok">
+                <h3>TikTok</h3>
+                <p>Auto-post viral clips</p>
+                <button class="connect-btn" id="tiktokBtn">Connect TikTok</button>
+                </div> 
         </div>
         
         <!-- AI Configuration -->
