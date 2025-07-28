@@ -289,6 +289,7 @@
         .instagram { background: #e4405f; }
         .twitter { background: #008000; }
         .tiktok { background: #000000; }
+        .kick { background: #53fc18; }
 
         .platform-info {
             flex: 1;
@@ -597,6 +598,13 @@
                                 <div class="connection-status coming-soon" id="twitter-status">Coming Soon</div>
                             </div>
                         </div>
+                        <div class="platform-item">
+                        <div class="platform-icon kick">K</div>
+                                <div class="platform-info">
+                                <div class="platform-name">Kick</div>
+                                <div class="connection-status disconnected" id="kick-status">Not Connected</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -782,6 +790,17 @@ async function saveThreshold() {
                         document.getElementById('tiktok-status').textContent = 'Connected';
                         document.getElementById('tiktok-status').className = 'connection-status connected';
                         connectedCount++;
+
+                    // Check Kick
+                        const kickConnected = data.some(conn => conn.platform === 'kick' && conn.is_active);
+                    if (kickConnected) {
+                        document.getElementById('kick-status').textContent = 'Connected';
+                        document.getElementById('kick-status').className = 'connection-status connected';
+                        connectedCount++;
+                    } else {
+                        document.getElementById('kick-status').textContent = 'Visit Setup';
+                        document.getElementById('kick-status').className = 'connection-status disconnected';
+                    }
                     }
                     
                     // Instagram, Twitter, TikTok remain as "Coming Soon" (already set in HTML)
@@ -795,6 +814,8 @@ async function saveThreshold() {
                     document.getElementById('youtube-status').textContent = 'Visit Setup';
                     document.getElementById('youtube-status').className = 'connection-status disconnected';
                     document.getElementById('connectedPlatforms').textContent = '0';
+                    document.getElementById('kick-status').textContent = 'Visit Setup';  // Add this line
+                    document.getElementById('kick-status').className = 'connection-status disconnected';  // Add this line
                 }
             } catch (error) {
                 console.error('Error loading platform connections:', error);
