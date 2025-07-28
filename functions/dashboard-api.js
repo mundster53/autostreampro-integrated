@@ -165,6 +165,9 @@ exports.handler = async (event, context) => {
                 
             case 'getAnalytics':
                 return await getAnalytics(userId, data.timeframe, supabase, headers);
+
+            case 'getKickClips':
+                return await getKickClips(userId, supabase, headers);
                 
             default:
                 return {
@@ -631,6 +634,31 @@ async function getAutomationStatus(userId, supabase) {
             autoPosting: true,
             aiTitles: true,
             sentimentAnalysis: false
+        };
+    }
+    async function getKickClips(userId, supabase, headers) {
+    try {
+        const { data, error } = await supabase
+            .from('clips')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('source_platform', 'kick')
+            .eq('status', 'pending_manual_download')
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+        if (error) throw error;
+
+        return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify(data || [])
+        };
+    } catch (error) {
+        return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ error: error.message })
         };
     }
 }
