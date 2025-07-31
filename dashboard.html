@@ -737,7 +737,7 @@ async function saveThreshold() {
         }
 
         // Load platform connections
-        async function loadPlatformConnections() {
+       async function loadPlatformConnections() {
     console.log('Loading platform connections...');
     
     try {
@@ -782,7 +782,50 @@ async function saveThreshold() {
             } else {
                 document.getElementById('youtube-status').textContent = 'Visit Setup';
                 document.getElementById('youtube-status').className = 'connection-status disconnected';
+            }
 
+            // Check TikTok
+            const tiktokConnected = data.some(conn => conn.platform === 'tiktok' && conn.is_active);
+            if (tiktokConnected) {
+                document.getElementById('tiktok-status').textContent = 'Connected';
+                document.getElementById('tiktok-status').className = 'connection-status connected';
+                connectedCount++;
+            } else {
+                document.getElementById('tiktok-status').textContent = 'Visit Setup';
+                document.getElementById('tiktok-status').className = 'connection-status disconnected';
+            }
+
+            // Check Kick - FIXED: Now outside TikTok block
+            const kickConnected = data.some(conn => conn.platform === 'kick' && conn.is_active);
+            if (kickConnected) {
+                document.getElementById('kick-status').textContent = 'Connected';
+                document.getElementById('kick-status').className = 'connection-status connected';
+                connectedCount++;
+            } else {
+                document.getElementById('kick-status').textContent = 'Visit Setup';
+                document.getElementById('kick-status').className = 'connection-status disconnected';
+            }
+            
+            // Update connected count
+            document.getElementById('connectedPlatforms').textContent = connectedCount;
+            
+        } else {
+            console.log('No platform connections found');
+            // Set all to disconnected except coming soon platforms
+            document.getElementById('twitch-status').textContent = 'Visit Setup';
+            document.getElementById('twitch-status').className = 'connection-status disconnected';
+            document.getElementById('youtube-status').textContent = 'Visit Setup';
+            document.getElementById('youtube-status').className = 'connection-status disconnected';
+            document.getElementById('tiktok-status').textContent = 'Visit Setup';
+            document.getElementById('tiktok-status').className = 'connection-status disconnected';
+            document.getElementById('kick-status').textContent = 'Visit Setup';
+            document.getElementById('kick-status').className = 'connection-status disconnected';
+            document.getElementById('connectedPlatforms').textContent = '0';
+        }
+    } catch (error) {
+        console.error('Error loading platform connections:', error);
+    }
+}
         // Sign out function
         async function signOut() {
             try {
