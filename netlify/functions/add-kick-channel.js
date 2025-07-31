@@ -28,15 +28,17 @@ exports.handler = async (event) => {
   try {
     const { userId, kickUsername } = JSON.parse(event.body);
 
-    // Verify channel exists
-    const channelResponse = await fetch(`https://kick.com/api/v2/channels/${kickUsername}`);
-    if (!channelResponse.ok) {
-      throw new Error('Kick channel not found');
+    if (!userId || !kickUsername) {
+      throw new Error('Missing userId or kickUsername');
     }
 
-    const channelData = await channelResponse.json();
+    console.log(`Adding Kick channel ${kickUsername} for user ${userId}`);
 
-    // Store connection
+    // Skip Kick API verification due to Cloudflare blocking
+    // We'll trust the user knows their own username
+    console.log('Skipping Kick API verification due to Cloudflare protection');
+
+    // Check if connection already exists
     const { data: existing } = await supabase
       .from('streaming_connections')
       .select('id')
@@ -47,7 +49,7 @@ exports.handler = async (event) => {
     const connectionData = {
       user_id: userId,
       platform: 'kick',
-      platform_user_id: channelData.id.toString(),
+      platform_user_id: `kick_${kickUsername}`, // Use username as ID since we can't get real ID
       platform_username: kickUsername,
       access_token: 'PUBLIC_ACCESS',
       refresh_token: 'NOT_APPLICABLE',
@@ -76,6 +78,7 @@ exports.handler = async (event) => {
     };
 
   } catch (error) {
+    console.error('Kick connection error:', error);
     return {
       statusCode: 500,
       headers: { 'Access-Control-Allow-Origin': '*' },
