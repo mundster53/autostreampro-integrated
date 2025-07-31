@@ -610,12 +610,23 @@ async function connectKick() {
     if (!username) return;
     
     try {
+        // Get the current user
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+            alert('Please log in first');
+            window.location.href = '/'; // Redirect to login
+            return;
+        }
+        
+        console.log('Connecting Kick for user:', user.id); // Debug log
+        
         const response = await fetch('/.netlify/functions/add-kick-channel', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                userId: supabaseUserId,
-                kickUsername: username
+                userId: user.id,  // Use user.id instead of supabaseUserId
+                kickUsername: username.trim()
             })
         });
         
@@ -630,6 +641,7 @@ async function connectKick() {
             alert('Error: ' + result.error);
         }
     } catch (error) {
+        console.error('Kick connection error:', error);
         alert('Failed to connect Kick');
     }
 }
