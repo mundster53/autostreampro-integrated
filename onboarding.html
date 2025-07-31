@@ -283,7 +283,7 @@
                 <div class="platform-card" data-platform="kick">
                     <div class="platform-icon kick-icon">K</div>
                     <div class="platform-name">Kick</div>
-                    <button class="connect-btn" id="kickBtn" onclick="connectKick()">
+                    <button class="connect-btn" id="kickBtn">
                     Connect Kick
                     </button>
                     <div class="success-message" id="kickSuccess" style="display: none;">
@@ -405,6 +405,42 @@ const googleClientId = '17381198225-gn5qnqdlhuehbhlva9ro046r5qbssfrn.apps.google
         document.getElementById('tiktokBtn').addEventListener('click', () => {
             window.location.href = '/.netlify/functions/tiktok-auth';
         });
+
+        // Connect Kick (add this after the TikTok event listener)
+document.getElementById('kickBtn').addEventListener('click', async () => {
+    const username = prompt('Enter your Kick username:');
+    if (!username) return;
+    
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            alert('Please log in first');
+            return;
+        }
+        
+        const response = await fetch('/.netlify/functions/add-kick-channel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: user.id,
+                kickUsername: username.trim()
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            document.getElementById('kickBtn').style.display = 'none';
+            document.getElementById('kickSuccess').style.display = 'block';
+            document.getElementById('kickUsername').textContent = result.username;
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Kick connection error:', error);
+        alert('Failed to connect Kick');
+    }
+});
         
         // Save platform connection
         async function savePlatformConnection(platform, data) {
