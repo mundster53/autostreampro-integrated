@@ -703,17 +703,26 @@ async function disconnectYouTube() {
 
 // Check Kick on page load
 async function checkKickConnection() {
-    const { data } = await supabase
-        .from('streaming_connections')
-        .select('*')
-        .eq('user_id', supabaseUserId)
-        .eq('platform', 'kick')
-        .single();
+    try {
+        // Get current user properly
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
         
-    if (data) {
-        document.getElementById('kickConnect').style.display = 'none';
-        document.getElementById('kickSuccess').style.display = 'block';
-        document.getElementById('kickUsername').textContent = data.platform_username;
+        const { data } = await supabase
+            .from('streaming_connections')
+            .select('*')
+            .eq('user_id', user.id)  // Fixed: use user.id
+            .eq('platform', 'kick')
+            .single();
+            
+        if (data) {
+            document.getElementById('kickBtn').style.display = 'none';
+            document.getElementById('kickSuccess').style.display = 'block';
+            document.getElementById('kickUsername').textContent = data.platform_username;
+        }
+    } catch (error) {
+        // Silently handle if no connection exists
+        console.log('No Kick connection found');
     }
 }
 
@@ -722,6 +731,44 @@ window.addEventListener('DOMContentLoaded', () => {
     // ... existing code ...
     checkKickConnection();
 });
+
+        function updateConnectedPlatforms() {
+    // Check how many platforms are connected
+    let connectedCount = 0;
+    const platforms = ['twitch', 'youtube', 'tiktok', 'kick'];
+    
+    platforms.forEach(platform => {
+        let elementId;
+        switch(platform) {
+            case 'twitch':
+                elementId = 'twitchBtn';
+                break;
+            case 'youtube':
+                elementId = 'youtubeBtn';
+                break;
+            case 'tiktok':
+                elementId = 'tiktokBtn';
+                break;
+            case 'kick':
+                elementId = 'kickBtn';
+                break;
+        }
+        
+        // If the connect button is hidden, the platform is connected
+        const btn = document.getElementById(elementId);
+        if (btn && btn.style.display === 'none') {
+            connectedCount++;
+        }
+    });
+    
+    console.log(`Connected platforms: ${connectedCount}`);
+    
+    // Update any UI elements that show connection count
+    const statusElement = document.getElementById('connectionStatus');
+    if (statusElement) {
+        statusElement.textContent = `${connectedCount} of 4 platforms connected`;
+    }
+}
         
     </script>
 </body>
