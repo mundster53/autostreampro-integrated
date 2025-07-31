@@ -790,6 +790,10 @@ async function saveThreshold() {
                         document.getElementById('tiktok-status').textContent = 'Connected';
                         document.getElementById('tiktok-status').className = 'connection-status connected';
                         connectedCount++;
+                        } else {
+                        document.getElementById('tiktok-status').textContent = 'Visit Setup';
+                        document.getElementById('tiktok-status').className = 'connection-status disconnected';
+                    }
 
                     // Check Kick
                         const kickConnected = data.some(conn => conn.platform === 'kick' && conn.is_active);
