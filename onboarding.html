@@ -615,17 +615,16 @@ async function connectKick() {
         
         if (!user) {
             alert('Please log in first');
-            window.location.href = '/'; // Redirect to login
             return;
         }
         
-        console.log('Connecting Kick for user:', user.id); // Debug log
+        console.log('Connecting Kick for user:', user.id);
         
         const response = await fetch('/.netlify/functions/add-kick-channel', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                userId: user.id,  // Use user.id instead of supabaseUserId
+                userId: user.id,
                 kickUsername: username.trim()
             })
         });
@@ -633,7 +632,7 @@ async function connectKick() {
         const result = await response.json();
         
         if (result.success) {
-            document.getElementById('kickConnect').style.display = 'none';
+            document.getElementById('kickBtn').style.display = 'none';  // Changed from 'kickConnect' to 'kickBtn'
             document.getElementById('kickSuccess').style.display = 'block';
             document.getElementById('kickUsername').textContent = result.username;
             updateConnectedPlatforms();
@@ -645,7 +644,6 @@ async function connectKick() {
         alert('Failed to connect Kick');
     }
 }
-
 // YouTube disconnect
 async function disconnectYouTube() {
     if (!confirm('Disconnect YouTube? You can reconnect to refresh tokens.')) return;
