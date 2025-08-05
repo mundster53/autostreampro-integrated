@@ -244,6 +244,9 @@
                     <button class="connect-btn" id="twitchBtn">
                         Connect Twitch
                     </button>
+                    <button onclick="disconnectPlatform('twitch')" class="disconnect-btn" style="margin-top: 10px;">
+                        Disconnect Twitch
+                    </button>
                 </div>
                 
                 <!-- YouTube -->
@@ -252,6 +255,9 @@
                     <div class="platform-name">YouTube</div>
                     <button class="connect-btn" id="youtubeBtn">
                         Connect YouTube
+                    </button>
+                    <button onclick="disconnectPlatform('youtube')" class="disconnect-btn" style="margin-top: 10px;">
+                        Disconnect YouTube
                     </button>
                 </div>
                 
@@ -262,6 +268,9 @@
                     <button class="connect-btn" disabled>
                         <span class="coming-soon">Coming Soon</span>
                     </button>
+                    <button onclick="disconnectPlatform('instagram')" class="disconnect-btn" style="margin-top: 10px;">
+                    Disconnect Instagram
+                    </button>
                 </div>
                 
                 <!-- Twitter -->
@@ -271,6 +280,9 @@
                     <button class="connect-btn" disabled>
                         <span class="coming-soon">Coming Soon</span>
                     </button>
+                    <button onclick="disconnectPlatform('twitter')" class="disconnect-btn" style="margin-top: 10px;">
+                    Disconnect Twitter
+                    </button>
                 </div>
                 
                 <!-- TikTok -->
@@ -279,6 +291,9 @@
                     <div class="platform-name">TikTok</div>
                     <button class="connect-btn" disabled>
                         <span class="coming-soon">Coming Soon</span>
+                    </button>
+                    <button onclick="disconnectPlatform('tiktok')" class="disconnect-btn" style="margin-top: 10px;">
+                    Disconnect TikTok
                     </button>
                 </div>
             </div>
@@ -549,6 +564,39 @@ const googleClientId = '17381198225-gn5qnqdlhuehbhlva9ro046r5qbssfrn.apps.google
             await checkConnections();
             await handleOAuthReturn();
         });
+        // Generic disconnect function that calls the right endpoint
+async function disconnectPlatform(platform) {
+  if (!confirm(`Are you sure you want to disconnect ${platform}?`)) {
+    return;
+  }
+
+  try {
+    // Get current user ID
+    const userId = 'e067a518-c578-4b11-bdfd-470ff92d3d69'; // Or get dynamically
+
+    const response = await fetch(`/.netlify/functions/disconnect-${platform}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        userId: userId
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert(`${platform} disconnected successfully`);
+      // Update UI if needed
+    } else {
+      alert(`Failed to disconnect ${platform}: ${result.error}`);
+    }
+  } catch (error) {
+    console.error('Disconnect error:', error);
+    alert(`Error disconnecting ${platform}`);
+  }
+}
     </script>
 </body>
 </html>
