@@ -759,14 +759,35 @@ async function disconnectYouTube() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-                userId: 'e067a518-c578-4b11-bdfd-470ff92d3d69'  // ✅ Use actual user ID
+                userId: 'e067a518-c578-4b11-bdfd-470ff92d3d69'
             })
         });
         
         if (response.ok) {
+            // Update ALL visual indicators
+            const youtubeCard = document.querySelector('[data-platform="youtube"]');
+            
+            // Remove connected status from card
+            youtubeCard.classList.remove('connected');
+            
+            // Show connect button
+            document.getElementById('youtubeBtn').style.display = 'block';
+            document.getElementById('youtubeBtn').disabled = false;
+            document.getElementById('youtubeBtn').innerHTML = 'Connect YouTube';
+            
+            // Hide success message
             document.getElementById('youtubeSuccess').style.display = 'none';
-            document.getElementById('youtubeBtn').style.display = 'block';  // ✅ Fixed ID
+            
+            // Update any connected status text
+            const connectedSpan = youtubeCard.querySelector('.connected-status');
+            if (connectedSpan) {
+                connectedSpan.remove();
+            }
+            
             showSuccess('YouTube disconnected successfully');
+            
+            // Update the connection counter if you have one
+            updateConnectedPlatforms();
         } else {
             const error = await response.json();
             alert('Failed to disconnect YouTube: ' + error.error);
