@@ -222,6 +222,58 @@
             color: #f59e0b;
             font-size: 14px;
         }
+        .disconnect-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.disconnect-btn:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.disconnect-btn:active {
+    transform: translateY(0);
+}
+
+.disconnect-btn:disabled {
+    background: #e5e7eb;
+    color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Optional: Hide disconnect buttons when platform not connected */
+.platform-card:not(.connected) .disconnect-btn {
+    display: none;
+}
+
+/* Style for the inline YouTube disconnect button */
+#youtubeSuccess button {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 10px;
+    transition: background 0.3s ease;
+}
+
+#youtubeSuccess button:hover {
+    background: #c82333;
+}
+
     </style>
 </head>
 <body>
@@ -295,14 +347,8 @@
                     <button class="connect-btn" id="kickBtn">
                     Connect Kick
                     </button>
-<<<<<<< HEAD
-                    <button onclick="disconnectPlatform('tiktok')" class="disconnect-btn" style="margin-top: 10px;">
-                    Disconnect TikTok
-                    </button>
-=======
                     <div class="success-message" id="kickSuccess" style="display: none;">
                     ✓ Connected as <span id="kickUsername"></span>
->>>>>>> f6e50e05d405aab117b65b735464e15ae6186684
                 </div>
 </div>
                
@@ -310,6 +356,10 @@
                 <h3>TikTok</h3>
                 <p>Auto-post viral clips</p>
                 <button class="connect-btn" id="tiktokBtn">Connect TikTok</button>
+                <button class="connect-btn" id="tiktokBtn">Connect TikTok</button>
+                <button onclick="disconnectTikTok()" class="disconnect-btn" style="margin-top: 10px;">
+                 Disconnect TikTok
+                </button>
                 </div> 
         </div>
         
