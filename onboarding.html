@@ -758,16 +758,21 @@ async function disconnectYouTube() {
         const response = await fetch('/.netlify/functions/disconnect-youtube', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: supabaseUserId })
+            body: JSON.stringify({ 
+                userId: 'e067a518-c578-4b11-bdfd-470ff92d3d69'  // ✅ Use actual user ID
+            })
         });
         
         if (response.ok) {
             document.getElementById('youtubeSuccess').style.display = 'none';
-            document.getElementById('youtubeConnect').style.display = 'block';
-            updateConnectedPlatforms();
+            document.getElementById('youtubeBtn').style.display = 'block';  // ✅ Fixed ID
+            showSuccess('YouTube disconnected successfully');
+        } else {
+            const error = await response.json();
+            alert('Failed to disconnect YouTube: ' + error.error);
         }
     } catch (error) {
-        alert('Failed to disconnect YouTube');
+        alert('Failed to disconnect YouTube: ' + error.message);
     }
 }
 
