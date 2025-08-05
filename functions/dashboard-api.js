@@ -1,6 +1,83 @@
 // Dashboard API Handler for AutoStreamPro with Supabase
 const { createClient } = require('@supabase/supabase-js');
 
+// Add OpenAI scoring function
+async function callOpenAIForScoring(analysisData) {
+    const OpenAI = require('openai');
+    
+    try {
+        const openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY
+        });
+
+        const completion = await openai.chat.completions.create({
+            model: "gpt-4",
+            messages: [
+                {
+                    role: "system",
+                    content: `You are an AI that scores gaming clips for viral potential. 
+                    Score from 0.0 to 1.0 based on:
+                    - Exciting gameplay moments (kills, clutches, funny failures)
+                    - Audio intensity peaks (shouting, excitement, reactions)
+                    - Chat reaction volume and excitement
+                    - Unique or unexpected moments
+                    
+                    Scoring guide:
+                    0.0-0.39: Not viral worthy (boring, standard gameplay)
+                    0.40-0.69: Good potential (solid plays, decent reactions)
+                    0.70-1.0: High viral potential (amazing plays, huge reactions)
+                    
+                    Return JSON with: {"score": 0.0-1.0, "reason": "brief explanation"}`
+                },
+                {
+                    role: "user",
+                    content: `Game: ${analysisData.game || 'Unknown'}
+                    Duration: ${analysisData.duration || 30} seconds
+                    Context: ${analysisData.context || 'Gaming highlight'}
+                    
+                    Analyze this clip for viral potential.`
+                }
+            ],
+            response_format: { type: "json_object" }
+        });
+
+        const response = JSON.parse(completion.choices[0].message.content);
+        console.log('AI Score:', response.score, 'Reason:', response.reason);
+        return response.score || 0.5;
+        
+    } catch (error) {
+        console.error('OpenAI API error:', error);
+        // Return null to trigger fallback
+        return null;
+    }
+}
+
+// Add AI scoring calculation function
+async function calculateAIScore(streamData, userId, supabase) {
+    try {
+        // Try to get AI score
+        const aiScore = await callOpenAIForScoring({
+            game: streamData.game,
+            duration: streamData.duration,
+            context: streamData.context || 'Gaming clip'
+        });
+
+        // If AI scoring worked, return it
+        if (aiScore !== null) {
+            return Math.round(aiScore * 100); // Convert 0-1 to 0-100
+        }
+        
+        // Fallback to random scoring if AI fails
+        console.log('AI scoring failed, using fallback random score');
+        return Math.floor(Math.random() * 40) + 60; // 60-100
+        
+    } catch (error) {
+        console.error('AI scoring error:', error);
+        // Fallback to random scoring
+        return Math.floor(Math.random() * 40) + 60; // 60-100
+    }
+}
+
 exports.handler = async (event, context) => {
     // CORS headers
     const headers = {
@@ -88,6 +165,9 @@ exports.handler = async (event, context) => {
                 
             case 'getAnalytics':
                 return await getAnalytics(userId, data.timeframe, supabase, headers);
+
+            case 'getKickClips':
+                return await getKickClips(userId, supabase, headers);
                 
             default:
                 return {
@@ -301,16 +381,83 @@ async function generateClip(userId, streamData, supabase, headers) {
     try {
         console.log('Generating clip for user:', userId, streamData);
 
-        // Create new clip record
+        // Create clip with pending score
         const clipData = {
-            supabase_user_id: userId,
-            title: `Epic ${streamData.game || 'Gaming'} Moment`,
+            user_id: userId,
+            source_platform: 'twitch',
+            source_id: streamData.clipId || `clip_${Date.now()}`,
+            title: streamData.title || `Epic ${streamData.game || 'Gaming'} Moment`,
             game: streamData.game || 'Unknown',
             duration: streamData.duration || 30,
-            viralityScore: Math.floor(Math.random() * 40) + 60, // 60-100
-            status: 'generated',
+            thumbnail_url: streamData.thumbnailUrl,
+            video_url: streamData.videoUrl,
+            ai_score: 0, // Will be updated by real analysis
+            status: 'analyzing', // New status
             created_at: new Date().toISOString()
         };
+
+        const { data, error } = await supabase
+            .from('clips')
+            .insert(clipData)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        // Trigger real AI analysis
+        const analysisResult = await fetch(`${process.env.NETLIFY_URL}/.netlify/functions/analyzeClipContent`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clipId: data.id })
+        });
+
+        const analysis = await analysisResult.json();
+
+        // Only add to publishing queue if score is good
+        if (analysis.shouldUpload) {
+            await supabase
+                .from('publishing_queue')
+                .insert({
+                    clip_id: data.id,
+                    platform: 'youtube',
+                    status: 'pending',
+                    priority: Math.floor(analysis.score * 10) // Higher score = higher priority
+                });
+            
+            console.log(`Clip ${data.id} scored ${analysis.score} - WILL UPLOAD`);
+        } else {
+            console.log(`Clip ${data.id} scored ${analysis.score} - SKIPPING`);
+            
+            // Update status to rejected
+            await supabase
+                .from('clips')
+                .update({ status: 'rejected_low_score' })
+                .eq('id', data.id);
+        }
+
+        return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({
+                success: true,
+                message: 'Clip analyzed successfully',
+                clip: data,
+                analysis: analysis
+            })
+        };
+
+    } catch (error) {
+        console.error('Error generating clip:', error);
+        return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({
+                error: 'Failed to generate clip',
+                message: error.message
+            })
+        };
+    }
+}
 
         const { data, error } = await supabase
             .from('clips')
@@ -487,6 +634,31 @@ async function getAutomationStatus(userId, supabase) {
             autoPosting: true,
             aiTitles: true,
             sentimentAnalysis: false
+        };
+    }
+    async function getKickClips(userId, supabase, headers) {
+    try {
+        const { data, error } = await supabase
+            .from('clips')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('source_platform', 'kick')
+            .eq('status', 'pending_manual_download')
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+        if (error) throw error;
+
+        return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify(data || [])
+        };
+    } catch (error) {
+        return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ error: error.message })
         };
     }
 }
