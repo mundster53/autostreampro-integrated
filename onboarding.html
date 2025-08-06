@@ -95,6 +95,7 @@
         .instagram-icon { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
         .twitter-icon { background: #1da1f2; }
         .tiktok-icon { background: #000; }
+        .kick-icon { background: #53fc18; }
         
         .platform-name {
             font-weight: 600;
@@ -345,12 +346,12 @@
                     </button>
                 </div>
                 
-                <!-- Kick -->
-<div class="platform-card connected" data-platform="kick">
+               <!-- Kick -->
+<div class="platform-card" data-platform="kick">
     <div class="platform-icon kick-icon">K</div>
     <div class="platform-name">Kick</div>
-    <button class="connect-btn" id="kickBtn" disabled>
-        <span class="connected-status">✓ Connected</span>
+    <button class="connect-btn" id="kickBtn">
+        Connect Kick
     </button>
     <button onclick="disconnectPlatform('kick')" class="disconnect-btn">
         Disconnect Kick
@@ -499,9 +500,14 @@ document.getElementById('kickBtn').addEventListener('click', async () => {
         const result = await response.json();
         
         if (result.success) {
-            document.getElementById('kickBtn').style.display = 'none';
-            document.getElementById('kickSuccess').style.display = 'block';
-            document.getElementById('kickUsername').textContent = result.username;
+            const kickCard = document.querySelector('[data-platform="kick"]');
+kickCard.classList.add('connected');
+
+const kickBtn = document.getElementById('kickBtn');
+kickBtn.innerHTML = '<span class="connected-status">✓ Connected</span>';
+kickBtn.disabled = true;
+
+updateConnectedPlatforms();
         } else {
             alert('Error: ' + result.error);
         }
@@ -910,24 +916,26 @@ async function disconnectPlatform(platform) {
 // Check Kick on page load
 async function checkKickConnection() {
     try {
-        // Get current user properly
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         
         const { data } = await supabase
             .from('streaming_connections')
             .select('*')
-            .eq('user_id', user.id)  // Fixed: use user.id
+            .eq('user_id', user.id)
             .eq('platform', 'kick')
             .single();
             
         if (data) {
-            document.getElementById('kickBtn').style.display = 'none';
-            document.getElementById('kickSuccess').style.display = 'block';
-            document.getElementById('kickUsername').textContent = data.platform_username;
+            // THIS IS WHAT MAKES IT LOOK LIKE TWITCH/YOUTUBE
+            const kickCard = document.querySelector('[data-platform="kick"]');
+            kickCard.classList.add('connected');
+            
+            const kickBtn = document.getElementById('kickBtn');
+            kickBtn.innerHTML = '<span class="connected-status">✓ Connected</span>';
+            kickBtn.disabled = true;
         }
     } catch (error) {
-        // Silently handle if no connection exists
         console.log('No Kick connection found');
     }
 }
