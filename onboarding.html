@@ -885,9 +885,8 @@ async function disconnectPlatform(platform) {
   }
 
   try {
-    const userId = 'e067a518-c578-4b11-bdfd-470ff92d3d69'; // Or get dynamically
+    const userId = 'e067a518-c578-4b11-bdfd-470ff92d3d69';
 
-    // Use the specific disconnect function for each platform
     const response = await fetch(`/.netlify/functions/disconnect-${platform}`, {
       method: 'POST',
       headers: {
@@ -900,12 +899,18 @@ async function disconnectPlatform(platform) {
 
     const result = await response.json();
 
-    if (result.success) {
+    if (response.ok && result.success) {
+      const card = document.querySelector(`[data-platform="${platform}"]`);
+      card.classList.remove('connected');
+      
+      const btn = card.querySelector('.connect-btn');
+      btn.innerHTML = `Connect ${platform.charAt(0).toUpperCase() + platform.slice(1)}`;
+      btn.disabled = false;
+      btn.style.display = 'block';
+      
       alert(`${platform} disconnected successfully`);
-      // Update UI
-      document.getElementById(`${platform}Success`).style.display = 'none';
     } else {
-      alert(`Failed to disconnect ${platform}: ${result.error}`);
+      alert(`Failed to disconnect ${platform}`);
     }
   } catch (error) {
     console.error('Disconnect error:', error);
