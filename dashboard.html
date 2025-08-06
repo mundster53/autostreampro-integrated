@@ -885,6 +885,56 @@ async function saveThreshold() {
             }
         });
     </script>
+<script>
+// Get the current user from Netlify Identity
+const user = netlifyIdentity.currentUser();
+
+// Update the display when slider moves
+document.getElementById('thresholdSlider').addEventListener('input', function(e) {
+    document.getElementById('thresholdValue').textContent = e.target.value + '%';
+});
+
+// Save threshold to database
+async function saveThreshold() {
+    if (!user) {
+        alert('Please log in first');
+        return;
+    }
+    
+    const threshold = document.getElementById('thresholdSlider').value;
+    
+    try {
+        const response = await fetch('https://autostreampro-backend-production.up.railway.app/api/update-threshold', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: user.id,  // Netlify Identity user ID
+                threshold: threshold / 100
+            })
+        });
+        
+        if (response.ok) {
+            alert('Threshold updated successfully!');
+        } else {
+            alert('Failed to update threshold');
+        }
+    } catch (error) {
+        console.error('Error updating threshold:', error);
+        alert('Error updating threshold');
+    }
+}
+
+// Load current threshold on page load
+async function loadThreshold() {
+    if (!user) return;
+    
+    // You'd need another endpoint to GET the current threshold
+    // For now, it uses the default 40% in the HTML
+}
+
+// Call on page load
+loadThreshold();
+</script>
 
 </body>
 </html>
