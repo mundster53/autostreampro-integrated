@@ -346,27 +346,30 @@
                 </div>
                 
                 <!-- Kick -->
-                <div class="platform-card" data-platform="kick">
-                    <div class="platform-icon kick-icon">K</div>
-                    <div class="platform-name">Kick</div>
-                    <button class="connect-btn" id="kickBtn">
-                    Connect Kick
-                    </button>
-                    <div class="success-message" id="kickSuccess" style="display: none;">
-                    ✓ Connected as <span id="kickUsername"></span>
-                </div>
+                <!-- Kick -->
+<div class="platform-card" data-platform="kick">
+    <div class="platform-icon kick-icon">K</div>
+    <div class="platform-name">Kick</div>
+    <button class="connect-btn" id="kickBtn">
+        Connect Kick
+    </button>
+    <div class="success-message" id="kickSuccess" style="display: none;">
+        ✓ Connected as <span id="kickUsername"></span>
+    </div>
+    <button onclick="disconnectPlatform('kick')" class="disconnect-btn">
+        Disconnect Kick
+    </button>
 </div>
                
-                <div class="platform-card" data-platform="tiktok">
-                <h3>TikTok</h3>
-                <p>Auto-post viral clips</p>
-    
-                <button class="connect-btn" id="tiktokBtn">Connect TikTok</button>
-                <button onclick="disconnectTikTok()" class="disconnect-btn" style="margin-top: 10px;">
-                 Disconnect TikTok
-                </button>
-                </div> 
-        </div>
+                <!-- TikTok -->
+<div class="platform-card" data-platform="tiktok">
+    <div class="platform-icon tiktok-icon">T</div>
+    <div class="platform-name">TikTok</div>
+    <button class="connect-btn" id="tiktokBtn">Connect TikTok</button>
+    <button onclick="disconnectTikTok()" class="disconnect-btn">
+        Disconnect TikTok
+    </button>
+</div>
         
         <!-- AI Configuration -->
         <div class="section">
