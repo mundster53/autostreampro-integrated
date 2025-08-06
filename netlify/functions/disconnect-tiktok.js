@@ -5,7 +5,7 @@ const supabase = createClient(
 );
 
 exports.handler = async (event) => {
-  // Add CORS preflight handling
+  // Handle CORS preflight
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -13,14 +13,18 @@ exports.handler = async (event) => {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
-      }
+      },
+      body: ''
     };
   }
 
   if (event.httpMethod !== 'POST') {
     return { 
       statusCode: 405, 
-      headers: { 'Access-Control-Allow-Origin': '*' },
+      headers: { 
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({ error: 'Method not allowed' })
     };
   }
@@ -28,39 +32,45 @@ exports.handler = async (event) => {
   try {
     const { userId } = JSON.parse(event.body);
     
-    // Check if connection exists first
-    const { data: existing } = await supabase
+    // First check if connection exists
+    const { data: existing, error: checkError } = await supabase
       .from('streaming_connections')
       .select('id')
       .eq('user_id', userId)
-      .eq('platform', 'tiktok')
-      .single();
+      .eq('platform', 'tiktok');
     
-    if (existing) {
-      // Delete TikTok connection if it exists
-      const { error } = await supabase
+    // If there's a connection, delete it
+    if (existing && existing.length > 0) {
+      const { error: deleteError } = await supabase
         .from('streaming_connections')
         .delete()
         .eq('user_id', userId)
         .eq('platform', 'tiktok');
         
-      if (error) throw error;
+      if (deleteError) {
+        console.error('Delete error:', deleteError);
+        throw deleteError;
+      }
     }
     
-    // Always return success - whether we deleted something or not
+    // Return success whether we deleted something or not
     return {
       statusCode: 200,
-      headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ 
-        success: true,
-        message: 'TikTok disconnected successfully'
-      })
+      headers: { 
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ success: true })
     };
     
   } catch (error) {
+    console.error('Disconnect TikTok error:', error);
     return {
       statusCode: 500,
-      headers: { 'Access-Control-Allow-Origin': '*' },
+      headers: { 
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({ error: error.message })
     };
   }

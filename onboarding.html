@@ -804,7 +804,9 @@ async function disconnectTikTok() {
   }
 
   try {
-    const userId = 'e067a518-c578-4b11-bdfd-470ff92d3d69';
+    // Get user ID - use the same method as other functions
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user ? user.id : 'e067a518-c578-4b11-bdfd-470ff92d3d69';
 
     const response = await fetch('/.netlify/functions/disconnect-tiktok', {
       method: 'POST',
@@ -818,34 +820,56 @@ async function disconnectTikTok() {
 
     const result = await response.json();
     
-    // Check if response is OK (status 200-299)
-    if (response.ok) {
-      // Update UI
+    if (response.ok && result.success) {
+      // Update card state
       const tiktokCard = document.querySelector('[data-platform="tiktok"]');
       if (tiktokCard) {
         tiktokCard.classList.remove('connected');
       }
       
+      // Show connect button
       const tiktokBtn = document.getElementById('tiktokBtn');
       if (tiktokBtn) {
         tiktokBtn.style.display = 'block';
         tiktokBtn.disabled = false;
+        tiktokBtn.innerHTML = 'Connect TikTok';
       }
       
+      // Hide success message if exists
       const tiktokSuccess = document.getElementById('tiktokSuccess');
       if (tiktokSuccess) {
         tiktokSuccess.style.display = 'none';
       }
       
-      alert('TikTok disconnected successfully');
+      // Show success message using your existing function
+      if (typeof showSuccess === 'function') {
+        showSuccess('TikTok disconnected successfully');
+      } else {
+        alert('TikTok disconnected successfully');
+      }
+      
+      // Update connection counter if exists
+      if (typeof updateConnectedPlatforms === 'function') {
+        updateConnectedPlatforms();
+      }
+      
     } else {
-      // Only show error if response is not OK
-      alert('Failed to disconnect TikTok');
+      const errorMsg = result.error || 'Failed to disconnect TikTok';
+      if (typeof showError === 'function') {
+        showError(errorMsg);
+      } else {
+        alert(errorMsg);
+      }
     }
     
   } catch (error) {
-    console.error('Disconnect error:', error);
-    alert('Error disconnecting TikTok');
+    console.error('Disconnect TikTok error:', error);
+    const errorMsg = 'Error disconnecting TikTok: ' + error.message;
+    if (typeof showError === 'function') {
+      showError(errorMsg);
+    } else {
+      alert(errorMsg);
+    }
   }
 }
 
