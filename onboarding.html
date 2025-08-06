@@ -346,15 +346,14 @@
                 </div>
                 
                 <!-- Kick -->
-                <!-- Kick -->
-<div class="platform-card" data-platform="kick">
+<div class="platform-card connected" data-platform="kick">
     <div class="platform-icon kick-icon">K</div>
     <div class="platform-name">Kick</div>
-    <button class="connect-btn" id="kickBtn">
-        Connect Kick
+    <button class="connect-btn" id="kickBtn" disabled>
+        <span class="connected-status">✓ Connected</span>
     </button>
     <div class="success-message" id="kickSuccess" style="display: none;">
-        ✓ Connected as <span id="kickUsername"></span>
+        ✓ Connected as <span id="kickUsername">SaltLordNacnud</span>
     </div>
     <button onclick="disconnectPlatform('kick')" class="disconnect-btn">
         Disconnect Kick
