@@ -28,20 +28,35 @@ exports.handler = async (event) => {
   try {
     const { userId } = JSON.parse(event.body);
     
-    // Delete TikTok connection
-    const { error } = await supabase
+    // Check if connection exists first
+    const { data: existing } = await supabase
       .from('streaming_connections')
-      .delete()
+      .select('id')
       .eq('user_id', userId)
-      .eq('platform', 'tiktok');
-      
-    if (error) throw error;
+      .eq('platform', 'tiktok')
+      .single();
     
+    if (existing) {
+      // Delete TikTok connection if it exists
+      const { error } = await supabase
+        .from('streaming_connections')
+        .delete()
+        .eq('user_id', userId)
+        .eq('platform', 'tiktok');
+        
+      if (error) throw error;
+    }
+    
+    // Always return success - whether we deleted something or not
     return {
       statusCode: 200,
       headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ success: true })
+      body: JSON.stringify({ 
+        success: true,
+        message: 'TikTok disconnected successfully'
+      })
     };
+    
   } catch (error) {
     return {
       statusCode: 500,
