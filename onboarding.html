@@ -804,7 +804,7 @@ async function disconnectTikTok() {
   }
 
   try {
-    const userId = 'e067a518-c578-4b11-bdfd-470ff92d3d69'; // Or get dynamically
+    const userId = 'e067a518-c578-4b11-bdfd-470ff92d3d69';
 
     const response = await fetch('/.netlify/functions/disconnect-tiktok', {
       method: 'POST',
@@ -817,14 +817,32 @@ async function disconnectTikTok() {
     });
 
     const result = await response.json();
-
-    if (result.success) {
+    
+    // Check if response is OK (status 200-299)
+    if (response.ok) {
+      // Update UI
+      const tiktokCard = document.querySelector('[data-platform="tiktok"]');
+      if (tiktokCard) {
+        tiktokCard.classList.remove('connected');
+      }
+      
+      const tiktokBtn = document.getElementById('tiktokBtn');
+      if (tiktokBtn) {
+        tiktokBtn.style.display = 'block';
+        tiktokBtn.disabled = false;
+      }
+      
+      const tiktokSuccess = document.getElementById('tiktokSuccess');
+      if (tiktokSuccess) {
+        tiktokSuccess.style.display = 'none';
+      }
+      
       alert('TikTok disconnected successfully');
-      // Update UI as needed
-      document.getElementById('tiktokSuccess').style.display = 'none';
     } else {
-      alert('Failed to disconnect TikTok: ' + result.error);
+      // Only show error if response is not OK
+      alert('Failed to disconnect TikTok');
     }
+    
   } catch (error) {
     console.error('Disconnect error:', error);
     alert('Error disconnecting TikTok');
