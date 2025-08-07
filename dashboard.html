@@ -706,10 +706,16 @@ async function loadClips() {
     if (!user) return;
     
     try {
-        const response = await fetch(`https://autostreampro-backend-production.up.railway.app/api/clips/${user.id}`);
-        const clips = await response.json();
+        const { data: clips, error } = await supabase
+            .from('clips')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(20);
+            
+        if (error) throw error;
         
-        displayClips(clips);
+        displayClips(clips || []);
     } catch (error) {
         console.error('Error loading clips:', error);
     }
