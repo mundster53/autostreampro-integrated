@@ -460,7 +460,7 @@ const googleClientId = '17381198225-gn5qnqdlhuehbhlva9ro046r5qbssfrn.apps.google
         document.getElementById('twitchBtn').addEventListener('click', () => {
             const redirectUri = 'https://autostreampro.com/onboarding.html';
             const scope = 'user:read:email+clips:edit+channel:read:stream_key';
-            const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=twitch`;
+            const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=twitch&force_verify=true`;
             window.location.href = authUrl;
         });
         
@@ -541,7 +541,7 @@ updateConnectedPlatforms();
                         platformUserId: data.userID || data.user_id || platform,
                         accessToken: data.accessToken || data.access_token,
                         refreshToken: data.refreshToken || data.refresh_token || '',
-                        username: data.username || platform
+                        platform_username: data.username || data.channel_title || platform
                     })
                 });
                 
@@ -812,7 +812,7 @@ async function disconnectTikTok() {
   try {
     // Get user ID - use the same method as other functions
     const { data: { user } } = await supabase.auth.getUser();
-    const userId = user ? user.id : 'e067a518-c578-4b11-bdfd-470ff92d3d69';
+    const userId = user.id ; 
 
     const response = await fetch('/.netlify/functions/disconnect-tiktok', {
       method: 'POST',
@@ -886,7 +886,7 @@ async function disconnectPlatform(platform) {
   }
 
   try {
-    const userId = 'e067a518-c578-4b11-bdfd-470ff92d3d69';
+    const userId = user.id;
 
     const response = await fetch(`/.netlify/functions/disconnect-${platform}`, {
       method: 'POST',
