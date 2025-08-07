@@ -761,11 +761,18 @@ async function disconnectYouTube() {
     if (!confirm('Disconnect YouTube? You can reconnect to refresh tokens.')) return;
     
     try {
+    
+        // GET THE USER FIRST
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            alert('Please log in first');
+            return;
+        }
         const response = await fetch('/.netlify/functions/disconnect-youtube', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-                userId: 'e067a518-c578-4b11-bdfd-470ff92d3d69'
+                userId: user.id
             })
         });
         
@@ -812,6 +819,10 @@ async function disconnectTikTok() {
   try {
     // Get user ID - use the same method as other functions
     const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+    alert('Please log in first');
+    return;
+}
     const userId = user.id ; 
 
     const response = await fetch('/.netlify/functions/disconnect-tiktok', {
@@ -886,6 +897,12 @@ async function disconnectPlatform(platform) {
   }
 
   try {
+    // GET THE USER FIRST
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        alert('Please log in first');
+        return;
+    }
     const userId = user.id;
 
     const response = await fetch(`/.netlify/functions/disconnect-${platform}`, {
@@ -918,6 +935,29 @@ async function disconnectPlatform(platform) {
     alert(`Error disconnecting ${platform}`);
   }
 }
+
+    const result = await response.json();
+
+    if (response.ok && result.success) {
+      const card = document.querySelector(`[data-platform="${platform}"]`);
+      card.classList.remove('connected');
+      
+      const btn = card.querySelector('.connect-btn');
+      btn.innerHTML = `Connect ${platform.charAt(0).toUpperCase() + platform.slice(1)}`;
+      btn.disabled = false;
+      btn.style.display = 'block';
+      
+      alert(`${platform} disconnected successfully`);
+    } else {
+      alert(`Failed to disconnect ${platform}`);
+    }
+
+    try {}
+  catch (error) {
+    console.error('Disconnect error:', error);
+    alert(`Error disconnecting ${platform}`);
+  }
+
 
 // Check Kick on page load
 async function checkKickConnection() {
@@ -993,3 +1033,5 @@ window.addEventListener('DOMContentLoaded', () => {
     </script>
 </body>
 </html>
+  }
+}
