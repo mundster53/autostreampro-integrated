@@ -639,105 +639,217 @@
     <!-- Toast notification container -->
     <div id="toast" class="toast"></div>
 
-    <script>
-    // Initialize Supabase with your actual credentials
-        const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
-        
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+   <script>
+// Initialize Supabase with your actual credentials
+const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
 
-        // Threshold slider update
-        document.getElementById('thresholdSlider').addEventListener('input', (e) => {
-            document.getElementById('thresholdValue').textContent = e.target.value + '%';
-        });
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Load user's saved threshold when dashboard loads
+// Threshold slider update
+document.getElementById('thresholdSlider').addEventListener('input', (e) => {
+    document.getElementById('thresholdValue').textContent = e.target.value + '%';
+});
+
+// Load user's saved threshold when dashboard loads
 async function loadUserThreshold() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     
-    const { data: prefs } = await supabase
-        .from('user_preferences')
-        .select('viral_threshold')
+    const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('virality_threshold')
         .eq('user_id', user.id)
         .single();
     
-    if (prefs && prefs.viral_threshold) {
-        const threshold = Math.round(prefs.viral_threshold * 100);
+    if (profile && profile.virality_threshold) {
+        const threshold = Math.round(profile.virality_threshold * 100);
         document.getElementById('thresholdSlider').value = threshold;
         document.getElementById('thresholdValue').textContent = threshold + '%';
     }
 }
 
-// Actually save the threshold
+// Save threshold
 async function saveThreshold() {
     try {
         const threshold = document.getElementById('thresholdSlider').value / 100;
         const { data: { user } } = await supabase.auth.getUser();
         
-        const { error } = await supabase
-            .from('user_preferences')
-            .upsert({
-                user_id: user.id,
-                viral_threshold: threshold
-            }, { onConflict: 'user_id' });
+        if (!user) {
+            showToast('Please log in first', 'error');
+            return;
+        }
         
-        if (error) throw error;
+        const response = await fetch('https://autostreampro-backend-production.up.railway.app/api/update-threshold', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: user.id,
+                threshold: threshold
+            })
+        });
         
-        showToast(`Threshold saved: ${threshold * 100}%`, 'success');
+        if (response.ok) {
+            showToast(`Threshold saved: ${threshold * 100}%`, 'success');
+        } else {
+            showToast('Failed to save threshold', 'error');
+        }
     } catch (error) {
         showToast('Failed to save threshold', 'error');
         console.error('Save threshold error:', error);
     }
 }
 
-        // Check authentication and load dashboard
-        async function loadDashboard() {
-            try {
+// Load clips from database
+async function loadClips() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
     
-                // Check if user is authenticated
-                const { data: { user }, error: authError } = await supabase.auth.getUser();
-                
-                if (authError || !user) {
-                    console.log('User not authenticated, redirecting to login');
-                    window.location.href = '/login.html';
-                    return;
-                }
+    try {
+        const response = await fetch(`https://autostreampro-backend-production.up.railway.app/api/clips/${user.id}`);
+        const clips = await response.json();
+        
+        displayClips(clips);
+    } catch (error) {
+        console.error('Error loading clips:', error);
+    }
+}
 
-                // Display user email
-                document.getElementById('userEmail').textContent = user.email;
+// Display clips in the table
+function displayClips(clips) {
+    const tableBody = document.querySelector('table tbody') || document.querySelector('table');
+    
+    if (!clips || clips.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">No clips yet. Start streaming to see your clips here.</td></tr>';
+        return;
+    }
+    
+    tableBody.innerHTML = clips.map(clip => `
+        <tr>
+            <td>${clip.thumbnail_url ? `<img src="${clip.thumbnail_url}" style="width: 120px; height: 67px; object-fit: cover; border-radius: 4px;">` : '📹'}</td>
+            <td>
+                <div><strong>${clip.title}</strong></div>
+                <div style="color: #666; font-size: 14px;">${clip.game || 'Gaming'}</div>
+            </td>
+            <td>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 100px; background: #e0e0e0; height: 8px; border-radius: 4px;">
+                        <div style="width: ${clip.ai_score * 100}%; background: ${getScoreColor(clip.ai_score)}; height: 100%; border-radius: 4px;"></div>
+                    </div>
+                    <span>${Math.round(clip.ai_score * 100)}%</span>
+                </div>
+            </td>
+            <td>
+                <span style="padding: 4px 12px; border-radius: 20px; font-size: 14px; background: ${getStatusColor(clip.status)}; color: white;">
+                    ${formatStatus(clip.status)}
+                </span>
+            </td>
+            <td>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="publishToYouTube('${clip.id}')" style="background: #FF0000; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                        📺 YouTube
+                    </button>
+                    <button onclick="publishToTikTok('${clip.id}')" style="background: #000000; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                        🎵 TikTok
+                    </button>
+                </div>
+                <div style="margin-top: 8px;">
+                    <label style="font-size: 12px;">
+                        <input type="checkbox" ${clip.auto_publish ? 'checked' : ''} onchange="toggleAutoPublish('${clip.id}', this.checked)">
+                        Auto-publish
+                    </label>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
 
-                // Load user data and platform connections
-                await loadUserStats();
-                await loadPlatformConnections();
+// Helper functions
+function getScoreColor(score) {
+    if (score >= 0.7) return '#4CAF50';
+    if (score >= 0.4) return '#FF9800';
+    return '#F44336';
+}
 
-            } catch (error) {
-                console.error('Dashboard loading error:', error);
-                showToast('Failed to load dashboard data', 'error');
-            }
+function getStatusColor(status) {
+    switch(status) {
+        case 'published': return '#4CAF50';
+        case 'pending': return '#FF9800';
+        case 'processing': return '#2196F3';
+        default: return '#666';
+    }
+}
+
+function formatStatus(status) {
+    return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+}
+
+// Publish functions
+async function publishToYouTube(clipId) {
+    if (confirm('Publish this clip to YouTube?')) {
+        // Add to publishing queue
+        alert('Added to YouTube publishing queue!');
+    }
+}
+
+async function publishToTikTok(clipId) {
+    if (confirm('Publish this clip to TikTok?')) {
+        alert('TikTok publishing coming soon!');
+    }
+}
+
+async function toggleAutoPublish(clipId, enabled) {
+    // Update auto-publish setting
+    console.log(`Auto-publish for clip ${clipId}: ${enabled}`);
+}
+
+// Check authentication and load dashboard
+async function loadDashboard() {
+    try {
+        // Check if user is authenticated
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        
+        if (authError || !user) {
+            console.log('User not authenticated, redirecting to login');
+            window.location.href = '/login.html';
+            return;
         }
 
-        // Load user stats from database
-        async function loadUserStats() {
-            try {
-                // For now, display default values since we don't have streaming data yet
-                document.getElementById('activeStreams').textContent = '0';
-                document.getElementById('totalViews').textContent = '0';
-                document.getElementById('revenue').textContent = '$0';
-                
-                // Update change indicators
-                document.getElementById('streamsChange').textContent = 'No active streams';
-                document.getElementById('viewsChange').textContent = 'Start streaming to track views';
-                document.getElementById('revenueChange').textContent = 'No revenue yet';
+        // Display user email
+        document.getElementById('userEmail').textContent = user.email;
 
-            } catch (error) {
-                console.error('Error loading user stats:', error);
-                // Don't show error toast for stats - just use defaults
-            }
-        }
+        // Load all dashboard data
+        await loadUserStats();
+        await loadPlatformConnections();
+        await loadUserThreshold();
+        await loadClips();
 
-        // Load platform connections
-       async function loadPlatformConnections() {
+    } catch (error) {
+        console.error('Dashboard loading error:', error);
+        showToast('Failed to load dashboard data', 'error');
+    }
+}
+
+// Load user stats from database
+async function loadUserStats() {
+    try {
+        // For now, display default values since we don't have streaming data yet
+        document.getElementById('activeStreams').textContent = '0';
+        document.getElementById('totalViews').textContent = '0';
+        document.getElementById('revenue').textContent = '$0';
+        
+        // Update change indicators
+        document.getElementById('streamsChange').textContent = 'No active streams';
+        document.getElementById('viewsChange').textContent = 'Start streaming to track views';
+        document.getElementById('revenueChange').textContent = 'No revenue yet';
+
+    } catch (error) {
+        console.error('Error loading user stats:', error);
+    }
+}
+
+// Load platform connections
+async function loadPlatformConnections() {
     console.log('Loading platform connections...');
     
     try {
@@ -762,178 +874,96 @@ async function saveThreshold() {
             
             let connectedCount = 0;
             
-            // Check Twitch
-            const twitchConnected = data.some(conn => conn.platform === 'twitch' && conn.is_active);
-            if (twitchConnected) {
-                document.getElementById('twitch-status').textContent = 'Connected';
-                document.getElementById('twitch-status').className = 'connection-status connected';
-                connectedCount++;
-            } else {
-                document.getElementById('twitch-status').textContent = 'Visit Setup';
-                document.getElementById('twitch-status').className = 'connection-status disconnected';
-            }
-            
-            // Check YouTube
-            const youtubeConnected = data.some(conn => conn.platform === 'youtube' && conn.is_active);
-            if (youtubeConnected) {
-                document.getElementById('youtube-status').textContent = 'Connected';
-                document.getElementById('youtube-status').className = 'connection-status connected';
-                connectedCount++;
-            } else {
-                document.getElementById('youtube-status').textContent = 'Visit Setup';
-                document.getElementById('youtube-status').className = 'connection-status disconnected';
-            }
-
-            // Check TikTok
-            const tiktokConnected = data.some(conn => conn.platform === 'tiktok' && conn.is_active);
-            if (tiktokConnected) {
-                document.getElementById('tiktok-status').textContent = 'Connected';
-                document.getElementById('tiktok-status').className = 'connection-status connected';
-                connectedCount++;
-            } else {
-                document.getElementById('tiktok-status').textContent = 'Visit Setup';
-                document.getElementById('tiktok-status').className = 'connection-status disconnected';
-            }
-
-            // Check Kick - FIXED: Now outside TikTok block
-            const kickConnected = data.some(conn => conn.platform === 'kick' && conn.is_active);
-            if (kickConnected) {
-                document.getElementById('kick-status').textContent = 'Connected';
-                document.getElementById('kick-status').className = 'connection-status connected';
-                connectedCount++;
-            } else {
-                document.getElementById('kick-status').textContent = 'Visit Setup';
-                document.getElementById('kick-status').className = 'connection-status disconnected';
-            }
+            // Check each platform
+            const platforms = ['twitch', 'youtube', 'tiktok', 'kick'];
+            platforms.forEach(platform => {
+                const connected = data.some(conn => conn.platform === platform && conn.is_active);
+                if (connected) {
+                    document.getElementById(`${platform}-status`).textContent = 'Connected';
+                    document.getElementById(`${platform}-status`).className = 'connection-status connected';
+                    connectedCount++;
+                } else {
+                    document.getElementById(`${platform}-status`).textContent = 'Visit Setup';
+                    document.getElementById(`${platform}-status`).className = 'connection-status disconnected';
+                }
+            });
             
             // Update connected count
             document.getElementById('connectedPlatforms').textContent = connectedCount;
             
         } else {
             console.log('No platform connections found');
-            // Set all to disconnected except coming soon platforms
-            document.getElementById('twitch-status').textContent = 'Visit Setup';
-            document.getElementById('twitch-status').className = 'connection-status disconnected';
-            document.getElementById('youtube-status').textContent = 'Visit Setup';
-            document.getElementById('youtube-status').className = 'connection-status disconnected';
-            document.getElementById('tiktok-status').textContent = 'Visit Setup';
-            document.getElementById('tiktok-status').className = 'connection-status disconnected';
-            document.getElementById('kick-status').textContent = 'Visit Setup';
-            document.getElementById('kick-status').className = 'connection-status disconnected';
+            // Set all to disconnected
+            ['twitch', 'youtube', 'tiktok', 'kick'].forEach(platform => {
+                document.getElementById(`${platform}-status`).textContent = 'Visit Setup';
+                document.getElementById(`${platform}-status`).className = 'connection-status disconnected';
+            });
             document.getElementById('connectedPlatforms').textContent = '0';
         }
     } catch (error) {
         console.error('Error loading platform connections:', error);
     }
 }
-        // Sign out function
-        async function signOut() {
-            try {
-                const { error } = await supabase.auth.signOut();
-                if (error) throw error;
-                
-                window.location.href = '/login.html';
-            } catch (error) {
-                console.error('Sign out error:', error);
-                showToast('Failed to sign out', 'error');
-            }
-        }
 
-        // Quick action functions
-        function startStream() {
-            showToast('Streaming feature coming soon!', 'success');
-        }
+// Sign out function
+async function signOut() {
+    try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        
+        window.location.href = '/login.html';
+    } catch (error) {
+        console.error('Sign out error:', error);
+        showToast('Failed to sign out', 'error');
+    }
+}
 
-        function viewAnalytics() {
-            window.location.href = '/analytics.html';
-        }
+// Quick action functions
+function startStream() {
+    showToast('Streaming feature coming soon!', 'success');
+}
 
-        function manageContent() {
-            showToast('Content management feature coming soon!', 'success');
-        }
+function viewAnalytics() {
+    window.location.href = '/analytics.html';
+}
 
-        // Toast notification function
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = `toast ${type} show`;
-            
-            setTimeout(() => {
-                toast.className = 'toast';
-            }, 3000);
-        }
+function manageContent() {
+    showToast('Content management feature coming soon!', 'success');
+}
 
-        // Refresh data periodically
-        function refreshDashboard() {
-            loadUserStats();
-            loadPlatformConnections();
-        }
+// Toast notification function
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast ${type} show`;
+    
+    setTimeout(() => {
+        toast.className = 'toast';
+    }, 3000);
+}
 
-        // Initialize dashboard on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Dashboard loaded');
-            loadDashboard();
-            
-            // Refresh data every 30 seconds
-            setInterval(refreshDashboard, 30000);
-        });
+// Refresh data periodically
+function refreshDashboard() {
+    loadUserStats();
+    loadPlatformConnections();
+    loadClips();
+}
 
-        // Handle authentication state changes
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_OUT') {
-                window.location.href = '/login.html';
-            }
-        });
-    </script>
-<script>
-// Get the current user from Netlify Identity
-const user = netlifyIdentity.currentUser();
-
-// Update the display when slider moves
-document.getElementById('thresholdSlider').addEventListener('input', function(e) {
-    document.getElementById('thresholdValue').textContent = e.target.value + '%';
+// Initialize dashboard on page load
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Dashboard loaded');
+    loadDashboard();
+    
+    // Refresh data every 30 seconds
+    setInterval(refreshDashboard, 30000);
 });
 
-// Save threshold to database
-async function saveThreshold() {
-    if (!user) {
-        alert('Please log in first');
-        return;
+// Handle authentication state changes
+supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT') {
+        window.location.href = '/login.html';
     }
-    
-    const threshold = document.getElementById('thresholdSlider').value;
-    
-    try {
-        const response = await fetch('https://autostreampro-backend-production.up.railway.app/api/update-threshold', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userId: user.id,  // Netlify Identity user ID
-                threshold: threshold / 100
-            })
-        });
-        
-        if (response.ok) {
-            alert('Threshold updated successfully!');
-        } else {
-            alert('Failed to update threshold');
-        }
-    } catch (error) {
-        console.error('Error updating threshold:', error);
-        alert('Error updating threshold');
-    }
-}
-
-// Load current threshold on page load
-async function loadThreshold() {
-    if (!user) return;
-    
-    // You'd need another endpoint to GET the current threshold
-    // For now, it uses the default 40% in the HTML
-}
-
-// Call on page load
-loadThreshold();
+});
 </script>
 
 </body>
