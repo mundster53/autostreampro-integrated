@@ -935,30 +935,6 @@ async function disconnectPlatform(platform) {
     alert(`Error disconnecting ${platform}`);
   }
 }
-
-    const result = await response.json();
-
-    if (response.ok && result.success) {
-      const card = document.querySelector(`[data-platform="${platform}"]`);
-      card.classList.remove('connected');
-      
-      const btn = card.querySelector('.connect-btn');
-      btn.innerHTML = `Connect ${platform.charAt(0).toUpperCase() + platform.slice(1)}`;
-      btn.disabled = false;
-      btn.style.display = 'block';
-      
-      alert(`${platform} disconnected successfully`);
-    } else {
-      alert(`Failed to disconnect ${platform}`);
-    }
-
-    try {}
-  catch (error) {
-    console.error('Disconnect error:', error);
-    alert(`Error disconnecting ${platform}`);
-  }
-
-
 // Check Kick on page load
 async function checkKickConnection() {
     try {
