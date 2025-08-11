@@ -465,13 +465,12 @@ const googleClientId = '17381198225-gn5qnqdlhuehbhlva9ro046r5qbssfrn.apps.google
         });
         
         // Connect YouTube
-        document.getElementById('youtubeBtn').addEventListener('click', () => {
-            const redirectUri = 'https://autostreampro.com/onboarding.html';
-            const scope = 'https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly';
-            const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent&state=youtube`;
-            window.location.href = authUrl;
-        });
-
+document.getElementById('youtubeBtn').addEventListener('click', () => {
+    const redirectUri = 'https://autostreampro.com/onboarding.html';
+    const scope = 'https://www.googleapis.com/auth/youtube.upload';  // ← ONLY upload
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent&state=youtube`;
+    window.location.href = authUrl;
+});
         // Connect TikTok
         document.getElementById('tiktokBtn').addEventListener('click', () => {
             window.location.href = '/.netlify/functions/tiktok-auth';
