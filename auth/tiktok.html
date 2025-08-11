@@ -63,58 +63,22 @@
     </div>
 
     <script>
-        // Extract OAuth parameters from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        const error = urlParams.get('error');
-        const state = urlParams.get('state');
+    // Get OAuth parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const error = urlParams.get('error');
+    const state = urlParams.get('state');
 
-        if (error) {
-            // OAuth error occurred
-            console.error('TikTok OAuth error:', error);
-            
-            // Send error message to parent window
-            if (window.opener) {
-                window.opener.postMessage({
-                    type: 'OAUTH_ERROR',
-                    platform: 'tiktok',
-                    error: error
-                }, window.location.origin);
-            }
-            
-            // Close popup
-            window.close();
-        } else if (code) {
-            // OAuth success - send code to parent window
-            console.log('TikTok OAuth success, code received');
-            
-            if (window.opener) {
-                window.opener.postMessage({
-                    type: 'OAUTH_SUCCESS',
-                    platform: 'tiktok',
-                    code: code,
-                    state: state
-                }, window.location.origin);
-            }
-            
-            // Close popup after a short delay
-            setTimeout(() => {
-                window.close();
-            }, 1000);
-        } else {
-            // No code or error - something went wrong
-            console.error('No OAuth code or error received');
-            
-            if (window.opener) {
-                window.opener.postMessage({
-                    type: 'OAUTH_ERROR',
-                    platform: 'tiktok',
-                    error: 'No authorization code received'
-                }, window.location.origin);
-            }
-            
-            window.close();
-        }
-    </script>
+    if (error) {
+        // Redirect back with error
+        window.location.href = '/onboarding.html?error=tiktok_failed';
+    } else if (code) {
+        // Redirect back with success
+        window.location.href = '/onboarding.html?tiktok=connected&code=' + code + '&state=' + state;
+    } else {
+        // No code or error
+        window.location.href = '/onboarding.html?error=tiktok_no_code';
+    }
+</script>
 </body>
 </html>
