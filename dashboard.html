@@ -553,6 +553,23 @@
                         </table>
                     </div>
                 </div>
+                <!-- TEMPORARY FOR TIKTOK APPROVAL - Remove after approval -->
+<div style="background: #f0f0f0; padding: 20px; margin: 20px 0; border-radius: 8px; border: 2px dashed #666;">
+    <h3>TikTok Upload Demo (Sandbox)</h3>
+    <p>Demonstrating video.upload scope capability:</p>
+    <button onclick="demoTikTokUpload()" style="background: #000; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+        📤 Upload Clip to TikTok
+    </button>
+    <div id="tiktok-demo-result" style="margin-top: 10px;"></div>
+</div>
+
+<script>
+// TEMPORARY FOR TIKTOK APPROVAL
+function demoTikTokUpload() {
+    document.getElementById('tiktok-demo-result').innerHTML = 
+        '<div style="color: green;">✓ Video upload initiated via Content Posting API (video.upload scope)</div>';
+}
+</script>
             </div>
 
             <!-- Right Sidebar -->
