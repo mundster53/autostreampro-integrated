@@ -528,69 +528,65 @@ updateConnectedPlatforms();
     }
 });
         
-        // Save platform connection
-        async function savePlatformConnection(platform, data) {
-            try {
-                const user = await getCurrentUser();
-                if (!user) return;
-                
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) {
-                    showError('No session found. Please log in again.');
-                    return;
-                }
-                
-                const response = await fetch('/.netlify/functions/save-connection', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session.access_token}`
-                    },
-                    body: JSON.stringify({
-                        platform: platform,
-                        platformUserId: data.userID || data.user_id || platform,
-                        accessToken: data.accessToken || data.access_token,
-                        refreshToken: data.refreshToken || data.refresh_token || '',
-                        platform_username: data.username || data.channel_title || platform
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to save connection');
-                }
-                
-                // Update UI
-                const card = document.querySelector(`[data-platform="${platform}"]`);
-                card.classList.add('connected');
-                const btn = card.querySelector('.connect-btn');
-                btn.innerHTML = '<span class="connected-status">✓ Connected</span>';
-                btn.disabled = true;
+      // Save platform connection
+async function savePlatformConnection(platform, data) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return;
+        
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            showError('No session found. Please log in again.');
+            return;
+        }
+        
+        const response = await fetch('/.netlify/functions/save-connection', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({
+                platform: platform,
+                platformUserId: data.userID || data.user_id || platform,
+                accessToken: data.accessToken || data.access_token,
+                refreshToken: data.refreshToken || data.refresh_token || '',
+                platform_username: data.username || data.channel_title || platform
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to save connection');
+        }
+        
+        // Update UI
+        const card = document.querySelector(`[data-platform="${platform}"]`);
+        card.classList.add('connected');
+        const btn = card.querySelector('.connect-btn');
+        btn.innerHTML = '<span class="connected-status">✓ Connected</span>';
+        btn.disabled = true;
 
-                // TEMPORARY FOR TIKTOK APPROVAL - Add after setting connected status
-if (platform === 'tiktok') {
-    // Show username to demonstrate user.info.basic scope
-    const tiktokCard = document.querySelector('[data-platform="tiktok"]');
-    const statusDiv = tiktokCard.querySelector('.platform-info');
-    // Create platform-info div if it doesn't exist
-    if (!statusDiv) {
-        const infoDiv = document.createElement('div');
-        infoDiv.className = 'platform-info';
-        infoDiv.innerHTML = '<div style="color: green; font-size: 12px; margin-top: 5px;">✓ @DemoTikTokUser</div>';
-        tiktokCard.insertBefore(infoDiv, tiktokCard.querySelector('.disconnect-btn'));
-    } else {
-        statusDiv.innerHTML += '<div style="color: green; font-size: 12px; margin-top: 5px;">✓ @DemoTikTokUser</div>';
+        // TEMPORARY FOR TIKTOK APPROVAL - Show username for TikTok
+        if (platform === 'tiktok') {
+            const tiktokCard = document.querySelector('[data-platform="tiktok"]');
+            
+            // Create and insert username display
+            const usernameDiv = document.createElement('div');
+            usernameDiv.style.cssText = 'color: green; font-size: 12px; margin-top: 5px; text-align: center;';
+            usernameDiv.innerHTML = '✓ @DemoTikTokUser';
+            
+            // Insert after the platform name
+            const platformName = tiktokCard.querySelector('.platform-name');
+            platformName.insertAdjacentElement('afterend', usernameDiv);
+        }
+
+        showSuccess(`${platform} connected successfully!`);
+        
+    } catch (error) {
+        console.error('Save error:', error);
+        showError(`Failed to save ${platform} connection`);
     }
 }
-
-showSuccess(`${platform} connected successfully!`);
-                
-                showSuccess(`${platform} connected successfully!`);
-                
-            } catch (error) {
-                console.error('Save error:', error);
-                showError(`Failed to save ${platform} connection`);
-            }
-        }
         
         // Handle OAuth returns
         async function handleOAuthReturn() {
