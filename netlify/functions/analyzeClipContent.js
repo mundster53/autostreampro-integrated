@@ -19,61 +19,60 @@ exports.handler = async (event, context) => {
   }
 
   try {
-  const { clipId } = JSON.parse(event.body || '{}');
-  
-  // Get clip data
-  const { data: clip, error } = await supabase
-    .from('clips')
-    .select('*')
-    .eq('id', clipId)
-    .single();
+    const { clipId } = JSON.parse(event.body || '{}');
     
-  if (error || !clip) {
-    throw new Error('Clip not found');
-  }
-  
-  // CHECK IF ALREADY ANALYZED - ADD THIS ENTIRE SECTION
-  if (clip.ai_score !== null) {
-    console.log('Clip already analyzed. Score:', clip.ai_score);
-    
-    // If high score but no viral content, generate it
-    if (clip.ai_score >= viralThreshold) && !clip.viral_title) {
-      console.log('Generating missing viral content...');
+    // Get clip data
+    const { data: clip, error } = await supabase
+      .from('clips')
+      .select('*')
+      .eq('id', clipId)
+      .single();
       
-      const viralResponse = await fetch(`https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/generateViralContent`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clipId: clipId })
-      });
+    if (error || !clip) {
+      throw new Error('Clip not found');
     }
     
-    // Return existing analysis
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        success: true,
-        clipId: clipId,
-        score: clip.ai_score,
-        analysis: clip.ai_analysis,
-        shouldUpload: clip.ai_score >= viralThreshold),
-        message: 'Using existing analysis'
-      })
-    };
-  }
-  // END OF NEW SECTION
-  
-  console.log('Analyzing clip:', clip.title);  // ← THIS LINE STAYS
+    // Get user's custom threshold BEFORE using it
+    const { data: userSettings } = await supabase
+      .from('user_preferences')
+      .select('viral_threshold')
+      .eq('user_id', clip.user_id)
+      .single();
 
-    // Get user's custom threshold
-const { data: userSettings } = await supabase
-  .from('user_preferences')
-  .select('viral_threshold')
-  .eq('user_id', clip.user_id)
-  .single();
-
-// Use custom threshold or default to 0.40
-const viralThreshold = userSettings?.viral_threshold || 0.40;
-console.log(`Using viral threshold: ${viralThreshold}`);
+    // Use custom threshold or default to 0.40
+    const viralThreshold = userSettings?.viral_threshold || 0.40;
+    console.log(`Using viral threshold: ${viralThreshold}`);
+    
+    // CHECK IF ALREADY ANALYZED
+    if (clip.ai_score !== null) {
+      console.log('Clip already analyzed. Score:', clip.ai_score);
+      
+      // If high score but no viral content, generate it
+      if (clip.ai_score >= viralThreshold && !clip.viral_title) {
+        console.log('Generating missing viral content...');
+        
+        const viralResponse = await fetch(`https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/generateViralContent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clipId: clipId })
+        });
+      }
+      
+      // Return existing analysis
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          success: true,
+          clipId: clipId,
+          score: clip.ai_score,
+          analysis: clip.ai_analysis,
+          shouldUpload: clip.ai_score >= viralThreshold,
+          message: 'Using existing analysis'
+        })
+      };
+    }
+    
+    console.log('Analyzing clip:', clip.title);
 
     // Step 1: Analyze thumbnail with GPT-4 Vision
     let visualScore = 0;
@@ -112,71 +111,49 @@ console.log(`Using viral threshold: ${viralThreshold}`);
       })
       .eq('id', clipId);
 
-// Automatically generate viral content for good clips
-if (finalScore >= viralThreshold)) {
-  console.log('Score is good! Triggering viral content generation...');
-  
-  try {
-    // Call our separate viral generation function
-    const viralResponse = await fetch(`https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/generateViralContent`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clipId: clipId })
-    });
-    
-    const viralResult = await viralResponse.json();
-    
-    if (viralResult.success) {
-      console.log('Viral content generated successfully!');
-      // ⬇️ ADD THE YOUTUBE UPLOAD TRIGGER HERE ⬇️
-  
-  // TRIGGER YOUTUBE UPLOAD
-  console.log('Now triggering YouTube upload...');
-  
-  try {
-    const uploadResponse = await fetch(`https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/upload-to-youtube`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clipId: clipId })
-    });
-    
-    const uploadResult = await uploadResponse.json();
-    
-    if (uploadResult.success) {
-      console.log('YouTube upload successful!', uploadResult);
-    } else {
-      console.error('YouTube upload failed:', uploadResult.error);
-    }
-  } catch (uploadError) {
-    console.error('YouTube upload error:', uploadError);
-  }
-  
-  // ⬆️ END OF YOUTUBE UPLOAD TRIGGER ⬆️
-    } else {
-      console.log('Viral generation skipped:', viralResult.message);
-    }
-  } catch (viralError) {
-    // Don't let viral generation failure break the main flow
-    console.error('Viral generation failed, but continuing:', viralError);
-  }
-}
-        const viralContent = JSON.parse(viralResponse.choices[0].message.content);
+    // Automatically generate viral content for good clips
+    if (finalScore >= viralThreshold) {
+      console.log('Score is good! Triggering viral content generation...');
+      
+      try {
+        // Call our separate viral generation function
+        const viralResponse = await fetch(`https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/generateViralContent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clipId: clipId })
+        });
         
-        // Update clip with viral content
-        await supabase
-          .from('clips')
-          .update({
-            viral_title: viralContent.title,
-            viral_tags: viralContent.tags,
-            viral_description: viralContent.description
-          })
-          .eq('id', clipId);
+        const viralResult = await viralResponse.json();
+        
+        if (viralResult.success) {
+          console.log('Viral content generated successfully!');
           
-        console.log('Viral content generated:', viralContent.title);
-        
+          // TRIGGER YOUTUBE UPLOAD
+          console.log('Now triggering YouTube upload...');
+          
+          try {
+            const uploadResponse = await fetch(`https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/upload-to-youtube`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ clipId: clipId })
+            });
+            
+            const uploadResult = await uploadResponse.json();
+            
+            if (uploadResult.success) {
+              console.log('YouTube upload successful!', uploadResult);
+            } else {
+              console.error('YouTube upload failed:', uploadResult.error);
+            }
+          } catch (uploadError) {
+            console.error('YouTube upload error:', uploadError);
+          }
+        } else {
+          console.log('Viral generation skipped:', viralResult.message);
+        }
       } catch (viralError) {
-        console.error('Viral generation failed:', viralError);
-        // Continue without viral content - don't break the flow
+        // Don't let viral generation failure break the main flow
+        console.error('Viral generation failed, but continuing:', viralError);
       }
     }
     
@@ -187,7 +164,7 @@ if (finalScore >= viralThreshold)) {
         clipId: clipId,
         score: finalScore,
         analysis: fullAnalysis,
-        shouldUpload: finalScore >= viralThreshold)
+        shouldUpload: finalScore >= viralThreshold
       })
     };
     
