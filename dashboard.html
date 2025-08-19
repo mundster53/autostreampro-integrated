@@ -568,7 +568,12 @@
 function demoTikTokUpload() {
     document.getElementById('tiktok-demo-result').innerHTML = 
         '<div style="color: green;">✓ Video upload initiated via Content Posting API (video.upload scope)</div>';
+        // ADD THESE 3 LINES
+    setTimeout(() => {
+        alert('Clip successfully queued for TikTok! User will be notified when posted.');
+    }, 1000);
 }
+// END TEMPORARY
 </script>
             </div>
 
