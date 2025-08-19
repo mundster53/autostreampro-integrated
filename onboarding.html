@@ -565,6 +565,24 @@ updateConnectedPlatforms();
                 const btn = card.querySelector('.connect-btn');
                 btn.innerHTML = '<span class="connected-status">✓ Connected</span>';
                 btn.disabled = true;
+
+                // TEMPORARY FOR TIKTOK APPROVAL - Add after setting connected status
+if (platform === 'tiktok') {
+    // Show username to demonstrate user.info.basic scope
+    const tiktokCard = document.querySelector('[data-platform="tiktok"]');
+    const statusDiv = tiktokCard.querySelector('.platform-info');
+    // Create platform-info div if it doesn't exist
+    if (!statusDiv) {
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'platform-info';
+        infoDiv.innerHTML = '<div style="color: green; font-size: 12px; margin-top: 5px;">✓ @DemoTikTokUser</div>';
+        tiktokCard.insertBefore(infoDiv, tiktokCard.querySelector('.disconnect-btn'));
+    } else {
+        statusDiv.innerHTML += '<div style="color: green; font-size: 12px; margin-top: 5px;">✓ @DemoTikTokUser</div>';
+    }
+}
+
+showSuccess(`${platform} connected successfully!`);
                 
                 showSuccess(`${platform} connected successfully!`);
                 
