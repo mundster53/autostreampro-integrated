@@ -272,6 +272,69 @@ exports.handler = async (event, context) => {
       throw new Error(`Clip not found: ${clipId}`);
     }
 
+    // CHECK UPLOAD LIMITS FOR NON-SHORTS
+const isShort = clip.duration && clip.duration <= 60;
+
+if (!isShort) {
+  // Check how many long-form videos uploaded today
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const { count: todaysLongVideos } = await supabase
+    .from('clips')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', clip.user_id)
+    .gte('published_at', today.toISOString())
+    .not('posted_platforms', 'is', null)
+    .gte('duration', 61);  // Only count videos >60 seconds
+  
+  const DAILY_LONG_VIDEO_LIMIT = 6;  // YouTube API limit
+  
+  if (todaysLongVideos >= DAILY_LONG_VIDEO_LIMIT) {
+    return {
+      statusCode: 429,  // Too Many Requests
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        success: false,
+        error: 'Daily upload limit reached for videos over 60 seconds',
+        message: `You've reached the daily limit of ${DAILY_LONG_VIDEO_LIMIT} long-form videos.`,
+        details: {
+          limit: DAILY_LONG_VIDEO_LIMIT,
+          uploaded_today: todaysLongVideos,
+          is_short: false,
+          clip_duration: clip.duration
+        },
+        solutions: [
+          '✅ YouTube Shorts (≤60 seconds) have no daily limit - upload unlimited Shorts!',
+          '✅ Your long-form video uploads will reset at midnight',
+          '📈 To increase your limit, request a YouTube API quota increase:'
+        ],
+        quota_increase_instructions: {
+          step1: 'Go to https://console.cloud.google.com',
+          step2: 'Select your project',
+          step3: 'Navigate to APIs & Services → YouTube Data API v3',
+          step4: 'Click "Quotas & System Limits"',
+          step5: 'Click "REQUEST QUOTA INCREASE"',
+          step6: 'Explain: "Gaming content creator needing to upload 20-50 clips daily"',
+          step7: 'YouTube typically approves 100,000-1,000,000 units/day for legitimate creators',
+          step8: 'Approval usually takes 2-3 business days'
+        },
+        tip: 'Pro Tip: Keep clips under 60 seconds to upload as Shorts with no limits!'
+      })
+    };
+  }
+  
+  // Show warning if approaching limit
+  if (todaysLongVideos >= DAILY_LONG_VIDEO_LIMIT - 2) {
+    console.log(`WARNING: User approaching daily limit. ${DAILY_LONG_VIDEO_LIMIT - todaysLongVideos} long-form uploads remaining today.`);
+  }
+}
+
+console.log(`Upload check passed. Is Short: ${isShort}, Duration: ${clip.duration}s`);
+
     // Get user's YouTube connection with refresh capabilities
     const { data: connection, error: connError } = await supabase
       .from('streaming_connections')
