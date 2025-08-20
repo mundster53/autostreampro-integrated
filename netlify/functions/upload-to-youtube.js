@@ -395,8 +395,31 @@ if (clip.video_url) {
   throw new Error('No video URL provided');
 }
 
-   // Generate AI content for YouTube
+  // Generate AI content for YouTube
 const aiContent = await generateAIContent(clip);
+
+// CHECK IF THIS SHOULD BE A SHORT
+const isShort = clip.duration && clip.duration <= 60;
+
+// Modify title for Shorts
+if (isShort) {
+  // Add #Shorts to title if not already there
+  if (!aiContent.title.includes('#Shorts')) {
+    // YouTube titles max 100 chars, we use 70, so we have room
+    aiContent.title = aiContent.title + ' #Shorts';
+  }
+  
+  // Ensure description has #Shorts as first hashtag
+  if (!aiContent.description.includes('#Shorts')) {
+    aiContent.description = aiContent.description.replace(
+      /(#\w+)/, 
+      '#Shorts $1'
+    );
+  }
+  
+  console.log(`Uploading as YouTube Short: ${aiContent.title}`);
+}
+
 console.log('Generated title:', aiContent.title);
 console.log('Tags count:', aiContent.tags.length);
 
@@ -405,7 +428,9 @@ const metadata = {
   snippet: {
     title: aiContent.title,
     description: aiContent.description,
-    tags: aiContent.tags.slice(0, 500), // YouTube has a 500 tag limit
+    tags: isShort 
+      ? ['shorts', ...aiContent.tags.slice(0, 499)] 
+      : aiContent.tags.slice(0, 500),
     categoryId: '20' // Gaming category
   },
   status: {
@@ -479,7 +504,27 @@ const metadata = {
     const realYouTubeId = uploadResult.id;
 
     console.log('Successfully uploaded to YouTube! Video ID:', realYouTubeId);
-    // Delete from S3 after successful YouTube upload
+    / UPDATE DATABASE WITH YOUTUBE SUCCESS
+const isShort = clip.duration && clip.duration <= 60;
+
+await supabase
+  .from('clips')
+  .update({
+    status: 'published',
+    posted_platforms: [{
+      platform: 'youtube',
+      type: isShort ? 'short' : 'video',
+      id: realYouTubeId,
+      url: `https://www.youtube.com/watch?v=${realYouTubeId}`,
+      uploaded_at: new Date().toISOString()
+    }],
+    published_at: new Date().toISOString()
+  })
+  .eq('id', clip.id);
+
+console.log(`Updated database: Clip ${clip.id} published as YouTube ${isShort ? 'Short' : 'Video'}`);
+   
+// Delete from S3 after successful YouTube upload
 try {
   // Check if this is an S3 clip
   if (clip.video_url && clip.video_url.includes('amazonaws.com')) {
