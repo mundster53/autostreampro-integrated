@@ -1,640 +1,498 @@
+const { google } = require('googleapis');
 const { createClient } = require('@supabase/supabase-js');
-const OpenAI = require('openai');
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+// YouTube quota limits
+const YOUTUBE_QUOTAS = {
+    DAILY_UPLOAD_LIMIT: 50000, // API units per day
+    VIDEO_UPLOAD_COST: 1600,   // API units per upload
+    MAX_UPLOADS_PER_DAY: 31,   // 50000 / 1600
+    MAX_UPLOADS_PER_HOUR: 6,   // Spread throughout day
+    MAX_UPLOADS_PER_MINUTE: 2  // Prevent bursts
+};
 
-const openai = new OpenAI({  // ADD THESE LINES
-  apiKey: process.env.OPENAI_API_KEY
-});
-
-async function getTwitchMP4Url(clip) {
-  const debugInfo = {
-    source_id: clip.source_id,
-    thumbnail_url: clip.thumbnail_url,
-    tried_urls: []
-  };
-  
-  // Method 1: Try using Twitch GQL API
-  try {
-    const gqlResponse = await fetch('https://gql.twitch.tv/gql', {
-      method: 'POST',
-      headers: {
-        'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        query: `{
-          clip(slug: "${clip.source_id}") {
-            videoQualities {
-              sourceURL
-              quality
-            }
-          }
-        }`
-      })
-    });
-    
-    const gqlData = await gqlResponse.json();
-    debugInfo.gql_response = gqlData;
-    
-    if (gqlData.data?.clip?.videoQualities?.[0]) {
-      const url = gqlData.data.clip.videoQualities[0].sourceURL;
-      debugInfo.tried_urls.push({ method: 'GQL', url: url });
-      return url;
-    }
-  } catch (e) {
-    debugInfo.gql_error = e.message;
-  }
-  
-  // Method 2: Try constructing from thumbnail
-  if (clip.thumbnail_url) {
-    const match = clip.thumbnail_url.match(/\/([A-Za-z0-9_-]+)\/\d+-offset-\d+-preview/);
-    if (match) {
-      const videoId = match[1];
-      const url = `https://clips-media-assets2.twitch.tv/${videoId}.mp4`;
-      debugInfo.tried_urls.push({ method: 'Thumbnail', url: url });
-      debugInfo.thumbnail_video_id = videoId;
-      return url;
-    }
-  }
-  
-  // Method 3: Try pattern from source_id
-  const url = `https://clips-media-assets2.twitch.tv/AT-cm%7C${clip.source_id}.mp4`;
-  debugInfo.tried_urls.push({ method: 'Fallback', url: url });
-  
-  // Return URL and debug info - modify the error handling in the main function
-  throw new Error(`DEBUG INFO: ${JSON.stringify(debugInfo, null, 2)}`);
-}
-async function getKickMP4Url(clip) {
-  const debugInfo = {
-    source_id: clip.source_id,
-    video_url: clip.video_url,
-    tried_methods: []
-  };
-  
-  try {
-    // Method 1: Direct Kick clip URL
-    if (clip.video_url && clip.video_url.includes('kick.com')) {
-      debugInfo.tried_methods.push('Direct Kick URL');
-      return clip.video_url;
-    }
-    
-    // Method 2: Try to fetch from Kick API
-    if (clip.source_id) {
-      const kickApiUrl = `https://kick.com/api/v2/clips/${clip.source_id}`;
-      debugInfo.tried_methods.push('Kick API');
-      
-      const response = await fetch(kickApiUrl);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.clip?.video_url) {
-          return data.clip.video_url;
-        }
-      }
-    }
-    
-  } catch (e) {
-    debugInfo.error = e.message;
-  }
-  
-  throw new Error(`Could not get Kick video URL. Debug: ${JSON.stringify(debugInfo, null, 2)}`);
-}
-
-async function generateAIContent(clip) {
-  try {
-    // Check if we already have viral content generated
-    if (clip.viral_title && clip.viral_tags && clip.viral_description) {
-      console.log('Using existing viral content');
-      return {
-        title: clip.viral_title,
-        description: clip.viral_description,
-        tags: Array.isArray(clip.viral_tags) ? clip.viral_tags : clip.viral_tags.split(',')
-      };
-    }
-
-    console.log('Generating new AI content for clip');
-    
-    const prompt = `You are a YouTube optimization expert. Create viral YouTube metadata for this gaming clip:
-
-Game: ${clip.game || 'Gaming'}
-Original Title: ${clip.title || 'Gaming Clip'}
-Platform: ${clip.source_platform || 'Stream'}
-AI Score: ${clip.ai_score ? Math.round(clip.ai_score * 100) + '%' : 'High'}
-Duration: ${clip.duration || 30} seconds
-${clip.description ? `Context: ${clip.description}` : ''}
-
-Generate:
-1. Title: Create a catchy, engaging title (max 70 chars). Use power words, numbers, and create curiosity. Make viewers NEED to click.
-
-2. Description: Write a compelling description that:
-   - Hooks viewers in the first 125 characters (shows in search)
-   - Includes relevant keywords naturally
-   - Has a clear call-to-action (subscribe, like, comment)
-   - Includes 5-10 relevant hashtags at the end
-   - Is 2-3 paragraphs long
-
-3. Tags: Generate 20-30 relevant tags including:
-   - Game-specific terms
-   - Gaming trends
-   - Skill levels (pro, insane, epic)
-   - Platform terms (twitch, kick, clips)
-   - Viral gaming keywords
-
-Format your response as JSON with exactly these keys:
-{
-  "title": "your title here",
-  "description": "your description here",
-  "tags": ["tag1", "tag2", "tag3", ...]
-}`;
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [
-        {
-          role: "system",
-          content: "You are a YouTube SEO expert who creates viral gaming content metadata. Your titles get millions of views."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      temperature: 0.8,
-      response_format: { type: "json_object" }
-    });
-
-    const aiContent = JSON.parse(completion.choices[0].message.content);
-    
-    // Save the generated content back to the database for future use
-    await supabase
-      .from('clips')
-      .update({
-        viral_title: aiContent.title,
-        viral_tags: aiContent.tags,
-        viral_description: aiContent.description
-      })
-      .eq('id', clip.id);
-    
-    return aiContent;
-    
-  } catch (error) {
-    console.error('AI generation failed, using fallback:', error);
-    
-    // Fallback content if AI fails
-    const game = clip.game || 'Gaming';
-    const score = clip.ai_score ? Math.round(clip.ai_score * 100) : 75;
-    
-    return {
-      title: score > 70 
-        ? `🔥 INSANE ${game} Clip That Broke The Internet!`
-        : `${game} Moment You Have To See To Believe! 😱`,
-      description: `This ${game} clip is absolutely incredible! You won't believe what happens...
-
-Watch as this epic ${game} moment unfolds - this is why we love gaming! This clip scored ${score}% on our viral AI detector, making it one of the best clips we've seen.
-
-👉 SUBSCRIBE for more epic ${game} content!
-🔔 Turn on notifications to never miss insane clips like this!
-💬 Comment your reaction below!
-
-Follow us for more:
-📺 Daily uploads of the best gaming moments
-🎮 Clips from top streamers and rising stars
-🏆 Only the most viral, must-see content
-
-#${game.replace(/\s+/g, '')} #Gaming #Viral #Epic #Insane #MustWatch #GamingClips #Twitch #Kick #Highlights #ProGamer #GamingMoments #ViralGaming #EpicWin`,
-      tags: [
-        game.toLowerCase(),
-        `${game.toLowerCase()} clips`,
-        `${game.toLowerCase()} highlights`,
-        'gaming',
-        'gaming clips',
-        'viral gaming',
-        'epic moments',
-        'insane plays',
-        'must watch',
-        'pro gamer',
-        'twitch clips',
-        'kick clips',
-        'best moments',
-        'gaming highlights',
-        'epic gaming',
-        'viral clips',
-        'insane gaming',
-        'top plays',
-        'gaming compilation',
-        'best of gaming',
-        'legendary moments',
-        'clutch plays',
-        'gaming wins',
-        'stream highlights',
-        'gamer moments'
-      ]
-    };
-  }
-}
-
-exports.handler = async (event, context) => {
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: {
+exports.handler = async (event) => {
+    const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
-      }
     };
-  }
 
-  if (event.httpMethod !== 'POST') {
-    return { 
-      statusCode: 405, 
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ error: 'Method Not Allowed' })
-    };
-  }
-
-  try {
-    const { clipId } = JSON.parse(event.body || '{}');
-
-    const { data: clip, error: clipError } = await supabase
-      .from('clips')
-      .select('*')
-      .eq('id', clipId)
-      .single();
-
-    if (clipError || !clip) {
-      throw new Error(`Clip not found: ${clipId}`);
+    if (event.httpMethod === 'OPTIONS') {
+        return { statusCode: 200, headers, body: '' };
     }
 
-    // CHECK UPLOAD LIMITS FOR NON-SHORTS
-const isShort = clip.duration && clip.duration <= 60;
-
-if (!isShort) {
-  // Check how many long-form videos uploaded today
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  const { count: todaysLongVideos } = await supabase
-    .from('clips')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', clip.user_id)
-    .gte('published_at', today.toISOString())
-    .not('posted_platforms', 'is', null)
-    .gte('duration', 61);  // Only count videos >60 seconds
-  
-  const DAILY_LONG_VIDEO_LIMIT = 6;  // YouTube API limit
-  
-  if (todaysLongVideos >= DAILY_LONG_VIDEO_LIMIT) {
-    return {
-      statusCode: 429,  // Too Many Requests
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        success: false,
-        error: 'Daily upload limit reached for videos over 60 seconds',
-        message: `You've reached the daily limit of ${DAILY_LONG_VIDEO_LIMIT} long-form videos.`,
-        details: {
-          limit: DAILY_LONG_VIDEO_LIMIT,
-          uploaded_today: todaysLongVideos,
-          is_short: false,
-          clip_duration: clip.duration
-        },
-        solutions: [
-          '✅ YouTube Shorts (≤60 seconds) have no daily limit - upload unlimited Shorts!',
-          '✅ Your long-form video uploads will reset at midnight',
-          '📈 To increase your limit, request a YouTube API quota increase:'
-        ],
-        quota_increase_instructions: {
-          step1: 'Go to https://console.cloud.google.com',
-          step2: 'Select your project',
-          step3: 'Navigate to APIs & Services → YouTube Data API v3',
-          step4: 'Click "Quotas & System Limits"',
-          step5: 'Click "REQUEST QUOTA INCREASE"',
-          step6: 'Explain: "Gaming content creator needing to upload 20-50 clips daily"',
-          step7: 'YouTube typically approves 100,000-1,000,000 units/day for legitimate creators',
-          step8: 'Approval usually takes 2-3 business days'
-        },
-        tip: 'Pro Tip: Keep clips under 60 seconds to upload as Shorts with no limits!'
-      })
-    };
-  }
-  
-  // Show warning if approaching limit
-  if (todaysLongVideos >= DAILY_LONG_VIDEO_LIMIT - 2) {
-    console.log(`WARNING: User approaching daily limit. ${DAILY_LONG_VIDEO_LIMIT - todaysLongVideos} long-form uploads remaining today.`);
-  }
-}
-
-console.log(`Upload check passed. Is Short: ${isShort}, Duration: ${clip.duration}s`);
-
-    // Get user's YouTube connection with refresh capabilities
-    const { data: connection, error: connError } = await supabase
-      .from('streaming_connections')
-      .select('access_token, refresh_token, platform_username, expires_at, user_id')
-      .eq('user_id', clip.user_id)
-      .eq('platform', 'youtube')
-      .eq('is_active', true)
-      .single();
-
-    if (connError || !connection) {
-      throw new Error('YouTube not connected for this user');
+    if (event.httpMethod !== 'POST') {
+        return {
+            statusCode: 405,
+            headers,
+            body: JSON.stringify({ error: 'Method not allowed' })
+        };
     }
-    
-    // Check if token is expired or will expire in next 5 minutes
+
+    const supabase = createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_KEY
+    );
+
+    try {
+        const { clipId, retryCount = 0 } = JSON.parse(event.body);
+        
+        if (!clipId) {
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'clipId is required' })
+            };
+        }
+
+        // Get clip details
+        const { data: clip, error: clipError } = await supabase
+            .from('clips')
+            .select('*')
+            .eq('id', clipId)
+            .single();
+
+        if (clipError || !clip) {
+            return {
+                statusCode: 404,
+                headers,
+                body: JSON.stringify({ error: 'Clip not found' })
+            };
+        }
+
+        // Check if already uploaded
+        if (clip.youtube_id) {
+            console.log('Clip already uploaded:', clip.youtube_id);
+            return {
+                statusCode: 200,
+                headers,
+                body: JSON.stringify({
+                    success: true,
+                    alreadyUploaded: true,
+                    youtubeUrl: clip.youtube_url,
+                    videoId: clip.youtube_id
+                })
+            };
+        }
+
+        // Check rate limits for this user
+        const rateLimitCheck = await checkRateLimits(clip.user_id, supabase);
+        if (!rateLimitCheck.allowed) {
+            console.log('Rate limit exceeded for user:', clip.user_id);
+            
+            // Add back to queue for later processing
+            if (retryCount < 3) {
+                await supabase
+                    .from('publishing_queue')
+                    .insert({
+                        clip_id: clipId,
+                        platform: 'youtube',
+                        status: 'rate_limited',
+                        retry_count: retryCount + 1,
+                        retry_after: rateLimitCheck.retryAfter,
+                        priority: clip.ai_score ? Math.floor(clip.ai_score * 10) : 5
+                    });
+            }
+            
+            return {
+                statusCode: 429,
+                headers: {
+                    ...headers,
+                    'Retry-After': rateLimitCheck.retryAfter.toString()
+                },
+                body: JSON.stringify({
+                    error: 'Rate limit exceeded',
+                    retryAfter: rateLimitCheck.retryAfter,
+                    message: rateLimitCheck.message
+                })
+            };
+        }
+
+        // Get user's YouTube connection
+        const { data: connection, error: connError } = await supabase
+            .from('streaming_connections')
+            .select('*')
+            .eq('user_id', clip.user_id)
+            .eq('platform', 'youtube')
+            .eq('is_active', true)
+            .single();
+
+        if (connError || !connection || !connection.refresh_token) {
+            console.error('No YouTube connection for user:', clip.user_id);
+            
+            // Update clip status
+            await supabase
+                .from('clips')
+                .update({ 
+                    status: 'failed',
+                    error_message: 'YouTube not connected'
+                })
+                .eq('id', clipId);
+            
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ 
+                    error: 'YouTube not connected for this user',
+                    needsOAuth: true,
+                    userId: clip.user_id
+                })
+            };
+        }
+
+        // Initialize OAuth2 client
+        const oauth2Client = new google.auth.OAuth2(
+            process.env.YOUTUBE_CLIENT_ID,
+            process.env.YOUTUBE_CLIENT_SECRET,
+            process.env.YOUTUBE_REDIRECT_URI
+        );
+
+        // Set the refresh token
+        oauth2Client.setCredentials({
+            refresh_token: connection.refresh_token
+        });
+
+        // Get a fresh access token
+        let credentials;
+        try {
+            const tokenResponse = await oauth2Client.refreshAccessToken();
+            credentials = tokenResponse.credentials;
+            oauth2Client.setCredentials(credentials);
+        } catch (tokenError) {
+            console.error('Token refresh failed:', tokenError);
+            
+            // Mark connection as inactive if refresh token is invalid
+            await supabase
+                .from('streaming_connections')
+                .update({ 
+                    is_active: false,
+                    error_message: 'Refresh token invalid - needs reauthorization'
+                })
+                .eq('id', connection.id);
+            
+            return {
+                statusCode: 401,
+                headers,
+                body: JSON.stringify({
+                    error: 'YouTube authorization expired',
+                    needsReauth: true,
+                    userId: clip.user_id
+                })
+            };
+        }
+
+        // Update the new access token in database
+        if (credentials.access_token !== connection.access_token) {
+            await supabase
+                .from('streaming_connections')
+                .update({ 
+                    access_token: credentials.access_token,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', connection.id);
+        }
+
+        // Initialize YouTube API with user's OAuth
+        const youtube = google.youtube({
+            version: 'v3',
+            auth: oauth2Client
+        });
+
+        // Download video from storage
+        const { data: fileData, error: downloadError } = await supabase.storage
+            .from('clips')
+            .download(clip.video_url);
+
+        if (downloadError) {
+            console.error('Error downloading video:', downloadError);
+            
+            // If file doesn't exist, mark clip appropriately
+            if (downloadError.message?.includes('not found')) {
+                await supabase
+                    .from('clips')
+                    .update({ 
+                        status: 'failed',
+                        error_message: 'Video file not found in storage'
+                    })
+                    .eq('id', clipId);
+            }
+            
+            return {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({ 
+                    error: 'Failed to download video from storage',
+                    details: downloadError.message
+                })
+            };
+        }
+
+        // Convert blob to buffer
+        const buffer = Buffer.from(await fileData.arrayBuffer());
+
+        // Check video size (YouTube limit is 128GB but we'll warn at 1GB)
+        const sizeMB = buffer.length / (1024 * 1024);
+        if (sizeMB > 1024) {
+            console.warn(`Large video detected: ${sizeMB}MB for clip ${clipId}`);
+        }
+
+        // Generate optimized metadata
+        const videoMetadata = generateVideoMetadata(clip);
+
+        // Upload to YouTube with retry logic
+        let uploadResponse;
+        let uploadAttempts = 0;
+        const maxUploadAttempts = 3;
+
+        while (uploadAttempts < maxUploadAttempts) {
+            try {
+                uploadAttempts++;
+                console.log(`Upload attempt ${uploadAttempts} for clip ${clipId}`);
+                
+                uploadResponse = await youtube.videos.insert({
+                    part: ['snippet', 'status'],
+                    requestBody: videoMetadata,
+                    media: {
+                        body: buffer
+                    }
+                });
+                
+                break; // Success, exit retry loop
+                
+            } catch (uploadError) {
+                console.error(`Upload attempt ${uploadAttempts} failed:`, uploadError.message);
+                
+                // Check if it's a retryable error
+                if (uploadAttempts < maxUploadAttempts && isRetryableError(uploadError)) {
+                    // Wait before retrying (exponential backoff)
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, uploadAttempts) * 1000));
+                    continue;
+                }
+                
+                // Non-retryable error or max attempts reached
+                await supabase
+                    .from('clips')
+                    .update({ 
+                        status: 'failed',
+                        error_message: uploadError.message,
+                        retry_count: uploadAttempts
+                    })
+                    .eq('id', clipId);
+                
+                throw uploadError;
+            }
+        }
+
+        const youtubeVideoId = uploadResponse.data.id;
+        const youtubeUrl = `https://youtube.com/watch?v=${youtubeVideoId}`;
+
+        console.log('Upload successful:', youtubeUrl);
+
+        // Update clip with YouTube info
+        await supabase
+            .from('clips')
+            .update({
+                youtube_id: youtubeVideoId,
+                youtube_url: youtubeUrl,
+                posted_platforms: ['youtube'],
+                published_at: new Date().toISOString(),
+                status: 'published',
+                upload_attempts: uploadAttempts
+            })
+            .eq('id', clipId);
+
+        // Record upload for rate limiting
+        await recordUpload(clip.user_id, supabase);
+
+        // Delete from storage after successful upload
+        try {
+            await supabase.storage
+                .from('clips')
+                .remove([clip.video_url]);
+            console.log('Deleted video from storage:', clip.video_url);
+        } catch (deleteError) {
+            console.error('Failed to delete from storage:', deleteError);
+            // Don't fail the whole operation if delete fails
+        }
+
+        // Update user metrics
+        await updateUserMetrics(clip.user_id, supabase);
+
+        return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({
+                success: true,
+                youtubeUrl,
+                videoId: youtubeVideoId,
+                message: "Video uploaded successfully to user's channel",
+                attempts: uploadAttempts
+            })
+        };
+
+    } catch (error) {
+        console.error('Upload error:', error);
+        
+        // Determine if this is a quota error
+        const isQuotaError = error.message?.toLowerCase().includes('quota') || 
+                           error.code === 403;
+        
+        return {
+            statusCode: isQuotaError ? 429 : 500,
+            headers,
+            body: JSON.stringify({
+                error: 'Upload failed',
+                message: error.message,
+                isQuotaError,
+                details: error.response?.data || error.errors || undefined
+            })
+        };
+    }
+};
+
+// Helper Functions
+
+async function checkRateLimits(userId, supabase) {
     const now = new Date();
-    const expiresAt = connection.expires_at ? new Date(connection.expires_at) : null;
-    const isExpiredSoon = !expiresAt || (expiresAt.getTime() - now.getTime()) < (5 * 60 * 1000);
+    const oneMinuteAgo = new Date(now - 60 * 1000);
+    const oneHourAgo = new Date(now - 60 * 60 * 1000);
+    const oneDayAgo = new Date(now - 24 * 60 * 60 * 1000);
 
-    let accessToken = connection.access_token;
+    // Get recent uploads
+    const { data: recentUploads } = await supabase
+        .from('clips')
+        .select('published_at')
+        .eq('user_id', userId)
+        .eq('status', 'published')
+        .gte('published_at', oneDayAgo.toISOString())
+        .order('published_at', { ascending: false });
 
-    if (isExpiredSoon) {
-      console.log('Token expired or expiring soon, refreshing...');
-      
-      // Call refresh token function
-      const refreshResponse = await fetch(`https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/refreshYouTubeToken`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+    if (!recentUploads) {
+        return { allowed: true };
+    }
+
+    // Count uploads in different time windows
+    const uploadsLastMinute = recentUploads.filter(u => 
+        new Date(u.published_at) > oneMinuteAgo
+    ).length;
+    
+    const uploadsLastHour = recentUploads.filter(u => 
+        new Date(u.published_at) > oneHourAgo
+    ).length;
+    
+    const uploadsLastDay = recentUploads.length;
+
+    // Check limits
+    if (uploadsLastMinute >= YOUTUBE_QUOTAS.MAX_UPLOADS_PER_MINUTE) {
+        return {
+            allowed: false,
+            retryAfter: 60,
+            message: 'Minute upload limit reached'
+        };
+    }
+
+    if (uploadsLastHour >= YOUTUBE_QUOTAS.MAX_UPLOADS_PER_HOUR) {
+        return {
+            allowed: false,
+            retryAfter: 3600,
+            message: 'Hourly upload limit reached'
+        };
+    }
+
+    if (uploadsLastDay >= YOUTUBE_QUOTAS.MAX_UPLOADS_PER_DAY) {
+        return {
+            allowed: false,
+            retryAfter: 86400,
+            message: 'Daily upload limit reached'
+        };
+    }
+
+    return { allowed: true };
+}
+
+async function recordUpload(userId, supabase) {
+    await supabase
+        .from('upload_metrics')
+        .insert({
+            user_id: userId,
+            platform: 'youtube',
+            uploaded_at: new Date().toISOString()
+        });
+}
+
+async function updateUserMetrics(userId, supabase) {
+    const { data: metrics } = await supabase
+        .from('user_metrics')
+        .select('clips_uploaded')
+        .eq('user_id', userId)
+        .single();
+
+    const currentCount = metrics?.clips_uploaded || 0;
+
+    await supabase
+        .from('user_metrics')
+        .upsert({
+            user_id: userId,
+            clips_uploaded: currentCount + 1,
+            last_upload: new Date().toISOString()
+        }, {
+            onConflict: 'user_id'
+        });
+}
+
+function generateVideoMetadata(clip) {
+    // Smart title generation (max 100 chars for YouTube)
+    let title = clip.title || `Gaming Highlight - ${clip.game || 'Unknown Game'}`;
+    if (title.length > 100) {
+        title = title.substring(0, 97) + '...';
+    }
+
+    // Generate comprehensive description
+    const description = [
+        clip.description || 'Check out this amazing gaming moment!',
+        '',
+        `🎮 Game: ${clip.game || 'Unknown'}`,
+        `🔥 Viral Score: ${Math.round((clip.ai_score || 0.5) * 100)}%`,
+        `📅 Captured: ${new Date(clip.created_at).toLocaleDateString()}`,
+        '',
+        '🏷️ Tags:',
+        (clip.tags || ['gaming']).map(tag => `#${tag.replace(/\\s+/g, '')}`).join(' '),
+        '',
+        '👉 Follow for more epic gaming moments!',
+        '',
+        'Powered by AutoStreamPro - AI-driven clip detection and publishing'
+    ].join('\\n');
+
+    // Generate tags (max 500 chars total, max 30 tags)
+    const tags = clip.tags || ['gaming', 'highlights', clip.game?.toLowerCase() || 'gameplay'];
+    const processedTags = tags
+        .slice(0, 30)
+        .map(tag => tag.toLowerCase().replace(/[^a-z0-9\\s]/g, '').trim())
+        .filter(tag => tag.length > 0);
+
+    return {
+        snippet: {
+            title,
+            description,
+            tags: processedTags,
+            categoryId: '20', // Gaming category
+            defaultLanguage: 'en',
+            defaultAudioLanguage: 'en'
         },
-        body: JSON.stringify({
-          refreshToken: connection.refresh_token,
-          userId: connection.user_id
-        })
-      });
-
-      if (refreshResponse.ok) {
-        const refreshResult = await refreshResponse.json();
-        accessToken = refreshResult.newToken;
-        console.log('Token refreshed successfully');
-      } else {
-        throw new Error('Failed to refresh YouTube token - user needs to reconnect');
-      }
-    }
-
-    console.log('Found YouTube connection for:', connection.platform_username);
-
-    // Simple test with real YouTube metadata API call
-    const testResponse = await fetch('https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true', {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`
-      }
-    });
-
-    if (!testResponse.ok) {
-      throw new Error(`YouTube API test failed: ${testResponse.status}`);
-    }
-
-    // Real YouTube video upload
-    console.log('Starting real YouTube upload for:', clip.title);
-    console.log('Video URL:', clip.video_url);
-
-    // Declare videoBuffer BEFORE the if/else
-let videoBuffer;
-
-// Handle different clip sources
-if (clip.video_url) {
-  // TWITCH CLIPS
-  if (clip.video_url.includes('twitch.tv') || clip.source_platform === 'twitch') {
-    console.log('Processing Twitch clip:', clip.video_url);
-    
-    try {
-      const mp4Url = await getTwitchMP4Url(clip);
-      console.log('Got Twitch MP4 URL:', mp4Url);
-      
-      const videoResponse = await fetch(mp4Url);
-      if (!videoResponse.ok) {
-        throw new Error(`Failed to download Twitch clip: ${videoResponse.status}`);
-      }
-      
-      videoBuffer = await videoResponse.arrayBuffer();
-      console.log('Downloaded Twitch clip, size:', videoBuffer.byteLength);
-      
-    } catch (error) {
-      console.error('Twitch clip download error:', error);
-      throw new Error(`Failed to process Twitch clip: ${error.message}`);
-    }
-  
-  // KICK CLIPS
-  } else if (clip.video_url.includes('kick.com') || clip.source_platform === 'kick') {
-    console.log('Processing Kick clip:', clip.video_url);
-    
-    try {
-      const mp4Url = await getKickMP4Url(clip);
-      console.log('Got Kick MP4 URL:', mp4Url);
-      
-      const videoResponse = await fetch(mp4Url);
-      if (!videoResponse.ok) {
-        throw new Error(`Failed to download Kick clip: ${videoResponse.status}`);
-      }
-      
-      videoBuffer = await videoResponse.arrayBuffer();
-      console.log('Downloaded Kick clip, size:', videoBuffer.byteLength);
-      
-    } catch (error) {
-      console.error('Kick clip download error:', error);
-      throw new Error(`Failed to process Kick clip: ${error.message}`);
-    }
-  
-  // S3 URLs or direct URLs (including the mistakenly stored Supabase files)
-  } else {
-    console.log('Fetching video from URL:', clip.video_url);
-    const videoResponse = await fetch(clip.video_url);
-    if (!videoResponse.ok) {
-      throw new Error(`Failed to fetch video: ${videoResponse.status}`);
-    }
-    
-    videoBuffer = await videoResponse.arrayBuffer();
-    console.log('Video size:', videoBuffer.byteLength, 'bytes');
-  }
-} else {
-  throw new Error('No video URL provided');
-}
-
-  // Generate AI content for YouTube
-const aiContent = await generateAIContent(clip);
-
-// CHECK IF THIS SHOULD BE A SHORT
-
-// Modify title for Shorts
-if (isShort) {
-  // Add #Shorts to title if not already there
-  if (!aiContent.title.includes('#Shorts')) {
-    // YouTube titles max 100 chars, we use 70, so we have room
-    aiContent.title = aiContent.title + ' #Shorts';
-  }
-  
-  // Ensure description has #Shorts as first hashtag
-  if (!aiContent.description.includes('#Shorts')) {
-    aiContent.description = aiContent.description.replace(
-      /(#\w+)/, 
-      '#Shorts $1'
-    );
-  }
-  
-  console.log(`Uploading as YouTube Short: ${aiContent.title}`);
-}
-
-console.log('Generated title:', aiContent.title);
-console.log('Tags count:', aiContent.tags.length);
-
-// Prepare video metadata with AI-generated content
-const metadata = {
-  snippet: {
-    title: aiContent.title,
-    description: aiContent.description,
-    tags: isShort 
-      ? ['shorts', ...aiContent.tags.slice(0, 499)] 
-      : aiContent.tags.slice(0, 500),
-    categoryId: '20' // Gaming category
-  },
-  status: {
-    privacyStatus: 'public',
-    selfDeclaredMadeForKids: false
-  }
-};
-
-    // YouTube multipart upload
-    const boundary = '-------314159265358979323846';
-    const delimiter = '\r\n--' + boundary + '\r\n';
-    const closeDelim = '\r\n--' + boundary + '--';
-
-    const metadataBody = delimiter + 
-      'Content-Type: application/json; charset=UTF-8\r\n\r\n' + 
-      JSON.stringify(metadata);
-
-    const videoBody = delimiter + 
-      'Content-Type: video/*\r\n' +
-      'Content-Transfer-Encoding: binary\r\n\r\n';
-
-    // Combine parts
-    const multipartBody = new Uint8Array(
-      new TextEncoder().encode(metadataBody).length +
-      new TextEncoder().encode(videoBody).length +
-      videoBuffer.byteLength +
-      new TextEncoder().encode(closeDelim).length
-    );
-
-    let offset = 0;
-    const encoder = new TextEncoder();
-
-    // Add metadata
-    const metadataBytes = encoder.encode(metadataBody);
-    multipartBody.set(metadataBytes, offset);
-    offset += metadataBytes.length;
-
-    // Add video header
-    const videoHeaderBytes = encoder.encode(videoBody);
-    multipartBody.set(videoHeaderBytes, offset);
-    offset += videoHeaderBytes.length;
-
-    // Add video data
-    multipartBody.set(new Uint8Array(videoBuffer), offset);
-    offset += videoBuffer.byteLength;
-
-    // Add closing delimiter
-    const closeBytes = encoder.encode(closeDelim);
-    multipartBody.set(closeBytes, offset);
-
-    console.log('Uploading to YouTube...');
-
-    // Upload to YouTube
-    const uploadUrl = 'https://www.googleapis.com/upload/youtube/v3/videos?uploadType=multipart&part=snippet,status';
-    const uploadResponse = await fetch(uploadUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'multipart/related; boundary=' + boundary
-      },
-      body: multipartBody
-    });
-
-    if (!uploadResponse.ok) {
-      const errorText = await uploadResponse.text();
-      console.error('YouTube upload failed:', uploadResponse.status, errorText);
-      throw new Error(`YouTube upload failed: ${uploadResponse.status}`);
-    }
-
-    const uploadResult = await uploadResponse.json();
-    const realYouTubeId = uploadResult.id;
-
-    console.log('Successfully uploaded to YouTube! Video ID:', realYouTubeId);
-    // UPDATE DATABASE WITH YOUTUBE SUCCESS
-
-await supabase
-  .from('clips')
-  .update({
-    status: 'published',
-    posted_platforms: [{
-      platform: 'youtube',
-      type: isShort ? 'short' : 'video',
-      id: realYouTubeId,
-      url: `https://www.youtube.com/watch?v=${realYouTubeId}`,
-      uploaded_at: new Date().toISOString()
-    }],
-    published_at: new Date().toISOString()
-  })
-  .eq('id', clip.id);
-
-console.log(`Updated database: Clip ${clip.id} published as YouTube ${isShort ? 'Short' : 'Video'}`);
-   
-// Delete from S3 after successful YouTube upload
-try {
-  // Check if this is an S3 clip
-  if (clip.video_url && clip.video_url.includes('amazonaws.com')) {
-    const deleteResponse = await fetch(`${process.env.URL || 'https://beautiful-rugelach-bda4b4.netlify.app'}/.netlify/functions/upload-to-s3`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'delete',
-        clipId: clip.id
-      })
-    });
-    
-    const deleteResult = await deleteResponse.json();
-    if (deleteResult.success) {
-      console.log('Deleted clip from S3');
-    }
-  }
-} catch (deleteError) {
-  console.error('Failed to delete from S3:', deleteError);
-  // Don't fail the whole upload if deletion fails
-}
-
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        success: true,
-        youtubeId: realYouTubeId,
-        message: 'Video uploaded to YouTube successfully!',
-        clipTitle: clip.title,
-        youtubeUrl: `https://www.youtube.com/watch?v=${realYouTubeId}`,
-        channelName: connection.platform_username
-      })
+        status: {
+            privacyStatus: 'public',
+            selfDeclaredMadeForKids: false,
+            madeForKids: false
+        }
     };
+}
 
-  } catch (error) {
-    return {
-      statusCode: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        success: false,
-        error: error.message
-      })
-    };
-  }
-};
+function isRetryableError(error) {
+    const retryableCodes = [500, 502, 503, 504, 408, 429];
+    const retryableMessages = ['network', 'timeout', 'enotfound', 'econnreset'];
+    
+    return retryableCodes.includes(error.code) ||
+           retryableMessages.some(msg => 
+               error.message?.toLowerCase().includes(msg)
+           );
+}
