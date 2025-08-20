@@ -567,7 +567,7 @@ const metadata = {
     const realYouTubeId = uploadResult.id;
 
     console.log('Successfully uploaded to YouTube! Video ID:', realYouTubeId);
-    / UPDATE DATABASE WITH YOUTUBE SUCCESS
+    // UPDATE DATABASE WITH YOUTUBE SUCCESS
 const isShort = clip.duration && clip.duration <= 60;
 
 await supabase
