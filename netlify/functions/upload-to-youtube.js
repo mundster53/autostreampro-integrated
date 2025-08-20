@@ -479,6 +479,28 @@ const metadata = {
     const realYouTubeId = uploadResult.id;
 
     console.log('Successfully uploaded to YouTube! Video ID:', realYouTubeId);
+    // Delete from S3 after successful YouTube upload
+try {
+  // Check if this is an S3 clip
+  if (clip.video_url && clip.video_url.includes('amazonaws.com')) {
+    const deleteResponse = await fetch(`${process.env.URL || 'https://beautiful-rugelach-bda4b4.netlify.app'}/.netlify/functions/upload-to-s3`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'delete',
+        clipId: clip.id
+      })
+    });
+    
+    const deleteResult = await deleteResponse.json();
+    if (deleteResult.success) {
+      console.log('Deleted clip from S3');
+    }
+  }
+} catch (deleteError) {
+  console.error('Failed to delete from S3:', deleteError);
+  // Don't fail the whole upload if deletion fails
+}
 
     return {
       statusCode: 200,
