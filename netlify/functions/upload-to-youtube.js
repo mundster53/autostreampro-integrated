@@ -1,9 +1,14 @@
 const { createClient } = require('@supabase/supabase-js');
+const OpenAI = require('openai');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 );
+
+const openai = new OpenAI({  // ADD THESE LINES
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 async function getTwitchMP4Url(clip) {
   const debugInfo = {
@@ -62,6 +67,173 @@ async function getTwitchMP4Url(clip) {
   
   // Return URL and debug info - modify the error handling in the main function
   throw new Error(`DEBUG INFO: ${JSON.stringify(debugInfo, null, 2)}`);
+}
+async function getKickMP4Url(clip) {
+  const debugInfo = {
+    source_id: clip.source_id,
+    video_url: clip.video_url,
+    tried_methods: []
+  };
+  
+  try {
+    // Method 1: Direct Kick clip URL
+    if (clip.video_url && clip.video_url.includes('kick.com')) {
+      debugInfo.tried_methods.push('Direct Kick URL');
+      return clip.video_url;
+    }
+    
+    // Method 2: Try to fetch from Kick API
+    if (clip.source_id) {
+      const kickApiUrl = `https://kick.com/api/v2/clips/${clip.source_id}`;
+      debugInfo.tried_methods.push('Kick API');
+      
+      const response = await fetch(kickApiUrl);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.clip?.video_url) {
+          return data.clip.video_url;
+        }
+      }
+    }
+    
+  } catch (e) {
+    debugInfo.error = e.message;
+  }
+  
+  throw new Error(`Could not get Kick video URL. Debug: ${JSON.stringify(debugInfo, null, 2)}`);
+}
+
+async function generateAIContent(clip) {
+  try {
+    // Check if we already have viral content generated
+    if (clip.viral_title && clip.viral_tags && clip.viral_description) {
+      console.log('Using existing viral content');
+      return {
+        title: clip.viral_title,
+        description: clip.viral_description,
+        tags: Array.isArray(clip.viral_tags) ? clip.viral_tags : clip.viral_tags.split(',')
+      };
+    }
+
+    console.log('Generating new AI content for clip');
+    
+    const prompt = `You are a YouTube optimization expert. Create viral YouTube metadata for this gaming clip:
+
+Game: ${clip.game || 'Gaming'}
+Original Title: ${clip.title || 'Gaming Clip'}
+Platform: ${clip.source_platform || 'Stream'}
+AI Score: ${clip.ai_score ? Math.round(clip.ai_score * 100) + '%' : 'High'}
+Duration: ${clip.duration || 30} seconds
+${clip.description ? `Context: ${clip.description}` : ''}
+
+Generate:
+1. Title: Create a catchy, engaging title (max 70 chars). Use power words, numbers, and create curiosity. Make viewers NEED to click.
+
+2. Description: Write a compelling description that:
+   - Hooks viewers in the first 125 characters (shows in search)
+   - Includes relevant keywords naturally
+   - Has a clear call-to-action (subscribe, like, comment)
+   - Includes 5-10 relevant hashtags at the end
+   - Is 2-3 paragraphs long
+
+3. Tags: Generate 20-30 relevant tags including:
+   - Game-specific terms
+   - Gaming trends
+   - Skill levels (pro, insane, epic)
+   - Platform terms (twitch, kick, clips)
+   - Viral gaming keywords
+
+Format your response as JSON with exactly these keys:
+{
+  "title": "your title here",
+  "description": "your description here",
+  "tags": ["tag1", "tag2", "tag3", ...]
+}`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: "You are a YouTube SEO expert who creates viral gaming content metadata. Your titles get millions of views."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      temperature: 0.8,
+      response_format: { type: "json_object" }
+    });
+
+    const aiContent = JSON.parse(completion.choices[0].message.content);
+    
+    // Save the generated content back to the database for future use
+    await supabase
+      .from('clips')
+      .update({
+        viral_title: aiContent.title,
+        viral_tags: aiContent.tags,
+        viral_description: aiContent.description
+      })
+      .eq('id', clip.id);
+    
+    return aiContent;
+    
+  } catch (error) {
+    console.error('AI generation failed, using fallback:', error);
+    
+    // Fallback content if AI fails
+    const game = clip.game || 'Gaming';
+    const score = clip.ai_score ? Math.round(clip.ai_score * 100) : 75;
+    
+    return {
+      title: score > 70 
+        ? `🔥 INSANE ${game} Clip That Broke The Internet!`
+        : `${game} Moment You Have To See To Believe! 😱`,
+      description: `This ${game} clip is absolutely incredible! You won't believe what happens...
+
+Watch as this epic ${game} moment unfolds - this is why we love gaming! This clip scored ${score}% on our viral AI detector, making it one of the best clips we've seen.
+
+👉 SUBSCRIBE for more epic ${game} content!
+🔔 Turn on notifications to never miss insane clips like this!
+💬 Comment your reaction below!
+
+Follow us for more:
+📺 Daily uploads of the best gaming moments
+🎮 Clips from top streamers and rising stars
+🏆 Only the most viral, must-see content
+
+#${game.replace(/\s+/g, '')} #Gaming #Viral #Epic #Insane #MustWatch #GamingClips #Twitch #Kick #Highlights #ProGamer #GamingMoments #ViralGaming #EpicWin`,
+      tags: [
+        game.toLowerCase(),
+        `${game.toLowerCase()} clips`,
+        `${game.toLowerCase()} highlights`,
+        'gaming',
+        'gaming clips',
+        'viral gaming',
+        'epic moments',
+        'insane plays',
+        'must watch',
+        'pro gamer',
+        'twitch clips',
+        'kick clips',
+        'best moments',
+        'gaming highlights',
+        'epic gaming',
+        'viral clips',
+        'insane gaming',
+        'top plays',
+        'gaming compilation',
+        'best of gaming',
+        'legendary moments',
+        'clutch plays',
+        'gaming wins',
+        'stream highlights',
+        'gamer moments'
+      ]
+    };
+  }
 }
 
 exports.handler = async (event, context) => {
@@ -162,53 +334,85 @@ exports.handler = async (event, context) => {
     console.log('Video URL:', clip.video_url);
 
     // Declare videoBuffer BEFORE the if/else
-    let videoBuffer;
+let videoBuffer;
 
-    // Handle Twitch clips with temporary download
-    if (clip.video_url && clip.video_url.includes('clips.twitch.tv/')) {
-        console.log('Processing Twitch clip:', clip.video_url);
-        
-        try {
-            const mp4Url = await getTwitchMP4Url(clip);
-            console.log('Got Twitch MP4 URL:', mp4Url);
-            
-            const videoResponse = await fetch(mp4Url);
-            if (!videoResponse.ok) {
-                throw new Error(`Failed to download Twitch clip: ${videoResponse.status}`);
-            }
-            
-            videoBuffer = await videoResponse.arrayBuffer();
-            console.log('Downloaded Twitch clip, size:', videoBuffer.byteLength);
-            
-        } catch (error) {
-            console.error('Twitch clip download error:', error);
-            throw new Error(`Failed to process Twitch clip: ${error.message}`);
-        }
-    } else {
-        // Regular video fetch for non-Twitch URLs
-        console.log('Fetching video from:', clip.video_url);
-        const videoResponse = await fetch(clip.video_url);
-        if (!videoResponse.ok) {
-            throw new Error(`Failed to fetch video: ${videoResponse.status}`);
-        }
-        
-        videoBuffer = await videoResponse.arrayBuffer();
-        console.log('Video size:', videoBuffer.byteLength, 'bytes');
-    }
-
-    // Prepare video metadata
-    const metadata = {
-      snippet: {
-        title: clip.title || `${clip.game} Gaming Highlight`,
-        description: `🎮 Epic ${clip.game} gameplay moment!\n\nAI Score: ${Math.round(clip.ai_score * 100)}%\nDuration: ${clip.duration}s\n\n🤖 Auto-generated by AutoStreamPro\n#${clip.game.replace(/\s+/g, '')} #Gaming #Highlights`,
-        tags: [clip.game, 'gaming', 'highlights', 'gameplay', 'autostreampro'],
-        categoryId: '20' // Gaming category
-      },
-      status: {
-        privacyStatus: 'public',
-        selfDeclaredMadeForKids: false
+// Handle different clip sources
+if (clip.video_url) {
+  // TWITCH CLIPS
+  if (clip.video_url.includes('twitch.tv') || clip.source_platform === 'twitch') {
+    console.log('Processing Twitch clip:', clip.video_url);
+    
+    try {
+      const mp4Url = await getTwitchMP4Url(clip);
+      console.log('Got Twitch MP4 URL:', mp4Url);
+      
+      const videoResponse = await fetch(mp4Url);
+      if (!videoResponse.ok) {
+        throw new Error(`Failed to download Twitch clip: ${videoResponse.status}`);
       }
-    };
+      
+      videoBuffer = await videoResponse.arrayBuffer();
+      console.log('Downloaded Twitch clip, size:', videoBuffer.byteLength);
+      
+    } catch (error) {
+      console.error('Twitch clip download error:', error);
+      throw new Error(`Failed to process Twitch clip: ${error.message}`);
+    }
+  
+  // KICK CLIPS
+  } else if (clip.video_url.includes('kick.com') || clip.source_platform === 'kick') {
+    console.log('Processing Kick clip:', clip.video_url);
+    
+    try {
+      const mp4Url = await getKickMP4Url(clip);
+      console.log('Got Kick MP4 URL:', mp4Url);
+      
+      const videoResponse = await fetch(mp4Url);
+      if (!videoResponse.ok) {
+        throw new Error(`Failed to download Kick clip: ${videoResponse.status}`);
+      }
+      
+      videoBuffer = await videoResponse.arrayBuffer();
+      console.log('Downloaded Kick clip, size:', videoBuffer.byteLength);
+      
+    } catch (error) {
+      console.error('Kick clip download error:', error);
+      throw new Error(`Failed to process Kick clip: ${error.message}`);
+    }
+  
+  // S3 URLs or direct URLs (including the mistakenly stored Supabase files)
+  } else {
+    console.log('Fetching video from URL:', clip.video_url);
+    const videoResponse = await fetch(clip.video_url);
+    if (!videoResponse.ok) {
+      throw new Error(`Failed to fetch video: ${videoResponse.status}`);
+    }
+    
+    videoBuffer = await videoResponse.arrayBuffer();
+    console.log('Video size:', videoBuffer.byteLength, 'bytes');
+  }
+} else {
+  throw new Error('No video URL provided');
+}
+
+   // Generate AI content for YouTube
+const aiContent = await generateAIContent(clip);
+console.log('Generated title:', aiContent.title);
+console.log('Tags count:', aiContent.tags.length);
+
+// Prepare video metadata with AI-generated content
+const metadata = {
+  snippet: {
+    title: aiContent.title,
+    description: aiContent.description,
+    tags: aiContent.tags.slice(0, 500), // YouTube has a 500 tag limit
+    categoryId: '20' // Gaming category
+  },
+  status: {
+    privacyStatus: 'public',
+    selfDeclaredMadeForKids: false
+  }
+};
 
     // YouTube multipart upload
     const boundary = '-------314159265358979323846';
