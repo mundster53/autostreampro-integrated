@@ -41,10 +41,9 @@
     "uuid": "^9.0.0",
     "moment": "^2.29.0",
     "lodash": "^4.17.21",
-    "sharp": "^0.32.0",
-    "canvas": "^2.11.0",
     "ws": "^8.14.0",
     "socket.io": "^4.7.0"
+    
   },
   "devDependencies": {
     "netlify-cli": "^17.0.0",

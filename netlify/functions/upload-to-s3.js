@@ -8,10 +8,10 @@ const supabase = createClient(
 );
 
 const s3Client = new S3Client({
-  region: process.env.AWS_REGION,
+  region: process.env.MY_AWS_REGION,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    accessKeyId: process.env.MY_AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.MY_AWS_SECRET_ACCESS_KEY
   }
 });
 
@@ -52,7 +52,7 @@ exports.handler = async (event, context) => {
       
       // Upload to S3
       const uploadCommand = new PutObjectCommand({
-        Bucket: process.env.S3_BUCKET_NAME,
+        Bucket: process.env.MY_S3_BUCKET_NAME,
         Key: s3Key,
         Body: videoBuffer,
         ContentType: 'video/mp4',
@@ -65,7 +65,7 @@ exports.handler = async (event, context) => {
       await s3Client.send(uploadCommand);
       
       // Generate public URL
-      const s3Url = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+      const s3Url = `https://${process.env.MY_S3_BUCKET_NAME}.s3.${process.env.MY_AWS_REGION}.amazonaws.com/${s3Key}`;
       
       // Update clip record with S3 URL if clipId provided
       if (clipId) {
@@ -75,7 +75,7 @@ exports.handler = async (event, context) => {
             video_url: s3Url,
             metadata: { 
               s3_key: s3Key,
-              s3_bucket: process.env.S3_BUCKET_NAME,
+              s3_bucket: process.env.MY_S3_BUCKET_NAME,
               storage_type: 's3'
             }
           })
@@ -117,7 +117,7 @@ exports.handler = async (event, context) => {
       
       if (s3Key) {
         const deleteCommand = new DeleteObjectCommand({
-          Bucket: process.env.S3_BUCKET_NAME,
+          Bucket: process.env.MY_S3_BUCKET_NAME,
           Key: s3Key
         });
         
@@ -156,7 +156,7 @@ exports.handler = async (event, context) => {
         
       if (clip?.metadata?.s3_key) {
         const command = new GetObjectCommand({
-          Bucket: process.env.S3_BUCKET_NAME,
+          Bucket: process.env.MY_S3_BUCKET_NAME,
           Key: clip.metadata.s3_key
         });
         
