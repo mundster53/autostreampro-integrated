@@ -462,7 +462,6 @@ if (clip.video_url) {
 const aiContent = await generateAIContent(clip);
 
 // CHECK IF THIS SHOULD BE A SHORT
-const isShort = clip.duration && clip.duration <= 60;
 
 // Modify title for Shorts
 if (isShort) {
@@ -568,7 +567,6 @@ const metadata = {
 
     console.log('Successfully uploaded to YouTube! Video ID:', realYouTubeId);
     // UPDATE DATABASE WITH YOUTUBE SUCCESS
-const isShort = clip.duration && clip.duration <= 60;
 
 await supabase
   .from('clips')
