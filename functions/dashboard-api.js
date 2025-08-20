@@ -459,38 +459,6 @@ async function generateClip(userId, streamData, supabase, headers) {
     }
 }
 
-        const { data, error } = await supabase
-            .from('clips')
-            .insert(clipData)
-            .select()
-            .single();
-
-        if (error) {
-            throw error;
-        }
-
-        return {
-            statusCode: 200,
-            headers,
-            body: JSON.stringify({
-                success: true,
-                message: 'Clip generated successfully',
-                clip: data
-            })
-        };
-
-    } catch (error) {
-        console.error('Error generating clip:', error);
-        return {
-            statusCode: 500,
-            headers,
-            body: JSON.stringify({
-                error: 'Failed to generate clip',
-                message: error.message
-            })
-        };
-    }
-}
 
 // Get analytics data
 async function getAnalytics(userId, timeframe, supabase, headers) {
@@ -636,6 +604,7 @@ async function getAutomationStatus(userId, supabase) {
             sentimentAnalysis: false
         };
     }
+}
     async function getKickClips(userId, supabase, headers) {
     try {
         const { data, error } = await supabase
