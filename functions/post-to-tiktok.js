@@ -48,7 +48,7 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({ error: 'Failed to post' })
         };
     }
-};st axios = require('axios');
+}; const axios = require('axios');
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
