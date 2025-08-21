@@ -69,6 +69,9 @@
 [functions."monitor-kick-streams-scheduled"]
   schedule = "*/5 * * * *"
 
+[functions."cleanupAllStorage"]
+  schedule = "*/30 * * * *"
+
 [[headers]]
   for = "/*"
   [headers.values]
