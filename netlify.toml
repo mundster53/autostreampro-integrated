@@ -77,6 +77,9 @@
 [functions."monitor-kick-streams-scheduled"]
   schedule = "*/5 * * * *"
 
+[functions."autoUploadClips"]
+  schedule = "*/5 * * * *"  # Upload to YouTube every 5 minutes
+
 [functions."cleanupAllStorage"]
   schedule = "*/30 * * * *"
 
