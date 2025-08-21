@@ -81,7 +81,7 @@ exports.handler = async (event, context) => {
               const key = url.pathname.substring(1);
               
               await s3.send(new DeleteObjectCommand({
-                Bucket: process.env.S3_BUCKET_NAME || 'autostreampro-temp-clips',
+                Bucket: process.env.MY_S3_BUCKET_NAME,  // CORRECTED
                 Key: key
               }));
               
@@ -136,7 +136,7 @@ exports.handler = async (event, context) => {
           const key = url.pathname.substring(1);
           
           await s3.send(new DeleteObjectCommand({
-            Bucket: process.env.S3_BUCKET_NAME || 'autostreampro-temp-clips',
+            Bucket: process.env.MY_S3_BUCKET_NAME,  // CORRECTED
             Key: key
           }));
           
