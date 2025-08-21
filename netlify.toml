@@ -66,6 +66,14 @@
   to = "/onboarding.html"
   status = 200
 
+# AUTOMATIC monitor check every minute
+[functions."autoStartMonitors"]
+  schedule = "* * * * *"
+
+# AUTOMATIC queue processing every 3 minutes
+[functions."autoProcessQueue"]  
+  schedule = "*/3 * * * *"
+
 [functions."monitor-kick-streams-scheduled"]
   schedule = "*/5 * * * *"
 
