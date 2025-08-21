@@ -237,7 +237,7 @@ exports.handler = async (event) => {
         }
 
         // Generate optimized metadata
-        const videoMetadata = generateVideoMetadata(clip);
+        const videoMetadata = formatVideoMetadataForYouTube(clip);
 
         // Upload to YouTube with retry logic
         let uploadResponse;
@@ -312,10 +312,10 @@ try {
         const { S3Client, DeleteObjectCommand } = require('@aws-sdk/client-s3');
         
         const s3 = new S3Client({
-            region: process.env.AWS_REGION || 'us-east-1',
+            region: process.env.MY_AWS_REGION || 'us-east-1',
             credentials: {
-                accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-                secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+                accessKeyId: process.env.MY_AWS_ACCESS_KEY_ID,
+                secretAccessKey: process.env.MY_AWS_SECRET_ACCESS_KEY
             }
         });
         
@@ -323,7 +323,7 @@ try {
         const key = url.pathname.substring(1);
         
         await s3.send(new DeleteObjectCommand({
-            Bucket: process.env.S3_BUCKET_NAME || 'autostreampro-temp-clips',
+            Bucket: process.env.MY_S3_BUCKET_NAME,
             Key: key
         }));
         
@@ -485,34 +485,21 @@ async function updateUserMetrics(userId, supabase) {
         });
 }
 
-function generateVideoMetadata(clip) {
-    // Smart title generation (max 100 chars for YouTube)
-    let title = clip.title || `Gaming Highlight - ${clip.game || 'Unknown Game'}`;
+function formatVideoMetadataForYouTube(clip) {
+    // Use the ALREADY GENERATED viral content from the database
+    let title = clip.viral_title || clip.title || `Gaming Highlight - ${clip.game || 'Unknown Game'}`;
     if (title.length > 100) {
         title = title.substring(0, 97) + '...';
     }
 
-    // Generate comprehensive description
-    const description = [
-        clip.description || 'Check out this amazing gaming moment!',
-        '',
-        `🎮 Game: ${clip.game || 'Unknown'}`,
-        `🔥 Viral Score: ${Math.round((clip.ai_score || 0.5) * 100)}%`,
-        `📅 Captured: ${new Date(clip.created_at).toLocaleDateString()}`,
-        '',
-        '🏷️ Tags:',
-        (clip.tags || ['gaming']).map(tag => `#${tag.replace(/\\s+/g, '')}`).join(' '),
-        '',
-        '👉 Follow for more epic gaming moments!',
-        '',
-        'Powered by AutoStreamPro - AI-driven clip detection and publishing'
-    ].join('\\n');
+    // Use the ALREADY GENERATED viral description
+    const description = clip.viral_description || clip.description || 'Check out this amazing gaming moment!';
 
-    // Generate tags (max 500 chars total, max 30 tags)
-    const tags = clip.tags || ['gaming', 'highlights', clip.game?.toLowerCase() || 'gameplay'];
+    // Use the ALREADY GENERATED viral tags
+    const tags = clip.viral_tags || clip.tags || ['gaming', 'highlights', clip.game?.toLowerCase() || 'gameplay'];
     const processedTags = tags
         .slice(0, 30)
-        .map(tag => tag.toLowerCase().replace(/[^a-z0-9\\s]/g, '').trim())
+        .map(tag => tag.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim())
         .filter(tag => tag.length > 0);
 
     return {
