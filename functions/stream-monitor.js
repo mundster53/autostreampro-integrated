@@ -3,7 +3,7 @@
 // Purpose: Monitor Twitch streams and detect clips
 
 const fetch = require('node-fetch');
-const ClipCreator = require('../services/clip-creator');
+// const ClipCreator = require('../services/clip-creator');
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 
 class StreamMonitor {
@@ -101,6 +101,8 @@ class StreamMonitor {
     }
 
     async checkAllStreams() {
+        console.log('[StreamMonitor] DISABLED - Using Railway version');
+    return;
         try {
             // Get all active Twitch connections
             const { data: connections, error } = await this.supabase
