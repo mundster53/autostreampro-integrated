@@ -72,6 +72,9 @@
 [functions."cleanupAllStorage"]
   schedule = "*/30 * * * *"
 
+[functions."autoFixMissingViral"]
+  schedule = "*/15 * * * *" 
+
 [[headers]]
   for = "/*"
   [headers.values]
