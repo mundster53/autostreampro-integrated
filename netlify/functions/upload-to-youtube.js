@@ -304,16 +304,61 @@ exports.handler = async (event) => {
         // Record upload for rate limiting
         await recordUpload(clip.user_id, supabase);
 
-        // Delete from storage after successful upload
+        // Delete from storage after successful upload (handles BOTH Supabase and S3)
+try {
+    // Check if it's an S3 URL
+    if (clip.video_url && clip.video_url.includes('s3')) {
+        // DELETE FROM S3
+        const { S3Client, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+        
+        const s3 = new S3Client({
+            region: process.env.AWS_REGION || 'us-east-1',
+            credentials: {
+                accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+                secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+            }
+        });
+        
+        const url = new URL(clip.video_url);
+        const key = url.pathname.substring(1);
+        
+        await s3.send(new DeleteObjectCommand({
+            Bucket: process.env.S3_BUCKET_NAME || 'autostreampro-temp-clips',
+            Key: key
+        }));
+        
+        console.log('Deleted from S3:', key);
+        
+    } else if (clip.video_url) {
+        // DELETE FROM SUPABASE STORAGE
         try {
             await supabase.storage
                 .from('clips')
                 .remove([clip.video_url]);
-            console.log('Deleted video from storage:', clip.video_url);
-        } catch (deleteError) {
-            console.error('Failed to delete from storage:', deleteError);
-            // Don't fail the whole operation if delete fails
+            console.log('Deleted from Supabase storage:', clip.video_url);
+        } catch (supabaseError) {
+            // Try alternative path format if first attempt fails
+            const path = clip.video_url.split('/').pop();
+            await supabase.storage
+                .from('clips')
+                .remove([path]);
+            console.log('Deleted from Supabase storage (retry):', path);
         }
+    }
+    
+    // Mark as deleted in database (for both storage types)
+    await supabase
+        .from('clips')
+        .update({ 
+            deleted_from_storage: true,
+            video_url: null 
+        })
+        .eq('id', clipId);
+        
+} catch (deleteError) {
+    console.error('Failed to delete from storage:', deleteError);
+    // Don't fail the whole operation if delete fails
+}
 
         // Update user metrics
         await updateUserMetrics(clip.user_id, supabase);

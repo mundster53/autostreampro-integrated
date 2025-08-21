@@ -1,5 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 const OpenAI = require('openai');
+const { S3Client, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -111,8 +112,9 @@ exports.handler = async (event, context) => {
       })
       .eq('id', clipId);
 
-    // Automatically generate viral content for good clips
+    // DECISION POINT: Good or bad clip?
     if (finalScore >= viralThreshold) {
+      // GOOD CLIP - Generate viral content and upload
       console.log('Score is good! Triggering viral content generation...');
       
       try {
@@ -152,9 +154,25 @@ exports.handler = async (event, context) => {
           console.log('Viral generation skipped:', viralResult.message);
         }
       } catch (viralError) {
-        // Don't let viral generation failure break the main flow
         console.error('Viral generation failed, but continuing:', viralError);
       }
+    } else {
+      // BAD CLIP - DELETE FROM STORAGE
+      console.log(`Score ${finalScore} < ${viralThreshold}, deleting from storage...`);
+      
+      // Delete from storage (S3 or Supabase)
+      await deleteFromStorage(clip);
+      
+      // Mark as rejected
+      await supabase
+        .from('clips')
+        .update({ 
+          status: 'rejected_low_score',
+          upload_status: 'rejected'
+        })
+        .eq('id', clipId);
+        
+      console.log(`Clip rejected and deleted: ${clipId}`);
     }
     
     return {
@@ -258,11 +276,11 @@ function analyzeMetadata(clip) {
   
   // Duration analysis (15-45 seconds is optimal)
   if (clip.duration >= 15 && clip.duration <= 45) {
-    score += 0.15; // Increased from 0.1
+    score += 0.15;
   } else if (clip.duration > 10 && clip.duration <= 60) {
-    score += 0.05; // Partial credit
+    score += 0.05;
   } else if (clip.duration > 60) {
-    score -= 0.05; // Reduced penalty
+    score -= 0.05;
   }
   
   // Game-specific boosts - expanded list
@@ -273,13 +291,13 @@ function analyzeMetadata(clip) {
   const gameLower = (clip.game || '').toLowerCase();
   
   if (viralGames.some(game => gameLower.includes(game))) {
-    score += 0.15; // Increased from 0.1
+    score += 0.15;
   }
   
   // Special boost for action games
   if (gameLower.includes('helldivers') || gameLower.includes('warzone') || 
       gameLower.includes('apex') || gameLower.includes('valorant')) {
-    score += 0.1; // Action game bonus
+    score += 0.1;
   }
   
   return Math.max(0, Math.min(1, score));
@@ -338,5 +356,64 @@ async function generateDetailedAnalysis(clip, score, visualReason) {
       summary: `Score: ${(score * 100).toFixed(0)}%. ${visualReason}`,
       timestamp: new Date().toISOString()
     };
+  }
+}
+
+async function deleteFromStorage(clip) {
+  try {
+    if (!clip.video_url) {
+      console.log('No video URL to delete');
+      return;
+    }
+    
+    // Check if it's S3
+    if (clip.video_url.includes('s3')) {
+      // Delete from S3
+      const s3 = new S3Client({
+        region: process.env.AWS_REGION || 'us-east-1',
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+        }
+      });
+      
+      const url = new URL(clip.video_url);
+      const key = url.pathname.substring(1);
+      
+      await s3.send(new DeleteObjectCommand({
+        Bucket: process.env.MY_S3_BUCKET_NAME,  // YOUR ACTUAL ENV VARIABLE
+        Key: key
+      }));
+      
+      console.log(`Deleted from S3: ${key}`);
+      
+    } else {
+      // Delete from Supabase storage
+      try {
+        await supabase.storage
+          .from('clips')
+          .remove([clip.video_url]);
+      } catch (e) {
+        // Try alternative path
+        const path = clip.video_url.split('/').pop();
+        await supabase.storage
+          .from('clips')
+          .remove([path]);
+      }
+      
+      console.log(`Deleted from Supabase storage: ${clip.video_url}`);
+    }
+    
+    // Update database
+    await supabase
+      .from('clips')
+      .update({ 
+        deleted_from_storage: true,
+        video_url: null
+      })
+      .eq('id', clip.id);
+    
+  } catch (error) {
+    console.error('Storage deletion failed:', error);
   }
 }
