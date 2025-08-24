@@ -632,43 +632,25 @@ async function savePlatformConnection(platform, data) {
             }
             
            if (state === 'youtube') {
-    console.log('1. YouTube OAuth return detected');
     try {
-        // Check if user exists
-        const { data: { user } } = await supabase.auth.getUser();
-        console.log('2. Current user:', user?.email || 'NO USER');
-        
         const response = await fetch('/.netlify/functions/youtube-auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ code })
         });
         
-        console.log('3. youtube-auth response:', response.status);
         const data = await response.json();
-        console.log('4. Tokens received:', data.access_token ? 'YES' : 'NO');
-        
         if (data.access_token) {
-            // Try refresh
-            const { error: refreshError } = await supabase.auth.refreshSession();
-            console.log('5. Session refresh:', refreshError || 'SUCCESS');
-            
-            // Check session exists
-            const { data: { session } } = await supabase.auth.getSession();
-            console.log('6. Session exists:', session ? 'YES' : 'NO');
-            console.log('7. Session token:', session?.access_token ? 'EXISTS' : 'MISSING');
-            
             await savePlatformConnection('youtube', {
-    accessToken: data.access_token,
-    refreshToken: data.refresh_token,
-    platformUserId: data.channel_id,  // Changed from userID to platformUserId
-    username: data.channel_title
-});
-            console.log('8. Save completed');
+                accessToken: data.access_token,
+                refreshToken: data.refresh_token,
+                platformUserId: data.channel_id || 'youtube',
+                username: data.channel_title || 'YouTube Channel'
+            });
         }
     } catch (error) {
-        console.error('FAILED AT:', error);
-        showError('Failed to connect YouTube: ' + error.message);
+        console.error('YouTube error:', error);
+        showError('Failed to connect YouTube');
     }
 }
 
