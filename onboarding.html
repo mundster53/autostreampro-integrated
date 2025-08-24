@@ -632,26 +632,26 @@ async function savePlatformConnection(platform, data) {
             }
             
             if (state === 'youtube') {
-                try {
-                    const response = await fetch('/.netlify/functions/youtube-auth', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code })
-                    });
-                    
-                    const data = await response.json();
-                    if (data.access_token) {
-                        await savePlatformConnection('youtube', {
-                            accessToken: data.access_token,
-                            refreshToken: data.refresh_token,
-                            userID: data.channel_id,
-                            username: data.channel_title
-                        });
-                    }
-                } catch (error) {
-                    showError('Failed to connect YouTube');
-                }
-            }
+    try {
+        const response = await fetch('/.netlify/functions/youtube-auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code })
+        });
+        
+        const data = await response.json();
+        if (data.access_token) {
+            await savePlatformConnection('youtube', {
+                accessToken: data.access_token,
+                refreshToken: data.refresh_token,
+                userID: data.channel_id,
+                username: data.channel_title
+            });
+        }
+    } catch (error) {
+        showError('Failed to connect YouTube');
+    }
+}
 
             if (state === 'tiktok') {
                 try {
