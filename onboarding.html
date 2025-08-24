@@ -551,7 +551,7 @@ async function savePlatformConnection(platform, data) {
                 platformUserId: data.userID || data.user_id || platform,
                 accessToken: data.accessToken || data.access_token,
                 refreshToken: data.refreshToken || data.refresh_token || '',
-                platform_username: data.username || data.channel_title || platform
+                username: data.username || data.channel_title || platform
             })
         });
         
