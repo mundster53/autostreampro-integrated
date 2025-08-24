@@ -631,25 +631,44 @@ async function savePlatformConnection(platform, data) {
                 }
             }
             
-            if (state === 'youtube') {
+           if (state === 'youtube') {
+    console.log('1. YouTube OAuth return detected');
     try {
+        // Check if user exists
+        const { data: { user } } = await supabase.auth.getUser();
+        console.log('2. Current user:', user?.email || 'NO USER');
+        
         const response = await fetch('/.netlify/functions/youtube-auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ code })
         });
         
+        console.log('3. youtube-auth response:', response.status);
         const data = await response.json();
+        console.log('4. Tokens received:', data.access_token ? 'YES' : 'NO');
+        
         if (data.access_token) {
+            // Try refresh
+            const { error: refreshError } = await supabase.auth.refreshSession();
+            console.log('5. Session refresh:', refreshError || 'SUCCESS');
+            
+            // Check session exists
+            const { data: { session } } = await supabase.auth.getSession();
+            console.log('6. Session exists:', session ? 'YES' : 'NO');
+            console.log('7. Session token:', session?.access_token ? 'EXISTS' : 'MISSING');
+            
             await savePlatformConnection('youtube', {
                 accessToken: data.access_token,
                 refreshToken: data.refresh_token,
                 userID: data.channel_id,
                 username: data.channel_title
             });
+            console.log('8. Save completed');
         }
     } catch (error) {
-        showError('Failed to connect YouTube');
+        console.error('FAILED AT:', error);
+        showError('Failed to connect YouTube: ' + error.message);
     }
 }
 
