@@ -680,28 +680,46 @@ async function savePlatformConnection(platform, data) {
         }
         
         // Check existing connections
-        async function checkConnections() {
-            const user = await getCurrentUser();
-            if (!user) return;
-            
-            const { data, error } = await supabase
-                .from('streaming_connections')
-                .select('platform')
-                .eq('user_id', user.id);
-            
-            if (data) {
-                data.forEach(conn => {
-                    const card = document.querySelector(`[data-platform="${conn.platform}"]`);
-                    if (card) {
-                        card.classList.add('connected');
-                        const btn = card.querySelector('.connect-btn');
-                        btn.innerHTML = '<span class="connected-status">✓ Connected</span>';
-                        btn.disabled = true;
-                    }
-                });
+        // Check existing connections
+// Check existing connections
+async function checkConnections() {
+    const user = await getCurrentUser();
+    if (!user) return;
+    
+    // FORCE FRESH CHECK - no caching
+    const { data, error } = await supabase
+        .from('streaming_connections')
+        .select('platform')
+        .eq('user_id', user.id)
+        .eq('is_active', true);  // Only active connections
+    
+    // First, reset ALL platforms to disconnected
+    const allPlatforms = ['youtube', 'twitch', 'kick', 'tiktok'];
+    allPlatforms.forEach(platform => {
+        const card = document.querySelector(`[data-platform="${platform}"]`);
+        if (card) {
+            card.classList.remove('connected');
+            const btn = card.querySelector('.connect-btn');
+            if (btn) {
+                btn.innerHTML = `Connect ${platform.charAt(0).toUpperCase() + platform.slice(1)}`;
+                btn.disabled = false;
             }
         }
-        
+    });
+    
+    // Then only mark as connected what's actually in database
+    if (data) {
+        data.forEach(conn => {
+            const card = document.querySelector(`[data-platform="${conn.platform}"]`);
+            if (card) {
+                card.classList.add('connected');
+                const btn = card.querySelector('.connect-btn');
+                btn.innerHTML = '<span class="connected-status">✓ Connected</span>';
+                btn.disabled = true;
+            }
+        });
+    }
+}    
         // Save configuration
         document.getElementById('saveBtn').addEventListener('click', async () => {
             const user = await getCurrentUser();
@@ -825,6 +843,8 @@ async function disconnectYouTube() {
             
             // Update the connection counter if you have one
             updateConnectedPlatforms();
+            // Force recheck connections from database
+            await checkConnections();
         } else {
             const error = await response.json();
             alert('Failed to disconnect YouTube: ' + error.error);
