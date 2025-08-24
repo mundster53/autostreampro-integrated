@@ -659,11 +659,11 @@ async function savePlatformConnection(platform, data) {
             console.log('7. Session token:', session?.access_token ? 'EXISTS' : 'MISSING');
             
             await savePlatformConnection('youtube', {
-                accessToken: data.access_token,
-                refreshToken: data.refresh_token,
-                userID: data.channel_id,
-                username: data.channel_title
-            });
+    accessToken: data.access_token,
+    refreshToken: data.refresh_token,
+    platformUserId: data.channel_id,  // Changed from userID to platformUserId
+    username: data.channel_title
+});
             console.log('8. Save completed');
         }
     } catch (error) {
