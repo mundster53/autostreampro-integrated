@@ -752,20 +752,27 @@ async function checkConnections() {
         });
     }
 }    
-        // Save configuration
         document.getElementById('saveBtn').addEventListener('click', async () => {
-            const user = await getCurrentUser();
-            if (!user) return;
-            
-            const config = {
-                user_id: user.id,
-                clip_length: document.getElementById('clipLength').value,
-                content_type: document.getElementById('contentType').value,
-                auto_clips: document.getElementById('autoClips').checked,
-                auto_titles: document.getElementById('autoTitles').checked,
-                auto_post: document.getElementById('autoPost').checked,
-                updated_at: new Date()
-            };
+    const user = await getCurrentUser();
+    if (!user) return;
+    
+    // First save preferences
+    const config = {
+        user_id: user.id,
+        clip_length: document.getElementById('clipLength').value,
+        content_type: document.getElementById('contentType').value,
+        auto_clips: document.getElementById('autoClips').checked,
+        auto_titles: document.getElementById('autoTitles').checked,
+        auto_post: document.getElementById('autoPost').checked,
+        updated_at: new Date()
+    };
+    
+    // Then save channel URLs to user_profiles
+    const channelData = {
+        youtube_channel_url: document.getElementById('youtube_channel_url').value,
+        twitch_channel_url: document.getElementById('twitch_channel_url').value,
+        kick_channel_url: document.getElementById('kick_channel_url').value
+    };
             
             try {
                 const { error } = await supabase
@@ -773,6 +780,17 @@ async function checkConnections() {
                     .upsert(config, { onConflict: 'user_id' });
                 
                 if (error) throw error;
+
+                // ADD THIS PART - Save channel URLs to user_profiles
+    const { error: profileError } = await supabase
+        .from('user_profiles')
+        .update(channelData)
+        .eq('user_id', user.id);
+    
+    if (profileError) {
+        console.error('Error saving channel URLs:', profileError);
+    }
+    // END OF ADDITION
                 
                 showSuccess('Setup complete! Redirecting to dashboard...');
                 setTimeout(() => {
