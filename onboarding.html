@@ -393,6 +393,27 @@
                         <option value="esports">Esports</option>
                     </select>
                 </div>
+
+                <!-- Add this after the contentType form-group, around line 323 -->
+<div class="form-group">
+    <label for="youtube_channel_url">Your YouTube Channel URL</label>
+    <input type="url" 
+           id="youtube_channel_url"
+           class="form-control"
+           placeholder="https://youtube.com/@yourchannel"
+           style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px;">
+    <small style="color: #666; font-size: 12px;">Where viewers will be directed from your clips</small>
+</div>
+
+<div class="form-group">
+    <label for="twitch_channel_url">Your Twitch Channel URL</label>
+    <input type="url" 
+           id="twitch_channel_url"
+           class="form-control"
+           placeholder="https://twitch.tv/yourchannel"
+           style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px;">
+    <small style="color: #666; font-size: 12px;">Your main streaming channel</small>
+</div>
                 
                 <div class="form-group">
                     <label>AI Features</label>
