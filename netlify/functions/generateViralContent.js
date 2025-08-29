@@ -54,37 +54,43 @@ const { data: clip, error } = await supabase
 
     try {
       // Generate viral content with OpenAI
-      const viralResponse = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [{
-          role: "system",
-          content: `You are a viral YouTube gaming content expert. Create unique, clickable content that gets views. Be creative and avoid templates.`
-        }, {
-          role: "user",
-          content: `Create viral YouTube content for this gaming clip:
-          
-          Game: ${clip.game || 'Gaming'}
-          Original Title: ${clip.title || 'Gaming Clip'}
-          Duration: ${clip.duration || 30} seconds
-          AI Score: ${Math.round(clip.ai_score * 100)}%
-          
-          Generate:
-          1. A catchy YouTube title (max 60 chars, use CAPS strategically)
-          2. 10-15 relevant tags/keywords (mix of specific and trending)
-          3. An engaging description (2-3 paragraphs with emojis)
-          
-          Make each unique based on the game and content. Be specific to ${clip.game}.
-          
-          Return as JSON:
-          {
-            "title": "your title here",
-            "tags": ["tag1", "tag2", ...],
-            "description": "your description here"
-          }`
-        }],
-        max_tokens: 500,
-        temperature: 0.8
-      });
+const channelUrls = clip.user_profiles || {};
+const primaryChannel = channelUrls.twitch_channel_url || channelUrls.youtube_channel_url || channelUrls.kick_channel_url || '';
+
+const viralResponse = await openai.chat.completions.create({
+  model: "gpt-3.5-turbo",
+  messages: [{
+    role: "system",
+    content: `You are an expert in YouTube and Google gaming SEO. You create highly clickable, unique, keyword-rich content that ranks for search and attracts viewers. Avoid generic templates; use trending, relevant topics and viral strategies.`
+  }, {
+    role: "user",
+    content: `Create SEO-optimized YouTube content for this gaming clip:
+
+Game: ${clip.game || 'Gaming'}
+Original Title: ${clip.title || 'Gaming Clip'}
+Duration: ${clip.duration || 30} seconds
+AI Score: ${Math.round(clip.ai_score * 100)}%
+Channel URL: ${primaryChannel}
+
+REQUIREMENTS:
+1. Title (max 60 chars): Include "${clip.game}" explicitly. Use psychological triggers (curiosity, urgency, exclusivity)
+2. Tags (15-20): Mix of exact game name, platform combos ("${clip.game} PC"), long-tail keywords, trending terms
+3. Description: 
+   - MUST start with: "🔴 Watch LIVE: ${primaryChannel}"
+   - Then 2-3 paragraphs with natural keyword placement
+   - Include timestamps if relevant
+   - End with channel promotion
+
+Return as JSON:
+{
+  "title": "your title here",
+  "tags": ["tag1", "tag2", ...],
+  "description": "your description here"
+}`
+  }],
+  max_tokens: 600,
+  temperature: 0.85
+});
 
       const viralContent = JSON.parse(viralResponse.choices[0].message.content);
       
