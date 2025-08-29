@@ -21,12 +21,19 @@ exports.handler = async (event, context) => {
   try {
     const { clipId } = JSON.parse(event.body || '{}');
     
-    // Get clip data
-    const { data: clip, error } = await supabase
-      .from('clips')
-      .select('*')
-      .eq('id', clipId)
-      .single();
+    // Get clip data with user's channel URLs
+const { data: clip, error } = await supabase
+  .from('clips')
+  .select(`
+    *,
+    user_profiles (
+      youtube_channel_url,
+      twitch_channel_url,
+      kick_channel_url
+    )
+  `)
+  .eq('id', clipId)
+  .single();
       
     if (error || !clip) {
       throw new Error('Clip not found');
