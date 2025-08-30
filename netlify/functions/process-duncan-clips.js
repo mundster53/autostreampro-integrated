@@ -250,13 +250,36 @@ exports.handler = async (event, context) => {
           viral_description: aiContent.description
         };
         
-        // Call upload-to-youtube function
-        console.log('Uploading to YouTube...');
-        const uploadResponse = await fetch(`${process.env.URL || 'https://beautiful-rugelach-bda4b4.netlify.app'}/.netlify/functions/upload-to-youtube`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ clipId: clip.id })
-        });
+        // Add to publishing queue instead of direct upload
+console.log('Adding to publishing queue...');
+const { error: queueError } = await supabase
+  .from('publishing_queue')
+  .insert({
+    clip_id: clip.id,
+    platform: 'youtube',
+    status: 'pending',
+    priority: Math.floor(clip.ai_score * 10),
+    created_at: new Date().toISOString()
+  });
+
+if (queueError) {
+  throw queueError;
+}
+
+console.log(`✅ Added to publishing queue with priority ${Math.floor(clip.ai_score * 10)}`);
+
+// Update clip status
+await supabase
+  .from('clips')
+  .update({ status: 'queued' })
+  .eq('id', clip.id);
+
+results.push({
+  clipId: clip.id,
+  success: true,
+  queued: true,
+  priority: Math.floor(clip.ai_score * 10)
+});
         
         const uploadResult = await uploadResponse.json();
         

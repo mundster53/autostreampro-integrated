@@ -166,23 +166,27 @@ exports.handler = async (event, context) => {
         }
       }
 
-      return {
-        statusCode: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          success: true,
-          access_token: tokenData.access_token,
-          refresh_token: tokenData.refresh_token,
-          expires_in: tokenData.expires_in,
-          token_type: tokenData.token_type,
-          scope: tokenData.scope,
-          channel_id: channelInfo.channel_id,
-          channel_title: channelInfo.channel_title
-        })
-      };
+      // Calculate actual expiration time
+const expiresAt = new Date(Date.now() + (tokenData.expires_in * 1000)).toISOString();
+
+return {
+  statusCode: 200,
+  headers: {
+    'Access-Control-Allow-Origin': '*',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    success: true,
+    access_token: tokenData.access_token,
+    refresh_token: tokenData.refresh_token,
+    expires_in: tokenData.expires_in,
+    expires_at: expiresAt,  // ADD THIS - actual timestamp when token expires
+    token_type: tokenData.token_type,
+    scope: tokenData.scope,
+    channel_id: channelInfo.channel_id,
+    channel_title: channelInfo.channel_title
+  })
+};
 
     } catch (error) {
       console.error('YouTube auth function error:', error);
