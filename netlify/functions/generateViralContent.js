@@ -61,7 +61,7 @@ const viralResponse = await openai.chat.completions.create({
   model: "gpt-3.5-turbo",
   messages: [{
     role: "system",
-    content: `You are an expert in YouTube and Google gaming SEO. You create highly clickable, unique, keyword-rich content that ranks for search and attracts viewers. Avoid generic templates; use trending, relevant topics and viral strategies.`
+    content: `You are an expert in YouTube and Google gaming SEO. You create highly clickable, unique, keyword-rich content that ranks for search and attracts viewers. Avoid generic templates; use trending, relevant topics and viral strategies. Focus on maximizing visibility and engagement for gaming content.`
   }, {
     role: "user",
     content: `Create SEO-optimized YouTube content for this gaming clip:
@@ -72,12 +72,18 @@ Duration: ${clip.duration || 30} seconds
 AI Score: ${Math.round(clip.ai_score * 100)}%
 Channel URL: ${primaryChannel}
 
+GOALS:
+- Maximize search visibility on YouTube and Google
+- Use high-performing keywords and phrases for ${clip.game}
+- Incorporate trending topics and hashtags for the gaming community
+- Write to increase both click-through rate and watch time
+
 REQUIREMENTS:
 1. Title (max 60 chars): Include "${clip.game}" explicitly. Use psychological triggers (curiosity, urgency, exclusivity)
 2. Tags (15-20): Mix of exact game name, platform combos ("${clip.game} PC"), long-tail keywords, trending terms
 3. Description: 
    - MUST start with: "🔴 Watch LIVE: ${primaryChannel}"
-   - Then 2-3 paragraphs with natural keyword placement
+   - Then 2-3 paragraphs with natural keyword placement, use emojis; start with a hook to boost watch time, mention game, highlights, and appeal to gamers searching for ${clip.game}-related clips)
    - Include timestamps if relevant
    - End with channel promotion
 
