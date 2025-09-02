@@ -50,6 +50,46 @@ exports.handler = async (event, context) => {
         errors.push({ clipId: clip.id, error: deleteError.message });
       }
     }
+
+    // ADD THIS AFTER THE REJECTED CLIPS SECTION
+// Clean up files from successfully uploaded clips
+const { data: uploadedClips, error: uploadError } = await supabase
+  .from('clips')
+  .select('id, video_url')
+  .not('youtube_id', 'is', null)  // Has been uploaded
+  .eq('deleted_from_storage', false)  // But file not deleted
+  .not('video_url', 'is', null)  // Still has a URL
+  .like('video_url', '%supabase%')  // Supabase storage only
+  .limit(50);
+
+if (!uploadError && uploadedClips) {
+  for (const clip of uploadedClips) {
+    try {
+      // Extract filename from URL
+      const filename = clip.video_url.split('/').pop();
+      
+      const { error } = await supabase.storage
+        .from('clips')
+        .remove([filename]);
+      
+      if (!error) {
+        // Mark as deleted
+        await supabase
+          .from('clips')
+          .update({ 
+            deleted_from_storage: true,
+            video_url: null
+          })
+          .eq('id', clip.id);
+          
+        deletedCount++;
+        console.log(`[Cleanup] Deleted uploaded clip file: ${filename}`);
+      }
+    } catch (e) {
+      errors.push({ clipId: clip.id, error: e.message });
+    }
+  }
+}
     
     // Also clean up very old rejected clips from database (older than 7 days)
     const sevenDaysAgo = new Date();
