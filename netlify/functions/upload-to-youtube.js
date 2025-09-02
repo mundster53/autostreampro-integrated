@@ -199,9 +199,15 @@ exports.handler = async (event) => {
         });
 
         // Download video from storage
-        const { data: fileData, error: downloadError } = await supabase.storage
-            .from('clips')
-            .download(clip.video_url);
+let downloadPath = clip.video_url;
+if (clip.video_url.includes('supabase.co')) {
+    // Extract just the filename from the full URL
+    downloadPath = clip.video_url.split('/').pop();
+}
+
+const { data: fileData, error: downloadError } = await supabase.storage
+    .from('clips')
+    .download(downloadPath);
 
         if (downloadError) {
             console.error('Error downloading video:', downloadError);
