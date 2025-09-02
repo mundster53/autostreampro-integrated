@@ -18,6 +18,10 @@ const s3 = new S3Client({
 exports.handler = async (event, context) => {
   console.log('[Cleanup] Starting storage cleanup...');
   
+  let deletedCount = 0;
+  let errors = [];
+  let dbDeleted = 0;
+  
   try {
     // Find rejected clips that haven't been deleted
     const { data: rejectedClips, error } = await supabase
@@ -31,9 +35,6 @@ exports.handler = async (event, context) => {
     if (error) {
       throw error;
     }
-    
-    let deletedCount = 0;
-    let errors = [];
     
     for (const clip of rejectedClips || []) {
       try {
@@ -51,45 +52,46 @@ exports.handler = async (event, context) => {
       }
     }
 
-    // ADD THIS AFTER THE REJECTED CLIPS SECTION
-// Clean up files from successfully uploaded clips
-const { data: uploadedClips, error: uploadError } = await supabase
-  .from('clips')
-  .select('id, video_url')
-  .not('youtube_id', 'is', null)  // Has been uploaded
-  .eq('deleted_from_storage', false)  // But file not deleted
-  .not('video_url', 'is', null)  // Still has a URL
-  .like('video_url', '%supabase%')  // Supabase storage only
-  .limit(50);
+    // Clean up files from successfully uploaded clips
+    const { data: uploadedClips, error: uploadError } = await supabase
+      .from('clips')
+      .select('id, video_url')
+      .not('youtube_id', 'is', null)  // Has been uploaded
+      .eq('deleted_from_storage', false)  // But file not deleted
+      .not('video_url', 'is', null)  // Still has a URL
+      .like('video_url', '%supabase%')  // Supabase storage only
+      .limit(50);
 
-if (!uploadError && uploadedClips) {
-  for (const clip of uploadedClips) {
-    try {
-      // Extract filename from URL
-      const filename = clip.video_url.split('/').pop();
-      
-      const { error } = await supabase.storage
-        .from('clips')
-        .remove([filename]);
-      
-      if (!error) {
-        // Mark as deleted
-        await supabase
-          .from('clips')
-          .update({ 
-            deleted_from_storage: true,
-            video_url: null
-          })
-          .eq('id', clip.id);
+    if (!uploadError && uploadedClips) {
+      for (const clip of uploadedClips) {
+        try {
+          // Extract filename from URL
+          const filename = clip.video_url.split('/').pop();
           
-        deletedCount++;
-        console.log(`[Cleanup] Deleted uploaded clip file: ${filename}`);
+          const { error } = await supabase.storage
+            .from('clips')
+            .remove([filename]);
+          
+          if (!error) {
+            // Mark as deleted
+            await supabase
+              .from('clips')
+              .update({ 
+                deleted_from_storage: true,
+                video_url: null
+              })
+              .eq('id', clip.id);
+              
+            deletedCount++;
+            console.log(`[Cleanup] Deleted uploaded clip file: ${filename}`);
+          } else {
+            errors.push({ clipId: clip.id, error: error.message });
+          }
+        } catch (e) {
+          errors.push({ clipId: clip.id, error: e.message });
+        }
       }
-    } catch (e) {
-      errors.push({ clipId: clip.id, error: e.message });
     }
-  }
-}
     
     // Also clean up very old rejected clips from database (older than 7 days)
     const sevenDaysAgo = new Date();
@@ -102,12 +104,16 @@ if (!uploadError && uploadedClips) {
       .lt('created_at', sevenDaysAgo.toISOString())
       .select('id');
     
-    const dbDeleted = oldClips ? oldClips.length : 0;
+    dbDeleted = oldClips ? oldClips.length : 0;
     
     console.log(`[Cleanup] Complete - Storage: ${deletedCount}, Database: ${dbDeleted}`);
     
     return {
       statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
         success: true,
         storageDeleted: deletedCount,
@@ -120,6 +126,10 @@ if (!uploadError && uploadedClips) {
     console.error('[Cleanup] Error:', error);
     return {
       statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
         success: false,
         error: error.message
@@ -133,11 +143,10 @@ async function deleteFromS3(clip) {
   const key = url.pathname.substring(1);
   
   await s3.send(new DeleteObjectCommand({
-    Bucket: process.env.MY_S3_BUCKET_NAME,  // YOUR ACTUAL BUCKET
+    Bucket: process.env.MY_S3_BUCKET_NAME,
     Key: key
   }));
   
-  // Mark as deleted in database
   await supabase
     .from('clips')
     .update({ 
@@ -151,18 +160,19 @@ async function deleteFromS3(clip) {
 
 async function deleteFromSupabase(clip) {
   try {
-    await supabase.storage
+    const filename = clip.video_url.split('/').pop();
+    
+    const { error } = await supabase.storage
       .from('clips')
-      .remove([clip.video_url]);
+      .remove([filename]);
+      
+    if (error) throw error;
+    
   } catch (e) {
-    // Try alternative path format
-    const path = clip.video_url.split('/').pop();
-    await supabase.storage
-      .from('clips')
-      .remove([path]);
+    console.error(`Error deleting ${clip.video_url}:`, e);
+    throw e;
   }
   
-  // Mark as deleted in database
   await supabase
     .from('clips')
     .update({ 
