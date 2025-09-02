@@ -36,7 +36,7 @@ const { data: pendingUploads, error } = await supabase
   .eq('platform', 'youtube')
   .eq('status', 'pending')
   .gte('clips.ai_score', 0.40) // Only process clips with score >= 0.40
-  .order('clips.ai_score', { ascending: false }) // Process best clips first
+  .order('ai_score', { ascending: false, foreignTable: 'clips' }) // Process best clips first
   .limit(5);
 
 if (error) throw error;
