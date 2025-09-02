@@ -338,10 +338,13 @@ try {
     } else if (clip.video_url) {
         // DELETE FROM SUPABASE STORAGE
         try {
-            await supabase.storage
-                .from('clips')
-                .remove([clip.video_url]);
-            console.log('Deleted from Supabase storage:', clip.video_url);
+         // Extract just the filename
+const filename = clip.video_url.split('/').pop();
+
+await supabase.storage
+    .from('clips')
+    .remove([filename]);
+console.log('Deleted from Supabase storage:', filename);
         } catch (supabaseError) {
             // Try alternative path format if first attempt fails
             const path = clip.video_url.split('/').pop();
