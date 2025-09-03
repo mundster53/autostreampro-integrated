@@ -1101,7 +1101,7 @@ async function toggleGlobalAutoPublish() {
             .upsert({
                 user_id: user.id,
                 auto_publish_enabled: enabled,
-                viral_threshold: parseFloat(document.getElementById('viralThresholdSlider').value) / 100,
+                viral_threshold: parseFloat(document.getElementById('thresholdSlider').value) / 100,
                 updated_at: new Date().toISOString()
             }, {
                 onConflict: 'user_id'
