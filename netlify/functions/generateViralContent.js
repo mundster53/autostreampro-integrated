@@ -63,8 +63,8 @@ const viralResponse = await openai.chat.completions.create({
     role: "system",
     content: `You are an expert in YouTube and Google gaming SEO. You create highly clickable, unique, keyword-rich content that ranks for search and attracts viewers. Avoid generic templates; use trending, relevant topics and viral strategies. Focus on maximizing visibility and engagement for gaming content.`
   }, {
-    role: "user",
-    content: `Create SEO-optimized YouTube content for this gaming clip:
+role: "user",
+content: `Create SEO-optimized YouTube content for this gaming clip:
 
 Game: ${clip.game || 'Gaming'}
 Original Title: ${clip.title || 'Gaming Clip'}
@@ -79,11 +79,23 @@ GOALS:
 - Write to increase both click-through rate and watch time
 
 REQUIREMENTS:
-1. Title (max 60 chars): Include "${clip.game}" explicitly. Use psychological triggers (curiosity, urgency, exclusivity)
-2. Tags (15-20): Mix of exact game name, platform combos ("${clip.game} PC"), long-tail keywords, trending terms
+1. Title (max 60 chars): Include "${clip.game}" explicitly. Use psychological triggers (curiosity, urgency, exclusivity).
+   Pick ONE unique angle to avoid repetition:
+   - Question/Curiosity: "How Did This ${clip.game} Player Survive?"
+   - Exclusivity/Rarity: "0.01% of ${clip.game} Players Can Do This"
+   - Challenge/Achievement: "${clip.game}'s Hardest Boss Defeated With [specific detail]"
+   - Urgency/Reaction: "${clip.game} Streamer Can't Believe What Just Happened"
+   - Discovery/News: "New ${clip.game} Strategy Changes Everything"
+   AVOID OVERUSED WORDS: Epic, Insane, Crazy, Amazing. Use specific descriptors instead.
+
+2. Tags (15-20): Mix of exact game name, platform combos ("${clip.game} PC"), long-tail keywords, trending terms, specific weapons/characters/locations from the game
+
 3. Description: 
    - MUST start with: "🔴 Watch LIVE: ${primaryChannel}"
-   - Then 2-3 paragraphs with natural keyword placement, use emojis; start with a hook to boost watch time, mention game, highlights, and appeal to gamers searching for ${clip.game}-related clips)
+   - Then 2-3 paragraphs with natural keyword placement, use emojis
+   - Start with a hook to boost watch time
+   - Mention game, highlights, and appeal to gamers searching for ${clip.game}-related clips
+   - Use specific game details (weapons, abilities, locations) not generic phrases
    - Include timestamps if relevant
    - End with channel promotion
 
