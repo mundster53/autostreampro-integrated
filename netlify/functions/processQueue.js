@@ -20,6 +20,33 @@ exports.handler = async (event, context) => {
   try {
     console.log('Starting queue processing...');
 
+    // ADD THIS ENTIRE DAILY LIMIT CHECK HERE (after line 19)
+    const today = new Date().toISOString().split('T')[0];
+    const { count: uploadedToday } = await supabase
+      .from('publishing_queue')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'completed')
+      .gte('completed_at', today + 'T00:00:00');
+
+    if (uploadedToday >= 10) {
+      console.log(`DAILY LIMIT REACHED: ${uploadedToday}/10 uploads today. Stopping.`);
+      return {
+        statusCode: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: 'Daily limit reached',
+          uploaded_today: uploadedToday
+        })
+      };
+    }
+
+    const remaining = 10 - uploadedToday;
+    console.log(`Uploads today: ${uploadedToday}/10. Can process ${remaining} more.`);
+    // END OF DAILY LIMIT CHECK
+
     // Get pending YouTube uploads with good AI scores only
 const { data: pendingUploads, error } = await supabase
   .from('publishing_queue')
@@ -37,21 +64,9 @@ const { data: pendingUploads, error } = await supabase
   .eq('status', 'pending')
   .gte('clips.ai_score', 0.40) // Only process clips with score >= 0.40
   .order('ai_score', { ascending: false, foreignTable: 'clips' }) // Process best clips first
-  .limit(5);
+  .limit(5, remaining); // Limit to remaining uploads for today
 
 if (error) throw error;
-
-console.log(`Found ${pendingUploads.length} high-scoring clips to process`);
-
-// Now when processing, you can access clip data directly
-for (const upload of pendingUploads) {
-  console.log(`Processing clip: ${upload.clips.title} (Score: ${upload.clips.ai_score})`);
-  // ... rest of processing logic
-}
-
-    if (error) throw error;
-
-    console.log(`Found ${pendingUploads.length} failed uploads to retry`);
 
     for (const upload of pendingUploads) {
       try {
