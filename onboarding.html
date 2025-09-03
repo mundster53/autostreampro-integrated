@@ -756,6 +756,17 @@ async function checkConnections() {
     const user = await getCurrentUser();
     if (!user) return;
     
+ // DEBUG: Check if inputs have values
+    console.log('YouTube input:', document.getElementById('youtube_channel_url').value);
+    console.log('Twitch input:', document.getElementById('twitch_channel_url').value);
+    console.log('Kick input:', document.getElementById('kick_channel_url').value);
+    
+    // If empty, there's your problem
+    if (!document.getElementById('youtube_channel_url').value) {
+        alert('YouTube URL is empty! Please fill it in.');
+        return;
+    }
+
     // First save preferences
     const config = {
         user_id: user.id,
