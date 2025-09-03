@@ -789,6 +789,9 @@ async function checkConnections() {
     
     if (profileError) {
         console.error('Error saving channel URLs:', profileError);
+        alert('Failed to save channel URLs: ' + profileError.message); 
+} else {
+    console.log('Channel URLs saved:', channelData); 
     }
     // END OF ADDITION
                 
