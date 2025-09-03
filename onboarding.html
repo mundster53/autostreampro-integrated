@@ -773,6 +773,9 @@ async function checkConnections() {
         twitch_channel_url: document.getElementById('twitch_channel_url').value,
         kick_channel_url: document.getElementById('kick_channel_url').value
     };
+
+    console.log('Captured channel data:', channelData);  // ADD THIS
+alert('Channel URLs: ' + JSON.stringify(channelData));  // ADD THIS
             
             try {
                 const { error } = await supabase
