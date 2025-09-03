@@ -20,32 +20,6 @@ exports.handler = async (event, context) => {
   try {
     console.log('Starting queue processing...');
 
-    // ADD THIS ENTIRE DAILY LIMIT CHECK HERE (after line 19)
-    const today = new Date().toISOString().split('T')[0];
-    const { count: uploadedToday } = await supabase
-      .from('publishing_queue')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'completed')
-      .gte('completed_at', today + 'T00:00:00');
-
-    if (uploadedToday >= 10) {
-      console.log(`DAILY LIMIT REACHED: ${uploadedToday}/10 uploads today. Stopping.`);
-      return {
-        statusCode: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          message: 'Daily limit reached',
-          uploaded_today: uploadedToday
-        })
-      };
-    }
-
-    const remaining = 10 - uploadedToday;
-    console.log(`Uploads today: ${uploadedToday}/10. Can process ${remaining} more.`);
-    // END OF DAILY LIMIT CHECK
 
     // Get pending YouTube uploads with good AI scores only
 const { data: pendingUploads, error } = await supabase
@@ -64,12 +38,43 @@ const { data: pendingUploads, error } = await supabase
   .eq('status', 'pending')
   .gte('clips.ai_score', 0.40) // Only process clips with score >= 0.40
   .order('ai_score', { ascending: false, foreignTable: 'clips' }) // Process best clips first
-  .limit(5, remaining); // Limit to remaining uploads for today
+  .limit(5); // Limit to remaining uploads for today
 
 if (error) throw error;
 
     for (const upload of pendingUploads) {
       try {
+        // ADD THIS NEW PER-USER CHECK HERE (at the start)
+    const userId = upload.clips.user_id;
+    const today = new Date().toISOString().split('T')[0];
+    
+   // Count this user's uploads today
+const { count: userUploadsToday } = await supabase
+  .from('clips')
+  .select('*', { count: 'exact', head: true })
+  .eq('user_id', userId)
+  .not('youtube_id', 'is', null)
+  .gte('created_at', today + 'T00:00:00');
+    
+    // Get user's plan limits
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('subscription_plan')
+      .eq('user_id', userId)
+      .single();
+    
+    const dailyLimit = {
+      'starter': 10,
+      'pro': 20,
+      'enterprise': 50
+    }[userProfile?.subscription_plan] || 10;
+    
+    if (userUploadsToday >= dailyLimit) {
+      console.log(`User ${userId} reached daily limit (${userUploadsToday}/${dailyLimit})`);
+      continue; // Skip to next upload
+    }
+    // END OF NEW PER-USER CHECK
+
         await supabase
           .from('publishing_queue')
           .update({ 
@@ -101,7 +106,7 @@ if (error) throw error;
               .eq('id', upload.id);
 
             // CORRECT - Fixed column names and added required fields:
-await supabase
+            await supabase
             .from('published_content')
             .insert({
               clip_id: upload.clip_id,
