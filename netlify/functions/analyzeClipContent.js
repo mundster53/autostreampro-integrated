@@ -1,6 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
 const OpenAI = require('openai');
-const { S3Client, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -112,9 +111,8 @@ exports.handler = async (event, context) => {
       })
       .eq('id', clipId);
 
-    // DECISION POINT: Good or bad clip?
+    // Automatically generate viral content for good clips
     if (finalScore >= viralThreshold) {
-      // GOOD CLIP - Generate viral content and upload
       console.log('Score is good! Triggering viral content generation...');
       
       try {
@@ -154,25 +152,9 @@ exports.handler = async (event, context) => {
           console.log('Viral generation skipped:', viralResult.message);
         }
       } catch (viralError) {
+        // Don't let viral generation failure break the main flow
         console.error('Viral generation failed, but continuing:', viralError);
       }
-    } else {
-      // BAD CLIP - DELETE FROM STORAGE
-      console.log(`Score ${finalScore} < ${viralThreshold}, deleting from storage...`);
-      
-      // Delete from storage (S3 or Supabase)
-      await deleteFromStorage(clip);
-      
-      // Mark as rejected
-      await supabase
-        .from('clips')
-        .update({ 
-          status: 'rejected_low_score',
-          upload_status: 'rejected'
-        })
-        .eq('id', clipId);
-        
-      console.log(`Clip rejected and deleted: ${clipId}`);
     }
     
     return {
@@ -254,50 +236,36 @@ async function analyzeThumbnailWithGPT4(thumbnailUrl, game) {
   }
 }
 
-function analyzeMetadata(clip) {
-  let score = 0.35; // Higher base score
+async function analyzeMetadata(clip) {
+  let score = 0.20; // Base score
   
-  // Title analysis - more keywords and better matching
-  const excitingWords = ['insane', 'crazy', 'epic', 'clutch', 'ace', 'pentakill', 
-                        'quadra', 'triple', '1v4', '1v5', 'comeback', 'perfect',
-                        'flawless', 'destroyed', 'obliterated', 'unbelievable',
-                        'super', 'earth', 'victory', 'win', 'best', 'amazing',
-                        'wild', 'savage', 'godlike', 'legendary'];
+  // Get user's preferred clip length
+  const { data: userPrefs } = await supabase
+    .from('user_preferences')
+    .select('clip_length')
+    .eq('user_id', clip.user_id)
+    .single();
   
-  const titleLower = (clip.title || '').toLowerCase();
-  let titleBoosts = 0;
+  const preferredLength = userPrefs?.clip_length || 30;
   
-  for (const word of excitingWords) {
-    if (titleLower.includes(word)) {
-      titleBoosts++;
-      score += 0.08; // Each word adds 8%
-    }
+  // Score based on how close to user's preference
+  const lengthDiff = Math.abs(clip.duration - preferredLength);
+  if (lengthDiff <= 5) {
+    score += 0.15; // Within 5 seconds of preference
+  } else if (lengthDiff <= 15) {
+    score += 0.10; // Within 15 seconds
+  } else if (lengthDiff <= 30) {
+    score += 0.05; // Within 30 seconds
   }
   
-  // Duration analysis (15-45 seconds is optimal)
-  if (clip.duration >= 15 && clip.duration <= 45) {
-    score += 0.15;
-  } else if (clip.duration > 10 && clip.duration <= 60) {
-    score += 0.05;
-  } else if (clip.duration > 60) {
-    score -= 0.05;
-  }
-  
-  // Game-specific boosts - expanded list
+  // Game-specific boosts (keep this)
   const viralGames = ['valorant', 'fortnite', 'warzone', 'apex', 'league of legends',
                      'overwatch', 'helldivers', 'destiny', 'call of duty', 'battlefield',
                      'counter-strike', 'cs:', 'rocket league', 'minecraft', 'among us'];
   
   const gameLower = (clip.game || '').toLowerCase();
-  
   if (viralGames.some(game => gameLower.includes(game))) {
     score += 0.15;
-  }
-  
-  // Special boost for action games
-  if (gameLower.includes('helldivers') || gameLower.includes('warzone') || 
-      gameLower.includes('apex') || gameLower.includes('valorant')) {
-    score += 0.1;
   }
   
   return Math.max(0, Math.min(1, score));
@@ -357,63 +325,5 @@ async function generateDetailedAnalysis(clip, score, visualReason) {
       timestamp: new Date().toISOString()
     };
   }
-}
-
-async function deleteFromStorage(clip) {
-  try {
-    if (!clip.video_url) {
-      console.log('No video URL to delete');
-      return;
-    }
-    
-    // Check if it's S3
-    if (clip.video_url.includes('s3')) {
-      // Delete from S3
-      const s3 = new S3Client({
-        region: process.env.AWS_REGION || 'us-east-1',
-        credentials: {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-        }
-      });
-      
-      const url = new URL(clip.video_url);
-      const key = url.pathname.substring(1);
-      
-      await s3.send(new DeleteObjectCommand({
-        Bucket: process.env.MY_S3_BUCKET_NAME,  // YOUR ACTUAL ENV VARIABLE
-        Key: key
-      }));
-      
-      console.log(`Deleted from S3: ${key}`);
-      
-    } else {
-      // Delete from Supabase storage
-      try {
-        await supabase.storage
-          .from('clips')
-          .remove([clip.video_url]);
-      } catch (e) {
-        // Try alternative path
-        const path = clip.video_url.split('/').pop();
-        await supabase.storage
-          .from('clips')
-          .remove([path]);
-      }
-      
-      console.log(`Deleted from Supabase storage: ${clip.video_url}`);
-    }
-    
-    // Update database
-    await supabase
-      .from('clips')
-      .update({ 
-        deleted_from_storage: true,
-        video_url: null
-      })
-      .eq('id', clip.id);
-    
-  } catch (error) {
-    console.error('Storage deletion failed:', error);
-  }
+  
 }
