@@ -66,10 +66,6 @@
   to = "/onboarding.html"
   status = 200
 
-# AUTOMATIC monitor check every minute
-[functions."autoStartMonitors"]
-  schedule = "* * * * *"
-
 # AUTOMATIC queue processing every 3 minutes
 [functions."autoProcessQueue"]  
   schedule = "*/3 * * * *"
@@ -93,7 +89,7 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "connect-src 'self' https://dykxhmdozgccawkbxejd.supabase.co https://api.openai.com https://api.replicate.com wss:"
+    Content-Security-Policy = "connect-src 'self' https://dykxhmdozgccawkbxejd.supabase.co https://api.openai.com https://api.replicate.com https://autostreampro-backend-production.up.railway.app wss:"
 
 [context.production.environment]
   NODE_ENV = "production"
