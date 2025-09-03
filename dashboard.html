@@ -1101,7 +1101,7 @@ async function toggleGlobalAutoPublish() {
             .upsert({
                 user_id: user.id,
                 auto_publish_enabled: enabled,
-                auto_publish_min_score: 0.40,
+                viral_threshold: viralThreshold,
                 updated_at: new Date().toISOString()
             }, {
                 onConflict: 'user_id'
