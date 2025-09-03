@@ -1198,14 +1198,14 @@ async function loadAutoPublishSettings() {
         
         const { data: prefs } = await supabase
             .from('user_preferences')
-            .select('auto_publish_enabled, auto_publish_min_score')
+            .select('auto_publish_enabled, viral_threshold')
             .eq('user_id', user.id)
             .single();
         
         if (prefs) {
             document.getElementById('globalAutoPublish').checked = prefs.auto_publish_enabled || false;
             // Update threshold display
-            const threshold = Math.round((prefs.auto_publish_min_score || 0.40) * 100);
+            const threshold = Math.round((prefs.viral_threshold || 0.40) * 100);
             document.getElementById('autoThreshold').textContent = `${threshold}%`;
         }
     } catch (error) {
