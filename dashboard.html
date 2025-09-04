@@ -667,9 +667,9 @@ function demoTikTokUpload() {
                         <button class="action-btn" onclick="window.location.href='/analytics.html'">
                             📊 View Analytics
                         </button>
-                        <button class="action-btn secondary" onclick="startStream()">
-                            📹 Start Stream
-                        </button>
+                        <button id="goingLiveBtn" class="action-btn" onclick="activateStreaming()">
+    🔴 Start Stream Monitoring
+</button>
                         <button class="action-btn secondary" onclick="manageContent()">
                             📝 Manage Content
                         </button>
@@ -1036,9 +1036,54 @@ async function signOut() {
     }
 }
 
-// Quick action functions
-function startStream() {
-    showToast('Streaming feature coming soon!', 'success');
+// Stream monitoring activation
+async function activateStreaming() {
+    try {
+        const btn = document.getElementById('goingLiveBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Activating...';
+        
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            showToast('Please log in first', 'error');
+            btn.disabled = false;
+            btn.textContent = '🔴 Start Stream Monitoring';
+            return;
+        }
+        
+        const response = await fetch('https://autostreampro-backend-production.up.railway.app/api/activate-monitoring', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${session.access_token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'activated') {
+            btn.textContent = '✅ Monitoring Active';
+            btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            showToast(`Monitoring active! ${result.clipsRemaining || 10} clips remaining today`, 'success');
+            
+            // Reset button after 4 hours
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.textContent = '🔴 Start Stream Monitoring';
+                btn.style.background = '';
+            }, 14400000);
+        } else if (result.status === 'limit_reached') {
+            showToast(`Daily limit reached (${result.clipsToday} clips)`, 'warning');
+            btn.textContent = '⚠️ Daily Limit Reached';
+            btn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Failed to activate monitoring:', error);
+        showToast('Failed to activate monitoring', 'error');
+        const btn = document.getElementById('goingLiveBtn');
+        btn.disabled = false;
+        btn.textContent = '🔴 Start Stream Monitoring';
+    }
 }
 
 function viewAnalytics() {
