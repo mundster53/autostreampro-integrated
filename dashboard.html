@@ -453,6 +453,37 @@
 
         .toast.success { background: #10b981; }
         .toast.error { background: #ef4444; }
+
+                .toast.success { background: #10b981; }
+        .toast.error { background: #ef4444; }
+        
+        /* Modal for monitoring notification */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
     </style>
 </head>
     
@@ -1064,7 +1095,14 @@ async function activateStreaming() {
         if (result.status === 'activated') {
             btn.textContent = '✅ Monitoring Active';
             btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-            showToast(`Monitoring active! ${result.clipsRemaining || 10} clips remaining today`, 'success');
+            // Show center modal instead of toast
+            document.getElementById('modalClipsRemaining').textContent = result.clipsRemaining || 10;
+            document.getElementById('monitoringModal').style.display = 'flex';
+
+            // Auto-close after 5 seconds
+            setTimeout(() => {
+            closeMonitoringModal();
+            }, 5000);
             
             // Reset button after 4 hours
             setTimeout(() => {
@@ -1072,6 +1110,7 @@ async function activateStreaming() {
                 btn.textContent = '🔴 Start Stream Monitoring';
                 btn.style.background = '';
             }, 14400000);
+
         } else if (result.status === 'limit_reached') {
             showToast(`Daily limit reached (${result.clipsToday} clips)`, 'warning');
             btn.textContent = '⚠️ Daily Limit Reached';
@@ -1257,7 +1296,20 @@ async function loadAutoPublishSettings() {
         console.error('Load settings error:', error);
     }
 }
+
+// Close modal function
+function closeMonitoringModal() {
+    document.getElementById('monitoringModal').style.display = 'none';
+}
 </script>
+<div id="monitoringModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2 style="font-size: 2rem; color: #10b981; margin-bottom: 1rem;">✅ Stream Monitoring Active!</h2>
+        <p style="font-size: 1.2rem; margin-bottom: 1rem;">Your streams are now being monitored for viral moments.</p>
+        <p style="font-size: 1rem; color: #6b7280; margin-bottom: 2rem;">Clips remaining today: <span id="modalClipsRemaining">10</span></p>
+        <button onclick="closeMonitoringModal()" style="background: #3b82f6; color: white; padding: 1rem 2rem; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer;">Got it!</button>
+    </div>
+</div>
 
 </body>
 </html>
