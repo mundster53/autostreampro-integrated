@@ -775,9 +775,10 @@
         }
         
         // Initialize event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if user is logged in
-            checkAuth();
+        document.addEventListener('DOMContentLoaded', async function() {  // Add async here
+    // Check if user is logged in
+    await checkAuth();  // Add await
+    await checkOnboardingStatus();  // Add this new line
             
             // Platform selection (Step 1)
             document.querySelectorAll('[data-platform]').forEach(option => {
@@ -838,6 +839,25 @@
                 window.location.href = '/login.html';
             }
         }
+
+        // Check if user has completed onboarding
+async function checkOnboardingStatus() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    
+    // Check if user has any streaming connections
+    const { data: connections } = await supabase
+        .from('streaming_connections')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1);
+    
+    // If no connections exist, redirect to wizard
+    if (!connections || connections.length === 0) {
+        window.location.href = '/onboarding-wizard.html';
+        return;
+    }
+}
         
         // Handle OAuth returns
         window.addEventListener('DOMContentLoaded', function() {
