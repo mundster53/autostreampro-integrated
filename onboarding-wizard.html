@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoStreamPro - Quick Setup</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .wizard-container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .progress-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            color: white;
+            text-align: center;
+        }
+        
+        .progress-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .progress-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        
+        .step-indicators {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .step-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .step-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .step-circle.completed {
+            background: #10b981;
+            color: white;
+        }
+        
+        .step-circle.active {
+            background: white;
+            color: #667eea;
+            animation: pulse 2s infinite;
+        }
+        
+        .step-circle.upcoming {
+            background: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+        
+        .step-line {
+            width: 40px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .step-line.completed {
+            background: #10b981;
+        }
+        
+        .step-labels {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .step-label {
+            width: 60px;
+            text-align: center;
+        }
+        
+        .wizard-content {
+            padding: 40px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .step-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .step-description {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+        
+        .platform-selection {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .platform-option {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .platform-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .platform-option.selected {
+            border-color: #667eea;
+            background: #f3f4ff;
+        }
+        
+        .platform-option.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .platform-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 10px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .kick-icon { background: #53fc18; }
+        .twitch-icon { background: #9146ff; }
+        .youtube-icon { background: #ff0000; }
+        .tiktok-icon { background: #000; }
+        
+        .platform-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 1rem;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .validation-message {
+            margin-top: 8px;
+            font-size: 0.875rem;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .validation-message.success {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #86efac;
+            display: block;
+        }
+        
+        .validation-message.error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+            display: block;
+        }
+        
+        .wizard-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: auto;
+            padding-top: 30px;
+        }
+        
+        .nav-btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-back {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .btn-back:hover {
+            background: #e5e7eb;
+        }
+        
+        .btn-next {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-next:hover:not(:disabled) {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+        
+        .btn-next:disabled {
+            background: #e5e7eb;
+            color: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .step-content {
+            display: none;
+        }
+        
+        .step-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .success-screen {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .success-icon {
+            font-size: 4rem;
+            color: #10b981;
+            margin-bottom: 20px;
+        }
+        
+        .quick-settings {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .setting-option {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .setting-option:hover {
+            border-color: #667eea;
+        }
+        
+        .setting-option.selected {
+            border-color: #667eea;
+            background: #f3f4ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="wizard-container">
+        <!-- Progress Header -->
+        <div class="progress-header">
+            <h1 class="progress-title">🚀 AutoStreamPro Quick Setup</h1>
+            <p class="progress-subtitle">Get your clips automated in 5 minutes!</p>
+            
+            <!-- Step Indicators -->
+            <div class="step-indicators">
+                <div class="step-item">
+                    <div class="step-circle active" id="step1">1</div>
+                </div>
+                <div class="step-line" id="line1"></div>
+                <div class="step-item">
+                    <div class="step-circle upcoming" id="step2">2</div>
+                </div>
+                <div class="step-line" id="line2"></div>
+                <div class="step-item">
+                    <div class="step-circle upcoming" id="step3">3</div>
+                </div>
+                <div class="step-line" id="line3"></div>
+                <div class="step-item">
+                    <div class="step-circle upcoming" id="step4">4</div>
+                </div>
+                <div class="step-line" id="line4"></div>
+                <div class="step-item">
+                    <div class="step-circle upcoming" id="step5">5</div>
+                </div>
+            </div>
+            
+            <!-- Step Labels -->
+            <div class="step-labels">
+                <div class="step-label">Stream</div>
+                <div class="step-label">Connect</div>
+                <div class="step-label">Publish</div>
+                <div class="step-label">Settings</div>
+                <div class="step-label">Verify</div>
+            </div>
+        </div>
+        
+        <!-- Wizard Content -->
+        <div class="wizard-content">
+            <!-- Step 1: Choose Platform -->
+            <div class="step-content active" id="content1">
+                <h2 class="step-title">Where do you stream?</h2>
+                <p class="step-description">Choose your main streaming platform. You can add more later.</p>
+                
+                <div class="platform-selection">
+                    <div class="platform-option" data-platform="kick">
+                        <div class="platform-icon kick-icon">K</div>
+                        <div class="platform-name">Kick</div>
+                    </div>
+                    <div class="platform-option" data-platform="twitch">
+                        <div class="platform-icon twitch-icon">T</div>
+                        <div class="platform-name">Twitch</div>
+                    </div>
+                    <div class="platform-option" data-platform="youtube">
+                        <div class="platform-icon youtube-icon">YT</div>
+                        <div class="platform-name">YouTube</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 2: Connect Platform -->
+            <div class="step-content" id="content2">
+                <h2 class="step-title">Connect your <span id="platformName">Platform</span></h2>
+                <p class="step-description">We'll monitor your stream and create clips automatically.</p>
+                
+                <!-- Kick Connection -->
+                <div id="kickConnection" style="display: none;">
+                    <div class="input-group">
+                        <label>Your Kick Username</label>
+                        <input type="text" id="kickUsername" class="input-field" placeholder="Enter your Kick username">
+                        <div class="validation-message" id="kickValidation"></div>
+                    </div>
+                    <button class="nav-btn btn-next" onclick="connectKick()" style="width: 100%; margin-top: 15px;">
+                        Verify Username
+                    </button>
+                </div>
+                
+                <!-- Twitch Connection -->
+                <div id="twitchConnection" style="display: none;">
+                    <button class="nav-btn btn-next" onclick="connectTwitch()" style="width: 100%; background: #9146ff;">
+                        Connect with Twitch
+                    </button>
+                    <p style="color: #666; font-size: 0.9rem; text-align: center; margin-top: 15px;">
+                        You'll be redirected to Twitch to authorize the connection
+                    </p>
+                </div>
+                
+                <!-- YouTube Connection -->
+                <div id="youtubeConnection" style="display: none;">
+                    <button class="nav-btn btn-next" onclick="connectYouTube()" style="width: 100%; background: #ff0000;">
+                        Connect with YouTube
+                    </button>
+                    <p style="color: #666; font-size: 0.9rem; text-align: center; margin-top: 15px;">
+                        You'll be redirected to YouTube to authorize the connection
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Step 3: Publishing Platforms -->
+            <div class="step-content" id="content3">
+                <h2 class="step-title">Where should we post your clips?</h2>
+                <p class="step-description">Connect at least one platform to share your viral moments.</p>
+                
+                <div class="platform-selection">
+                    <div class="platform-option" data-publish="youtube">
+                        <div class="platform-icon youtube-icon">YT</div>
+                        <div class="platform-name">YouTube</div>
+                    </div>
+                    <div class="platform-option" data-publish="tiktok">
+                        <div class="platform-icon tiktok-icon">T</div>
+                        <div class="platform-name">TikTok</div>
+                    </div>
+                </div>
+                
+                <div id="publishConnections" style="margin-top: 20px;"></div>
+            </div>
+            
+            <!-- Step 4: Settings -->
+            <div class="step-content" id="content4">
+                <h2 class="step-title">Choose your settings</h2>
+                <p class="step-description">We've set recommended defaults. Adjust if needed.</p>
+                
+                <div class="quick-settings">
+                    <div class="setting-option selected" data-threshold="40">
+                        <div style="font-weight: 600;">🎯 Balanced (Recommended)</div>
+                        <div style="font-size: 0.875rem; color: #666;">40% viral threshold - Expect 3-5 clips per stream</div>
+                    </div>
+                    <div class="setting-option" data-threshold="60">
+                        <div style="font-weight: 600;">🏆 Quality Focus</div>
+                        <div style="font-size: 0.875rem; color: #666;">60% viral threshold - Only the best 1-2 clips</div>
+                    </div>
+                    <div class="setting-option" data-threshold="20">
+                        <div style="font-weight: 600;">📈 Growth Mode</div>
+                        <div style="font-size: 0.875rem; color: #666;">20% viral threshold - More clips, 8-10 per stream</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 5: Test & Verify -->
+            <div class="step-content" id="content5">
+                <h2 class="step-title">Almost done!</h2>
+                <p class="step-description">Click below to complete your setup.</p>
+                
+                <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 3rem;">🎮</div>
+                    <p style="margin-top: 20px;">Your streaming setup will be ready to go!</p>
+                </div>
+            </div>
+            
+            <!-- Success Screen -->
+            <div class="step-content" id="contentSuccess">
+                <div class="success-screen">
+                    <div class="success-icon">✅</div>
+                    <h2 style="font-size: 1.5rem; color: #333; margin-bottom: 10px;">You're all set!</h2>
+                    <p style="color: #666; margin-bottom: 30px;">Your automatic clip system is ready</p>
+                    
+                    <button class="nav-btn btn-next" onclick="window.location.href='/dashboard.html'" style="width: 100%; background: #10b981;">
+                        Go to Dashboard
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <div class="wizard-navigation" id="wizardNav">
+                <button class="nav-btn btn-back" onclick="previousStep()" style="visibility: hidden;">
+                    ← Back
+                </button>
+                <button class="nav-btn btn-next" onclick="nextStep()" disabled>
+                    Next →
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Supabase
+        const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        
+        // OAuth Configuration
+        const twitchClientId = 'mzjsqcwxj9mexsa8vaimtzanbe7pll';
+        const googleClientId = '17381198225-gn5qnqdlhuehbhlva9ro046r5qbssfrn.apps.googleusercontent.com';
+        
+        // Wizard state
+        let currentStep = 1;
+        let selectedPlatform = null;
+        let selectedPublishPlatforms = [];
+        let selectedThreshold = 40;
+        
+        // Platform Connection Functions
+        async function connectKick() {
+            const username = document.getElementById('kickUsername').value.trim();
+            if (!username) {
+                document.getElementById('kickValidation').className = 'validation-message error';
+                document.getElementById('kickValidation').textContent = 'Please enter your Kick username';
+                document.getElementById('kickValidation').style.display = 'block';
+                return;
+            }
+            
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                alert('Please log in first');
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/.netlify/functions/add-kick-channel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: user.id,
+                        kickUsername: username
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('kickValidation').className = 'validation-message success';
+                    document.getElementById('kickValidation').textContent = `✓ Connected: ${username}`;
+                    document.getElementById('kickValidation').style.display = 'block';
+                    
+                    // Enable navigation next button
+                    const navNext = document.querySelector('#wizardNav .btn-next');
+                    if (navNext) navNext.disabled = false;
+                } else {
+                    document.getElementById('kickValidation').className = 'validation-message error';
+                    document.getElementById('kickValidation').textContent = 'Could not find that Kick channel';
+                    document.getElementById('kickValidation').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Kick connection error:', error);
+                document.getElementById('kickValidation').className = 'validation-message error';
+                document.getElementById('kickValidation').textContent = 'Connection error. Please try again.';
+                document.getElementById('kickValidation').style.display = 'block';
+            }
+        }
+        
+        function connectTwitch() {
+            const redirectUri = 'https://autostreampro.com/onboarding-wizard.html';
+            const scope = 'user:read:email+clips:edit+channel:read:stream_key';
+            const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=twitch&force_verify=true`;
+            window.location.href = authUrl;
+        }
+        
+        function connectYouTube() {
+            const redirectUri = 'https://autostreampro.com/onboarding-wizard.html';
+            const scope = 'https://www.googleapis.com/auth/youtube.upload+https://www.googleapis.com/auth/youtube.readonly';
+            const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent&state=youtube`;
+            window.location.href = authUrl;
+        }
+        
+        // Show platform-specific connection interface
+        function showPlatformConnection() {
+            const platformNameEl = document.getElementById('platformName');
+            if (platformNameEl && selectedPlatform) {
+                platformNameEl.textContent = selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1);
+            }
+            
+            // Hide all connection interfaces
+            document.getElementById('kickConnection').style.display = 'none';
+            document.getElementById('twitchConnection').style.display = 'none';
+            document.getElementById('youtubeConnection').style.display = 'none';
+            
+            // Show the selected platform's connection interface
+            if (selectedPlatform === 'kick') {
+                document.getElementById('kickConnection').style.display = 'block';
+            } else if (selectedPlatform === 'twitch') {
+                document.getElementById('twitchConnection').style.display = 'block';
+            } else if (selectedPlatform === 'youtube') {
+                document.getElementById('youtubeConnection').style.display = 'block';
+            }
+            
+            // Disable next button until connection is made
+            const navNext = document.querySelector('#wizardNav .btn-next');
+            if (navNext && currentStep === 2) {
+                navNext.disabled = true;
+            }
+        }
+        
+        // Navigation functions
+        function nextStep() {
+            if (currentStep < 5) {
+                // Mark current as completed
+                document.getElementById(`step${currentStep}`).classList.remove('active');
+                document.getElementById(`step${currentStep}`).classList.add('completed');
+                document.getElementById(`step${currentStep}`).innerHTML = '✓';
+                
+                if (currentStep > 0 && currentStep < 5) {
+                    document.getElementById(`line${currentStep}`).classList.add('completed');
+                }
+                
+                // Hide current content
+                document.getElementById(`content${currentStep}`).classList.remove('active');
+                
+                // Move to next
+                currentStep++;
+                
+                // Show new content
+                document.getElementById(`content${currentStep}`).classList.add('active');
+                
+                // Update indicators
+                document.getElementById(`step${currentStep}`).classList.remove('upcoming');
+                document.getElementById(`step${currentStep}`).classList.add('active');
+                
+                // Update buttons and handle step-specific logic
+                updateNavigationState();
+                
+                if (currentStep === 2) {
+                    showPlatformConnection();
+                }
+                
+                if (currentStep === 5) {
+                    document.querySelector('#wizardNav .btn-next').textContent = 'Complete Setup';
+                }
+            } else {
+                // Complete setup - save preferences and show success
+                completeSetup();
+            }
+        }
+        
+        function previousStep() {
+            if (currentStep > 1) {
+                // Remove completed from current
+                document.getElementById(`step${currentStep}`).classList.remove('active');
+                document.getElementById(`step${currentStep}`).classList.add('upcoming');
+                document.getElementById(`step${currentStep}`).innerHTML = currentStep;
+                
+                // Remove completed from line
+                if (currentStep > 1) {
+                    document.getElementById(`line${currentStep - 1}`).classList.remove('completed');
+                }
+                
+                // Hide current content
+                document.getElementById(`content${currentStep}`).classList.remove('active');
+                
+                // Move to previous
+                currentStep--;
+                
+                // Show previous content
+                document.getElementById(`content${currentStep}`).classList.add('active');
+                
+                // Update indicators
+                document.getElementById(`step${currentStep}`).classList.remove('completed');
+                document.getElementById(`step${currentStep}`).classList.add('active');
+                document.getElementById(`step${currentStep}`).innerHTML = currentStep;
+                
+                // Update navigation
+                updateNavigationState();
+            }
+        }
+        
+        function updateNavigationState() {
+            const backBtn = document.querySelector('#wizardNav .btn-back');
+            const nextBtn = document.querySelector('#wizardNav .btn-next');
+            
+            // Show/hide back button
+            backBtn.style.visibility = currentStep > 1 ? 'visible' : 'hidden';
+            
+            // Handle next button state based on current step
+            if (currentStep === 1) {
+                nextBtn.disabled = !selectedPlatform;
+            } else if (currentStep === 3) {
+                nextBtn.disabled = selectedPublishPlatforms.length === 0;
+            } else if (currentStep === 2) {
+                // Will be enabled when connection is successful
+                nextBtn.disabled = true;
+            } else {
+                nextBtn.disabled = false;
+            }
+            
+            // Update next button text
+            if (currentStep === 5) {
+                nextBtn.textContent = 'Complete Setup';
+            } else {
+                nextBtn.textContent = 'Next →';
+            }
+        }
+        
+        async function completeSetup() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                alert('Please log in first');
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // Save user preferences
+            try {
+                const { error } = await supabase
+                    .from('user_preferences')
+                    .upsert({
+                        user_id: user.id,
+                        viral_threshold: selectedThreshold,
+                        clip_length: 30,
+                        auto_clips: true,
+                        auto_titles: true,
+                        auto_post: true,
+                        updated_at: new Date()
+                    }, { onConflict: 'user_id' });
+                
+                if (error) throw error;
+                
+                // Show success screen
+                document.getElementById('content5').classList.remove('active');
+                document.getElementById('contentSuccess').classList.add('active');
+                document.getElementById('wizardNav').style.display = 'none';
+                
+                // Mark last step complete
+                document.getElementById('step5').classList.remove('active');
+                document.getElementById('step5').classList.add('completed');
+                document.getElementById('step5').innerHTML = '✓';
+                document.getElementById('line4').classList.add('completed');
+                
+            } catch (error) {
+                console.error('Error saving preferences:', error);
+                alert('Failed to save settings. Please try again.');
+            }
+        }
+        
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            checkAuth();
+            
+            // Platform selection (Step 1)
+            document.querySelectorAll('[data-platform]').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('[data-platform]').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    selectedPlatform = this.getAttribute('data-platform');
+                    updateNavigationState();
+                });
+            });
+            
+            // Publishing platform selection (Step 3)
+            document.querySelectorAll('[data-publish]').forEach(option => {
+                option.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                    const platform = this.getAttribute('data-publish');
+                    
+                    if (this.classList.contains('selected')) {
+                        if (!selectedPublishPlatforms.includes(platform)) {
+                            selectedPublishPlatforms.push(platform);
+                        }
+                    } else {
+                        selectedPublishPlatforms = selectedPublishPlatforms.filter(p => p !== platform);
+                    }
+                    
+                    updateNavigationState();
+                });
+            });
+            
+            // Settings selection (Step 4)
+            document.querySelectorAll('.setting-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.setting-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    selectedThreshold = parseInt(this.getAttribute('data-threshold'));
+                });
+            });
+            
+            // Kick username enter key
+            const kickInput = document.getElementById('kickUsername');
+            if (kickInput) {
+                kickInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        connectKick();
+                    }
+                });
+            }
+        });
+        
+        // Check authentication
+        async function checkAuth() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                window.location.href = '/login.html';
+            }
+        }
+        
+        // Handle OAuth returns
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            
+            if (code && state) {
+                // Handle OAuth return - jump to step 3
+                currentStep = 2;
+                selectedPlatform = state; // 'twitch' or 'youtube'
+                
+                // Update UI to show step 3
+                document.getElementById('step1').classList.remove('active');
+                document.getElementById('step1').classList.add('completed');
+                document.getElementById('step1').innerHTML = '✓';
+                document.getElementById('line1').classList.add('completed');
+                
+                document.getElementById('step2').classList.remove('upcoming');
+                document.getElementById('step2').classList.add('completed');
+                document.getElementById('step2').innerHTML = '✓';
+                document.getElementById('line2').classList.add('completed');
+                
+                document.getElementById('content1').classList.remove('active');
+                document.getElementById('content2').classList.remove('active');
+                
+                currentStep = 3;
+                document.getElementById('content3').classList.add('active');
+                document.getElementById('step3').classList.remove('upcoming');
+                document.getElementById('step3').classList.add('active');
+                
+                updateNavigationState();
+                
+                // Clean URL
+                window.history.replaceState({}, document.title, '/onboarding-wizard.html');
+            }
+        });
+    </script>
+</body>
+</html>
