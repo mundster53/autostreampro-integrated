@@ -180,7 +180,7 @@ exports.handler = async (event, context) => {
             },
             
             // URLs
-            success_url: `${process.env.SITE_URL}/onboarding.html?session_id={CHECKOUT_SESSION_ID}&trial=true`,
+            success_url: `${process.env.SITE_URL}/onboarding-wizard.html?session_id={CHECKOUT_SESSION_ID}&trial=true`,
             cancel_url: `${process.env.SITE_URL}/signup.html?plan=${plan}&cancelled=true`,
             
             // Metadata
