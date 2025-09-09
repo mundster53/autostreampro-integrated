@@ -1,7 +1,6 @@
 // DUAL PLATFORM QUEUE PROCESSOR - Handles YouTube and TikTok
 const { createClient } = require('@supabase/supabase-js');
-const YouTubePublisher = require('../../src/services/youtube-publisher');
-const TikTokPublisher = require('../../src/services/tiktok-publisher');
+const fetch = require('node-fetch');
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
@@ -23,8 +22,7 @@ exports.handler = async (event, context) => {
     try {
         console.log('🚀 [DualQueue] Starting dual platform queue processing...');
         
-        const youtubePublisher = new YouTubePublisher(supabase);
-        const tiktokPublisher = new TikTokPublisher(supabase);
+
         
         // Track results
         const results = {
@@ -87,7 +85,13 @@ exports.handler = async (event, context) => {
                 
                 // Attempt to publish
                 console.log(`[DualQueue] Publishing to YouTube: ${item.clips.title}`);
-                const success = await youtubePublisher.publishClip(item.clip_id);
+                // NEW:
+                const uploadResult = await fetch('https://autostreampro.com/.netlify/functions/upload-to-youtube', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ clipId: item.clip_id })
+});
+                const success = uploadResult.ok;
                 
                 if (success) {
                     results.youtube.successful++;
@@ -157,7 +161,17 @@ exports.handler = async (event, context) => {
                 
                 // Attempt to publish
                 console.log(`[DualQueue] Publishing to TikTok: ${item.clips.title}`);
-                const success = await tiktokPublisher.publishClip(item.clip_id);
+                // NEW:
+                const tiktokResult = await fetch('https://autostreampro.com/.netlify/functions/publish-to-tiktok', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                clipId: item.clip_id,
+                userId: item.clips.user_id,
+                privacy: 'PUBLIC_TO_EVERYONE'
+    })
+});
+                const success = tiktokResult.ok;
                 
                 if (success) {
                     results.tiktok.successful++;
