@@ -130,10 +130,15 @@ exports.handler = async (event, context) => {
             `)
             .eq('platform', 'tiktok')
             .eq('status', 'pending')
-            .is('clips.tiktok_url', null)  // Not already published
-            .gte('clips.ai_score', 0.40)
             .order('clips.ai_score', { ascending: false })
             .limit(10);  // Process up to 10 TikTok videos per run
+
+            // Then filter in JavaScript to maintain quality
+            const filteredQueue = tiktokQueue?.filter(item => 
+            item.clips && 
+            item.clips.ai_score >= 0.40 && 
+            !item.clips.tiktok_url
+            ) || [];
 
         if (!ttError && tiktokQueue?.length > 0) {
             console.log(`[DualQueue] Found ${tiktokQueue.length} TikTok clips to process`);
