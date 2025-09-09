@@ -1,7 +1,7 @@
 // DUAL PLATFORM QUEUE PROCESSOR - Handles YouTube and TikTok
 const { createClient } = require('@supabase/supabase-js');
-const YouTubePublisher = require('../src/services/youtube-publisher');
-const TikTokPublisher = require('../src/services/tiktok-publisher');
+const YouTubePublisher = require('../../src/services/youtube-publisher');
+const TikTokPublisher = require('../../src/services/tiktok-publisher');
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
