@@ -49,19 +49,19 @@ exports.handler = async (event, context) => {
         // Define plan pricing
         const planPricing = {
             'starter': {
-                amount: 2000, // $20.00 in cents
+                amount: 2500, // $25.00 in cents
                 name: 'AutoStreamPro Starter',
-                description: 'Perfect for new streamers'
+                description: 'Perfect for new streamers just getting started'
             },
             'expert': {
-                amount: 5000, // $50.00 in cents
+                amount: 4500, // $45.00 in cents
                 name: 'AutoStreamPro Expert',
-                description: 'For growing streamers'
+                description: 'For expert streamers looking to grow'
             },
             'pro': {
-                amount: 7500, // $75.00 in cents
+                amount: 7000, // $70.00 in cents
                 name: 'AutoStreamPro Pro',
-                description: 'For teams and agencies'
+                description: 'For pro streamers making more than $1,000/month'
             }
         };
 

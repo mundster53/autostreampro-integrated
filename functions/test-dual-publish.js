@@ -162,7 +162,7 @@ exports.handler = async (event, context) => {
             headers,
             body: JSON.stringify({
                 error: error.message,
-                stack: error.stack
+                stack: error.stack 
             })
         };
     }
