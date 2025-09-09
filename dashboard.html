@@ -1230,7 +1230,12 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDashboard();
     
     // Refresh data every 30 seconds
-    setInterval(refreshDashboard, 30000);
+    // Clear any existing interval first
+if (window.dashboardInterval) {
+    clearInterval(window.dashboardInterval);
+}
+// Set new interval and store reference
+window.dashboardInterval = setInterval(refreshDashboard, 30000);
 });
 
 // Handle authentication state changes
