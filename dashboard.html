@@ -484,6 +484,251 @@
             from { transform: translateY(-50px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
+
+        /* Discord Setup Section Styles */
+        .discord-setup-section {
+            background: linear-gradient(135deg, #7289da 0%, #5865f2 100%);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 20px 0;
+            color: white;
+            box-shadow: 0 10px 30px rgba(88, 101, 242, 0.3);
+        }
+
+        .discord-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+        }
+
+        .discord-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .discord-icon {
+            width: 48px;
+            height: 48px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .discord-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #43b581;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.inactive {
+            background: #faa61a;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .webhook-setup {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .webhook-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .webhook-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .webhook-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .webhook-input:focus {
+            outline: none;
+            border-color: white;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .webhook-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .discord-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .discord-btn-primary {
+            background: white;
+            color: #5865f2;
+        }
+
+        .discord-btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .discord-btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .discord-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .discord-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .webhook-help {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .webhook-help h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .webhook-help ol {
+            margin: 10px 0 0 20px;
+            padding: 0;
+        }
+
+        .webhook-help li {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .announcement-preview {
+            background: #36393f;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+            color: #dcddde;
+        }
+
+        .preview-embed {
+            border-left: 4px solid #ed4245;
+            padding-left: 12px;
+            margin-top: 10px;
+        }
+
+        .preview-title {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .preview-field {
+            display: inline-block;
+            margin-right: 20px;
+            margin-top: 8px;
+        }
+
+        .preview-field-name {
+            font-size: 12px;
+            color: #b9bbbe;
+            margin-bottom: 2px;
+        }
+
+        .preview-field-value {
+            font-size: 14px;
+            color: #dcddde;
+        }
+
+        .success-message, .error-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(67, 181, 129, 0.2);
+            border: 1px solid #43b581;
+        }
+
+        .error-message {
+            background: rgba(240, 71, 71, 0.2);
+            border: 1px solid #f04747;
+        }
+
+        .test-announcement-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+
+        .test-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .test-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .test-input-group label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .test-input {
+            padding: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+        }
     </style>
 </head>
     
@@ -608,26 +853,131 @@
                         </table>
                     </div>
                 </div>
-                <!-- TEMPORARY FOR TIKTOK APPROVAL - Remove after approval -->
-<div style="background: #f0f0f0; padding: 20px; margin: 20px 0; border-radius: 8px; border: 2px dashed #666;">
-    <h3>TikTok Upload Demo (Sandbox)</h3>
-    <p>Demonstrating video.upload scope capability:</p>
-    <button onclick="demoTikTokUpload()" style="background: #000; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
-        📤 Upload Clip to TikTok
-    </button>
-    <div id="tiktok-demo-result" style="margin-top: 10px;"></div>
-</div>
 
-<script>
+                <!-- Discord Announcement Setup Section -->
+                <div class="discord-setup-section">
+                    <div class="discord-header">
+                        <div class="discord-title">
+                            <div class="discord-icon">💬</div>
+                            <div>
+                                <h2 style="margin: 0;">Discord Announcements</h2>
+                                <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px;">Automatically announce your streams to Discord</p>
+                            </div>
+                        </div>
+                        <div class="discord-status" id="discordStatus">
+                            <span class="status-dot inactive" id="statusDot"></span>
+                            <span id="statusText">Not Connected</span>
+                        </div>
+                    </div>
+
+                    <div id="successMessage" class="success-message"></div>
+                    <div id="errorMessage" class="error-message"></div>
+
+                    <div class="webhook-setup">
+                        <h3 style="margin-top: 0; margin-bottom: 15px;">Setup Discord Webhook</h3>
+                        <div class="webhook-input-group">
+                            <input 
+                                type="url" 
+                                id="webhookUrl" 
+                                class="webhook-input" 
+                                placeholder="https://discord.com/api/webhooks/..."
+                                autocomplete="off"
+                            />
+                        </div>
+                        <div class="webhook-buttons">
+                            <button class="discord-btn discord-btn-primary" id="saveWebhookBtn" onclick="saveDiscordWebhook()">
+                                Save Webhook
+                            </button>
+                            <button class="discord-btn discord-btn-secondary" id="testWebhookBtn" onclick="testDiscordWebhook()">
+                                Test Connection
+                            </button>
+                            <button class="discord-btn discord-btn-secondary" id="removeWebhookBtn" onclick="removeDiscordWebhook()" style="display: none;">
+                                Remove Webhook
+                            </button>
+                        </div>
+
+                        <div class="webhook-help">
+                            <h4>How to get your Discord webhook URL:</h4>
+                            <ol>
+                                <li>Open your Discord server and go to the channel where you want announcements</li>
+                                <li>Click the gear icon ⚙️ next to the channel name to open Channel Settings</li>
+                                <li>Select "Integrations" from the left menu</li>
+                                <li>Click "Create Webhook" or "View Webhooks"</li>
+                                <li>Give your webhook a name (e.g., "Stream Alerts")</li>
+                                <li>Click "Copy Webhook URL" and paste it above</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="test-announcement-section">
+                        <h3 style="margin-top: 0; margin-bottom: 15px;">Test Announcement</h3>
+                        <div class="test-inputs">
+                            <div class="test-input-group">
+                                <label>Stream Title</label>
+                                <input type="text" id="testTitle" class="test-input" placeholder="Epic Gaming Session!" value="Epic Gaming Session!">
+                            </div>
+                            <div class="test-input-group">
+                                <label>Game</label>
+                                <input type="text" id="testGame" class="test-input" placeholder="Fortnite" value="Fortnite">
+                            </div>
+                            <div class="test-input-group">
+                                <label>Platform</label>
+                                <select id="testPlatform" class="test-input">
+                                    <option value="twitch">Twitch</option>
+                                    <option value="youtube">YouTube</option>
+                                    <option value="kick">Kick</option>
+                                </select>
+                            </div>
+                            <div class="test-input-group">
+                                <label>Announcement Type</label>
+                                <select id="testType" class="test-input">
+                                    <option value="going_live">Going Live Now</option>
+                                    <option value="scheduled">Scheduled Stream</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="discord-btn discord-btn-primary" onclick="sendTestAnnouncement()" id="sendTestBtn" disabled>
+                            Send Test Announcement
+                        </button>
+                    </div>
+
+                    <div class="announcement-preview">
+                        <div style="font-size: 12px; color: #b9bbbe; margin-bottom: 8px;">Preview</div>
+                        <div class="preview-embed">
+                            <div class="preview-title">🔴 LIVE NOW!</div>
+                            <div style="margin-bottom: 12px;">Epic Gaming Session!</div>
+                            <div class="preview-field">
+                                <div class="preview-field-name">🎮 Playing</div>
+                                <div class="preview-field-value">Fortnite</div>
+                            </div>
+                            <div class="preview-field">
+                                <div class="preview-field-name">📺 Streaming on</div>
+                                <div class="preview-field-value">Twitch</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TEMPORARY FOR TIKTOK APPROVAL - Remove after approval -->
+// <div style="background: #f0f0f0; padding: 20px; margin: 20px 0; border-radius: 8px; border: 2px dashed #666;">
+//    <h3>TikTok Upload Demo (Sandbox)</h3>
+//     <p>Demonstrating video.upload scope capability:</p>
+//     <button onclick="demoTikTokUpload()" style="background: #000; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+   //     📤 Upload Clip to TikTok
+//    </button>
+//    <div id="tiktok-demo-result" style="margin-top: 10px;"></div>
+// </div>
+
+// <script>
 // TEMPORARY FOR TIKTOK APPROVAL
-function demoTikTokUpload() {
-    document.getElementById('tiktok-demo-result').innerHTML = 
-        '<div style="color: green;">✓ Video upload initiated via Content Posting API (video.upload scope)</div>';
-        // ADD THESE 3 LINES
-    setTimeout(() => {
-        alert('Clip successfully queued for TikTok! User will be notified when posted.');
-    }, 1000);
-}
+// function demoTikTokUpload() {
+    // document.getElementById('tiktok-demo-result').innerHTML = 
+   //     '<div style="color: green;">✓ Video upload initiated via Content Posting API (video.upload scope)</div>';
+   //     // ADD THESE 3 LINES
+   // setTimeout(() => {
+   //     alert('Clip successfully queued for TikTok! User will be notified when posted.');
+   // }, 1000);
+//}
 // END TEMPORARY
 </script>
             </div>
@@ -1228,6 +1578,7 @@ function refreshDashboard() {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Dashboard loaded');
     loadDashboard();
+    checkDiscordConnection();
     
     // Refresh data every 30 seconds
     // Clear any existing interval first
@@ -1379,6 +1730,12 @@ async function loadAutoPublishSettings() {
 function closeMonitoringModal() {
     document.getElementById('monitoringModal').style.display = 'none';
 }
+
+// ========== ADD DISCORD FUNCTIONS HERE ==========
+async function checkDiscordConnection() {
+    // ... (rest of the Discord functions from the artifact)
+}
+
 </script>
 <div id="monitoringModal" class="modal-overlay">
     <div class="modal-content">
