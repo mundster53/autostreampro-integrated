@@ -82,6 +82,10 @@
 [functions."autoFixMissingViral"]
   schedule = "*/15 * * * *" 
 
+# SEO Performance Tracking - runs daily at 3 AM
+[functions."seo-performance-tracker"]
+  schedule = "0 3 * * *"
+
 [[headers]]
   for = "/*"
   [headers.values]

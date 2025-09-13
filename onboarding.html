@@ -807,6 +807,44 @@ alert('Channel URLs: ' + JSON.stringify(channelData));  // ADD THIS
 } else {
     console.log('Channel URLs saved:', channelData); 
     }
+
+    // ===============================================
+        // ADD THE NEW SEO INITIALIZATION CODE RIGHT HERE
+        // ===============================================
+        
+        // Initialize SEO Profile
+        try {
+            console.log('Setting up SEO optimization...');
+            
+            const seoResponse = await fetch('/.netlify/functions/initialize-seo-profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: user.id,
+                    gamePreferences: document.getElementById('contentType').value,
+                    contentType: document.getElementById('contentType').value,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                })
+            });
+            
+            const seoResult = await seoResponse.json();
+            
+            if (seoResult.success) {
+                console.log('SEO optimization configured!');
+                showSuccess('Setup complete! SEO optimization enabled.');
+            } else {
+                console.error('SEO setup failed:', seoResult.error);
+                // Don't block onboarding if SEO fails
+            }
+        } catch (seoError) {
+            console.error('SEO initialization error:', seoError);
+            // Continue anyway - SEO can be set up later
+        }
+        
+        // ===============================================
+        // END OF NEW SEO CODE
+        // ===============================================
+        
     // END OF ADDITION
                 
                 showSuccess('Setup complete! Redirecting to dashboard...');
