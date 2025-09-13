@@ -92,6 +92,32 @@ exports.handler = async (event, context) => {
                 // END OF SEO ENHANCEMENT
                 // ==========================================
                 
+// After SEO enhancement, add CHANNEL GROWTH enhancement
+try {
+    const channelResponse = await fetch(`${process.env.URL}/.netlify/functions/channel-growth-engine`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            action: 'enhance_for_growth',
+            userId: clip.user_id,
+            clipData: {
+                ...clip,
+                platform: 'youtube' // or detect from clip
+            }
+        })
+    });
+    
+    const channelResult = await channelResponse.json();
+    
+    if (channelResult.success) {
+        console.log(`Channel growth enhancements applied to clip ${clip.id}`);
+    }
+    
+} catch (channelError) {
+    console.error('Channel growth error:', channelError);
+    // Continue anyway
+}
+
                 // Post to platforms (now with SEO-optimized content)
                 const platforms = [];
                 
