@@ -17,17 +17,10 @@ exports.handler = async (event) => {
             process.env.SUPABASE_SERVICE_KEY
         );
 
-        // Duncan's user IDs
-        const duncanUserIds = [
-            '99f0c4bb-9016-409e-83ef-2c827698a2d5',
-            'e067a518-c578-4b11-bdfd-470ff92d3d69'
-        ];
-
         // Get all pending clips
         const { data: clips, error } = await supabase
             .from('clips')
             .select('id, ai_score')
-            .in('user_id', duncanUserIds)
             .in('status', ['ready_for_upload', 'queued', 'pending', 'analyzing'])
             .is('youtube_id', null)
             .order('ai_score', { ascending: false })

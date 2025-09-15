@@ -288,37 +288,26 @@ exports.handler = async (event) => {
             query = query.eq('user_id', specificUserId);
         }
 
-        // Special handling for Duncan's clips
-        const duncanUserIds = [
-            '99f0c4bb-9016-409e-83ef-2c827698a2d5',
-            'e067a518-c578-4b11-bdfd-470ff92d3d69'
-        ];
         
-        // First try to get Duncan's clips
-        const { data: duncanClips, error: duncanError } = await supabase
-            .from('clips')
-            .select('*')
-            .in('user_id', duncanUserIds)
-            .in('status', ['ready_for_upload', 'queued', 'pending', 'analyzing'])
-            .is('youtube_id', null)
-            .order('ai_score', { ascending: false })
-            .limit(batchSize);
+       // Get clips for all users equally
+const { data: clipsToProcess, error: clipsError } = await supabase
+    .from('clips')
+    .select('*')
+    .in('status', ['ready_for_upload', 'queued', 'pending', 'analyzing'])
+    .is('youtube_id', null)
+    .order('ai_score', { ascending: false })
+    .limit(batchSize);
 
-        let clipsToProcess = [];
-        
-        if (duncanClips && duncanClips.length > 0) {
-            console.log(`Found ${duncanClips.length} Duncan clips to process`);
-            clipsToProcess = duncanClips;
-        } else {
-            // If no Duncan clips, get regular clips
-            const { data: regularClips, error: clipsError } = await query;
-            
-            if (clipsError) {
-                throw clipsError;
-            }
-            
-            clipsToProcess = regularClips || [];
-        }
+if (clipsError) {
+    throw clipsError;
+}
+
+if (!clipsToProcess || clipsToProcess.length === 0) {
+    console.log('No clips to process');
+    return res.status(200).json({ message: 'No clips to process' });
+}
+
+console.log(`Found ${clipsToProcess.length} clips to process`);
 
         if (clipsToProcess.length === 0) {
             console.log('No clips in queue to process');
