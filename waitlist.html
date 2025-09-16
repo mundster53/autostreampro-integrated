@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join the AutoStreamPro Waitlist</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .tagline {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 18px;
+        }
+        
+        .spots-info {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            color: #166534;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        form {
+            margin-bottom: 20px;
+        }
+        
+        input[type="email"] {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        button:hover {
+            background: #5a67d8;
+        }
+        
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .success {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #86efac;
+            display: block;
+        }
+        
+        .error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+            display: block;
+        }
+        
+        .position {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+        
+        .benefits {
+            text-align: left;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .benefits h3 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .benefits li {
+            margin-bottom: 10px;
+            margin-left: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 AutoStreamPro</h1>
+        <p class="tagline">Turn your gaming clips into viral content automatically</p>
+        
+        <div class="spots-info">
+            <strong>Limited Launch:</strong> We're releasing 500 spots at a time to ensure the best experience for everyone.
+        </div>
+        
+        <form id="waitlistForm">
+            <input type="email" id="email" placeholder="Enter your email" required>
+            <button type="submit" id="submitBtn">Join the Waitlist</button>
+        </form>
+        
+        <div id="message" class="message"></div>
+        
+        <div class="benefits">
+            <h3>Early Access Benefits</h3>
+            <ul>
+                <li>✅ AI-powered viral clip detection</li>
+                <li>✅ Automatic YouTube & TikTok publishing</li>
+                <li>✅ SEO-optimized titles and descriptions</li>
+                <li>✅ 14-day free trial</li>
+                <li>✅ Founding member pricing</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        const form = document.getElementById('waitlistForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const messageDiv = document.getElementById('message');
+        const emailInput = document.getElementById('email');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Joining...';
+            messageDiv.style.display = 'none';
+            
+            try {
+                const response = await fetch('/.netlify/functions/join-waitlist', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: emailInput.value })
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'spots_available') {
+                    messageDiv.innerHTML = `<strong>Good news!</strong> Spots are available. Redirecting to signup...`;
+                    messageDiv.className = 'message success';
+                    setTimeout(() => {
+                        window.location.href = result.redirect;
+                    }, 2000);
+                } else if (result.status === 'already_joined') {
+                    messageDiv.innerHTML = `
+                        <strong>Already on the list!</strong><br>
+                        <div class="position">Position #${result.position}</div>
+                    `;
+                    messageDiv.className = 'message success';
+                } else if (result.success) {
+                    messageDiv.innerHTML = `
+                        <strong>You're in!</strong><br>
+                        <div class="position">Position #${result.position}</div>
+                        <p>Check your email for confirmation.</p>
+                    `;
+                    messageDiv.className = 'message success';
+                    form.style.display = 'none';
+                } else {
+                    messageDiv.innerHTML = `<strong>Error:</strong> ${result.error}`;
+                    messageDiv.className = 'message error';
+                }
+                
+            } catch (error) {
+                messageDiv.innerHTML = `<strong>Error:</strong> Failed to join waitlist`;
+                messageDiv.className = 'message error';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Join the Waitlist';
+            }
+        });
+    </script>
+</body>
+</html>
