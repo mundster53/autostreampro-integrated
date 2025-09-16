@@ -2,208 +2,94 @@
 const { createClient } = require('@supabase/supabase-js');
 
 exports.handler = async (event, context) => {
-  // Handle CORS
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS'
-      },
-      body: ''
-    };
-  }
-
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
+      headers: { 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ error: 'Method not allowed' })
     };
   }
 
   try {
     const { email, password, promoCode } = JSON.parse(event.body);
-
-    if (!email || !password) {
-      return {
-        statusCode: 400,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
-        body: JSON.stringify({ error: 'Email and password required' })
-      };
-    }
-
-    // Create Supabase client with service key for admin operations
+    
+    // Create service role client
     const supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_SERVICE_KEY
     );
 
-    // First check if user already exists
-    const { data: existingAuth } = await supabase
+    // First check if email already exists
+    const { data: existing } = await supabase
       .from('user_profiles')
       .select('email')
       .eq('email', email)
       .single();
 
-    if (existingAuth) {
+    if (existing) {
       return {
         statusCode: 400,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
-        body: JSON.stringify({ 
-          error: 'An account with this email already exists. Please sign in instead.'
-        })
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ error: 'Email already registered' })
       };
     }
 
-    // Try to sign up the user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // Create auth user using service role
+    const { data, error } = await supabase.auth.signUp({
       email: email,
-      password: password
+      password: password,
+      options: {
+        data: {
+          promo_code: promoCode
+        }
+      }
     });
 
-    if (authError) {
-      // Check for specific error types
-      if (authError.message.includes('already registered')) {
-        return {
-          statusCode: 400,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Headers': 'Content-Type',
-          },
-          body: JSON.stringify({ 
-            error: 'This email is already registered. Please sign in or use a different email.'
-          })
-        };
-      }
-      
-      return {
-        statusCode: 400,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
-        body: JSON.stringify({ 
-          error: authError.message || 'Failed to create account'
-        })
-      };
-    }
+    if (error) throw error;
 
-    if (!authData.user) {
-      return {
-        statusCode: 400,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
-        body: JSON.stringify({ 
-          error: 'Failed to create user account - please try again'
-        })
-      };
-    }
+    // Wait a moment for auth to propagate
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Calculate trial end date (14 days)
-    const trialEndDate = new Date();
-    trialEndDate.setDate(trialEndDate.getDate() + 14);
-
-    // Check promo code
-    let subscriptionPlan = 'starter';
-    let subscriptionStatus = 'trial';
-    
-    if (promoCode && promoCode.toUpperCase() === 'FREEACCESS') {
-      subscriptionPlan = 'pro';
-      subscriptionStatus = 'active';
-    }
-
-    // Create user profile - check if it already exists first
-    const { data: existingProfile } = await supabase
+    // Insert profile with matching user_id
+    const { error: profileError } = await supabase
       .from('user_profiles')
-      .select('user_id')
-      .eq('user_id', authData.user.id)
-      .single();
+      .insert({
+        user_id: data.user.id,
+        email: email,
+        subscription_status: 'active',
+        subscription_plan: promoCode === 'FREEACCESS' ? 'pro' : 'starter'
+      });
 
-    if (!existingProfile) {
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .insert({
-          user_id: authData.user.id,
-          email: email,
-          subscription_status: subscriptionStatus,
-          subscription_plan: subscriptionPlan,
-          trial_ends_at: subscriptionStatus === 'trial' ? trialEndDate.toISOString() : null,
-          virality_threshold: 0.40,
-          created_at: new Date().toISOString()
-        });
-
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-        // Return the actual error message
-        return {
-          statusCode: 400,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Headers': 'Content-Type',
-          },
-          body: JSON.stringify({ 
-            error: `Profile error: ${profileError.message}. Please contact support.`
-          })
-        };
-      }
+    if (profileError) {
+      console.error('Profile error:', profileError);
     }
 
     // Send welcome email
-    try {
-      await fetch('https://autostreampro.com/.netlify/functions/user-lifecycle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'welcome',
-          userId: authData.user.id,
-          data: { email }
-        })
-      });
-    } catch (e) {
-      console.error('Email failed:', e);
-    }
+    await fetch('https://autostreampro.com/.netlify/functions/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: email,
+        subject: 'Welcome to AutoStreamPro!',
+        html: '<h1>Welcome!</h1><p>Your account has been created.</p>'
+      })
+    });
 
     return {
       statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
+      headers: { 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ 
         success: true,
-        userId: authData.user.id,
-        email: email,
-        subscriptionPlan: subscriptionPlan,
-        subscriptionStatus: subscriptionStatus,
-        message: 'Account created successfully! Check your email to confirm.'
+        message: 'Account created! Check your email.',
+        userId: data.user.id
       })
     };
 
   } catch (error) {
-    console.error('Signup error:', error);
     return {
-      statusCode: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-      body: JSON.stringify({ 
-        error: 'Server error during signup',
-        details: error.message 
-      })
+      statusCode: 400,
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ error: error.message })
     };
   }
 };
