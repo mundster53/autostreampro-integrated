@@ -111,7 +111,8 @@ exports.handler = async (event, context) => {
             'Access-Control-Allow-Headers': 'Content-Type',
           },
           body: JSON.stringify({ 
-            error: 'An account with this email already exists' 
+            error: authError.message || authError.toString() || 'Database error creating new user',
+          details: authError.code || 'No error code'
           })
         };
       }
