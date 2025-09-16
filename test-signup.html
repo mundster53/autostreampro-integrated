@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Signup - AutoStreamPro</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+        .error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Signup</h1>
+    <div id="message"></div>
+    
+    <form id="signupForm">
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password (min 6 chars)" required minlength="6">
+        <input type="text" id="promoCode" placeholder="Promo Code (optional)">
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = 'Creating account...';
+            messageDiv.className = 'message';
+            
+            try {
+                const response = await fetch('/.netlify/functions/user-signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: document.getElementById('email').value,
+                        password: document.getElementById('password').value,
+                        promoCode: document.getElementById('promoCode').value
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    messageDiv.innerHTML = `
+                        <strong>Success!</strong><br>
+                        Account created for: ${result.email}<br>
+                        User ID: ${result.userId}<br>
+                        Plan: ${result.subscriptionPlan}<br>
+                        Status: ${result.subscriptionStatus}<br>
+                        Check your email for confirmation!
+                    `;
+                    messageDiv.className = 'message success';
+                    document.getElementById('signupForm').reset();
+                } else {
+                    messageDiv.innerHTML = `<strong>Error:</strong> ${result.error}`;
+                    messageDiv.className = 'message error';
+                }
+            } catch (error) {
+                messageDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                messageDiv.className = 'message error';
+            }
+        });
+    </script>
+</body>
+</html>
