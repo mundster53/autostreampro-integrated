@@ -40,19 +40,53 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Create regular Supabase client (NOT admin)
+    // Create Supabase client with service key for admin operations
     const supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_SERVICE_KEY
     );
 
-    // Use regular signup method
+    // First check if user already exists
+    const { data: existingAuth } = await supabase
+      .from('user_profiles')
+      .select('email')
+      .eq('email', email)
+      .single();
+
+    if (existingAuth) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+        body: JSON.stringify({ 
+          error: 'An account with this email already exists. Please sign in instead.'
+        })
+      };
+    }
+
+    // Try to sign up the user
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: email,
       password: password
     });
 
     if (authError) {
+      // Check for specific error types
+      if (authError.message.includes('already registered')) {
+        return {
+          statusCode: 400,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          },
+          body: JSON.stringify({ 
+            error: 'This email is already registered. Please sign in or use a different email.'
+          })
+        };
+      }
+      
       return {
         statusCode: 400,
         headers: {
@@ -73,7 +107,7 @@ exports.handler = async (event, context) => {
           'Access-Control-Allow-Headers': 'Content-Type',
         },
         body: JSON.stringify({ 
-          error: 'Failed to create user account'
+          error: 'Failed to create user account - please try again'
         })
       };
     }
@@ -91,22 +125,40 @@ exports.handler = async (event, context) => {
       subscriptionStatus = 'active';
     }
 
-    // Create user profile
-    const { error: profileError } = await supabase
+    // Create user profile - check if it already exists first
+    const { data: existingProfile } = await supabase
       .from('user_profiles')
-      .insert({
-        user_id: authData.user.id,
-        email: email,
-        subscription_status: subscriptionStatus,
-        subscription_plan: subscriptionPlan,
-        trial_ends_at: subscriptionStatus === 'trial' ? trialEndDate.toISOString() : null,
-        virality_threshold: 0.40,
-        created_at: new Date().toISOString()
-      });
+      .select('user_id')
+      .eq('user_id', authData.user.id)
+      .single();
 
-    if (profileError) {
-      console.error('Profile error:', profileError);
-      // Don't fail - user is created, just profile failed
+    if (!existingProfile) {
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .insert({
+          user_id: authData.user.id,
+          email: email,
+          subscription_status: subscriptionStatus,
+          subscription_plan: subscriptionPlan,
+          trial_ends_at: subscriptionStatus === 'trial' ? trialEndDate.toISOString() : null,
+          virality_threshold: 0.40,
+          created_at: new Date().toISOString()
+        });
+
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        // Return the actual error message
+        return {
+          statusCode: 400,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          },
+          body: JSON.stringify({ 
+            error: `Profile error: ${profileError.message}. Please contact support.`
+          })
+        };
+      }
     }
 
     // Send welcome email
@@ -136,11 +188,12 @@ exports.handler = async (event, context) => {
         email: email,
         subscriptionPlan: subscriptionPlan,
         subscriptionStatus: subscriptionStatus,
-        message: 'Account created! Check your email to confirm.'
+        message: 'Account created successfully! Check your email to confirm.'
       })
     };
 
   } catch (error) {
+    console.error('Signup error:', error);
     return {
       statusCode: 500,
       headers: {
@@ -148,7 +201,7 @@ exports.handler = async (event, context) => {
         'Access-Control-Allow-Headers': 'Content-Type',
       },
       body: JSON.stringify({ 
-        error: 'Server error',
+        error: 'Server error during signup',
         details: error.message 
       })
     };
