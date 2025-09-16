@@ -1,9 +1,16 @@
 // netlify/functions/user-signup.js
 const { createClient } = require('@supabase/supabase-js');
 
-const supabase = createClient(
+// Create admin client with service key
+const supabaseAdmin = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
+  process.env.SUPABASE_SERVICE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
 );
 
 exports.handler = async (event, context) => {
@@ -52,7 +59,7 @@ exports.handler = async (event, context) => {
     let subscriptionStatus = 'trial';
     
     if (promoCode) {
-      const { data: promo } = await supabase
+      const { data: promo } = await supabaseAdmin
         .from('promo_codes')
         .select('*')
         .eq('code', promoCode.toUpperCase())
@@ -73,7 +80,7 @@ exports.handler = async (event, context) => {
             }
             
             // Increment usage count
-            await supabase
+            await supabaseAdmin
               .from('promo_codes')
               .update({ used_count: promo.used_count + 1 })
               .eq('id', promo.id);
@@ -82,15 +89,33 @@ exports.handler = async (event, context) => {
       }
     }
 
-    // Create auth user
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true
+    // Create auth user using the admin API correctly
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: email,
+      password: password,
+      email_confirm: true,
+      user_metadata: {
+        promo_code: promoCode || null
+      }
     });
 
     if (authError) {
       console.error('Auth creation error:', authError);
+      
+      // Check if user already exists
+      if (authError.message && authError.message.includes('already registered')) {
+        return {
+          statusCode: 400,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          },
+          body: JSON.stringify({ 
+            error: 'An account with this email already exists' 
+          })
+        };
+      }
+      
       return {
         statusCode: 400,
         headers: {
@@ -98,7 +123,7 @@ exports.handler = async (event, context) => {
           'Access-Control-Allow-Headers': 'Content-Type',
         },
         body: JSON.stringify({ 
-          error: authError.message || 'Failed to create user' 
+          error: 'Database error creating new user' 
         })
       };
     }
@@ -108,11 +133,11 @@ exports.handler = async (event, context) => {
     trialEndDate.setDate(trialEndDate.getDate() + 14);
 
     // Create user profile
-    const { error: profileError } = await supabase
+    const { error: profileError } = await supabaseAdmin
       .from('user_profiles')
       .insert({
         user_id: authData.user.id,
-        email,
+        email: email,
         subscription_status: subscriptionStatus,
         subscription_plan: subscriptionPlan,
         trial_ends_at: subscriptionStatus === 'trial' ? trialEndDate.toISOString() : null,
@@ -123,7 +148,7 @@ exports.handler = async (event, context) => {
     if (profileError) {
       console.error('Profile creation error:', profileError);
       // Clean up auth user if profile creation fails
-      await supabase.auth.admin.deleteUser(authData.user.id);
+      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
       
       return {
         statusCode: 500,
@@ -136,7 +161,7 @@ exports.handler = async (event, context) => {
     }
 
     // Create subscription record
-    const { error: subError } = await supabase
+    const { error: subError } = await supabaseAdmin
       .from('user_subscriptions')
       .insert({
         user_id: authData.user.id,
@@ -153,11 +178,12 @@ exports.handler = async (event, context) => {
 
     if (subError) {
       console.error('Subscription creation error:', subError);
+      // Don't fail the whole signup if subscription record fails
     }
 
     // Record promo code usage
     if (promoCode && discountApplied) {
-      await supabase
+      await supabaseAdmin
         .from('promo_code_uses')
         .insert({
           promo_code: promoCode.toUpperCase(),
@@ -168,19 +194,23 @@ exports.handler = async (event, context) => {
 
     // Trigger welcome email
     try {
-      await fetch(`${process.env.URL}/.netlify/functions/user-lifecycle`, {
+      const lifecycleResponse = await fetch(`${process.env.URL || 'https://autostreampro.com'}/.netlify/functions/user-lifecycle`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'welcome',
           userId: authData.user.id,
           data: { 
-            email,
+            email: email,
             promoCode: promoCode || null,
             plan: subscriptionPlan
           }
         })
       });
+      
+      if (!lifecycleResponse.ok) {
+        console.error('Welcome email failed but user created successfully');
+      }
     } catch (emailError) {
       console.error('Welcome email error:', emailError);
       // Don't fail signup if email fails
@@ -195,9 +225,9 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({ 
         success: true,
         userId: authData.user.id,
-        email,
-        subscriptionPlan,
-        subscriptionStatus,
+        email: email,
+        subscriptionPlan: subscriptionPlan,
+        subscriptionStatus: subscriptionStatus,
         trialEndsAt: subscriptionStatus === 'trial' ? trialEndDate.toISOString() : null,
         message: 'Account created successfully! Check your email for confirmation.'
       })
