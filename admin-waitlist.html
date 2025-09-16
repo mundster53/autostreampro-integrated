@@ -1,0 +1,224 @@
+// admin-waitlist.html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Waitlist Management - AutoStreamPro Admin</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f3f4f6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .actions {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .invite-section {
+            margin: 20px 0;
+        }
+        input[type="number"] {
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            width: 100px;
+            margin: 0 10px;
+        }
+        #log {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Waitlist Management</h1>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="waiting">-</div>
+                <div class="stat-label">Waiting</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="invited">-</div>
+                <div class="stat-label">Invited</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="spotsUsed">-</div>
+                <div class="stat-label">Spots Used</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="spotsAvailable">-</div>
+                <div class="stat-label">Spots Available</div>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <h2>Actions</h2>
+            
+            <div class="invite-section">
+                <label>Invite next batch:</label>
+                <input type="number" id="inviteCount" value="10" min="1" max="100">
+                <button onclick="inviteBatch()">Send Invitations</button>
+            </div>
+            
+            <div>
+                <button onclick="refreshStats()">Refresh Stats</button>
+                <button onclick="openNewPhase()">Open Next Phase (500 spots)</button>
+            </div>
+            
+            <div id="log">
+                <div class="log-entry">Ready. Enter admin secret to continue.</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Get admin secret on page load
+        const adminSecret = prompt('Enter admin secret:');
+        if (!adminSecret) {
+            document.body.innerHTML = '<h1>Access Denied</h1>';
+        }
+        
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.insertBefore(entry, log.firstChild);
+        }
+        
+        async function callManagement(action, data = {}) {
+            try {
+                const response = await fetch('/.netlify/functions/manage-waitlist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-admin-token': adminSecret
+                    },
+                    body: JSON.stringify({ action, ...data })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                addLog(`Error: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+        
+        async function refreshStats() {
+            addLog('Fetching stats...');
+            try {
+                const stats = await callManagement('stats');
+                document.getElementById('waiting').textContent = stats.waiting || 0;
+                document.getElementById('invited').textContent = stats.invited || 0;
+                document.getElementById('spotsUsed').textContent = stats.spotsUsed || 0;
+                document.getElementById('spotsAvailable').textContent = stats.spotsAvailable || 0;
+                addLog('Stats updated', 'success');
+            } catch (error) {
+                addLog('Failed to load stats', 'error');
+            }
+        }
+        
+        async function inviteBatch() {
+            const count = parseInt(document.getElementById('inviteCount').value);
+            if (!count || count < 1) {
+                addLog('Invalid count', 'error');
+                return;
+            }
+            
+            addLog(`Sending ${count} invitations...`);
+            try {
+                const result = await callManagement('invite', { count });
+                if (result.invited) {
+                    addLog(`Successfully invited ${result.invited} users`, 'success');
+                    result.emails.forEach(email => {
+                        addLog(`  → ${email}`, 'success');
+                    });
+                } else {
+                    addLog(result.message || 'No invitations sent', 'warning');
+                }
+                refreshStats();
+            } catch (error) {
+                addLog('Failed to send invitations', 'error');
+            }
+        }
+        
+        async function openNewPhase() {
+            if (!confirm('Open next phase with 500 new spots?')) return;
+            
+            addLog('Opening new phase...');
+            try {
+                const result = await callManagement('new-phase');
+                addLog(`Phase ${result.newPhase} opened!`, 'success');
+                refreshStats();
+            } catch (error) {
+                addLog('Failed to open new phase', 'error');
+            }
+        }
+        
+        // Load stats on page load
+        refreshStats();
+    </script>
+</body>
+</html>
