@@ -1,5 +1,6 @@
 // netlify/functions/add-kick-channel.js
-// Dependency-free version (uses Supabase REST, not @supabase/supabase-js)
+// Dynamically inspects the `streaming_connections` columns via Supabase GraphQL
+// and only writes to columns that actually exist.
 
 exports.handler = async (event) => {
   try {
@@ -13,7 +14,7 @@ exports.handler = async (event) => {
         statusCode: 500,
         body: JSON.stringify({
           success: false,
-          error: 'Missing SUPABASE_URL or SUPABASE_SERVICE_KEY env vars'
+          error: 'Missing SUPABASE_URL or SUPABASE_SERVICE_KEY environment variables'
         })
       };
     }
@@ -21,81 +22,158 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body || '{}');
     const userId = String(body.userId || '').trim();
     const rawUsername = String(body.kickUsername || '').trim();
-
     if (!userId || !rawUsername) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ success: false, error: 'Missing userId or kickUsername' })
-      };
+      return { statusCode: 400, body: JSON.stringify({ success: false, error: 'Missing userId or kickUsername' }) };
     }
 
-    // very light normalization: allow letters, numbers, underscore, dot, hyphen
-    const username = rawUsername.toLowerCase().replace(/[^a-z0-9._-]/g, '');
     const platform = 'kick';
+    const normalizedUsername = rawUsername.toLowerCase().replace(/[^a-z0-9._-]/g, '');
 
-    const baseHeaders = {
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 1) Introspect columns on `streaming_connections` using Supabase GraphQL
+    // ─────────────────────────────────────────────────────────────────────────────
+    const gqlHeaders = {
       apikey: SUPABASE_SERVICE_KEY,
       Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
       'Content-Type': 'application/json'
     };
 
-    // 1) See if a Kick connection already exists for this user
-    const selRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/streaming_connections?user_id=eq.${encodeURIComponent(
-        userId
-      )}&platform=eq.${platform}&select=id`,
-      { headers: baseHeaders }
-    );
+    // Try direct type lookup first
+    let columns = null;
+    let gql = await fetch(`${SUPABASE_URL}/graphql/v1`, {
+      method: 'POST',
+      headers: gqlHeaders,
+      body: JSON.stringify({
+        query: `
+          {
+            __type(name: "streaming_connections") {
+              name
+              fields { name }
+            }
+          }
+        `
+      })
+    }).then(r => r.json()).catch(() => null);
 
-    if (!selRes.ok) {
-      const t = await selRes.text();
-      return { statusCode: 500, body: JSON.stringify({ success: false, error: t }) };
+    if (gql && gql.data && gql.data.__type && gql.data.__type.fields) {
+      columns = new Set(gql.data.__type.fields.map(f => f.name));
     }
 
-    const existing = await selRes.json();
+    // Fallback: scan the schema for a type named "streaming_connections" (safer)
+    if (!columns) {
+      gql = await fetch(`${SUPABASE_URL}/graphql/v1`, {
+        method: 'POST',
+        headers: gqlHeaders,
+        body: JSON.stringify({
+          query: `
+            {
+              __schema {
+                types {
+                  name
+                  kind
+                  fields { name }
+                }
+              }
+            }
+          `
+        })
+      }).then(r => r.json()).catch(() => null);
 
-    // Data to upsert
-    const payload = {
-      user_id: userId,
-      platform,
-      platform_user_id: username, // we store the username as the platform_user_id for Kick
-      username: rawUsername,
-      is_active: true,
-      updated_at: new Date().toISOString()
+      if (gql && gql.data && gql.data.__schema && Array.isArray(gql.data.__schema.types)) {
+        const t = gql.data.__schema.types.find(tt => tt && tt.name === 'streaming_connections' && tt.fields);
+        if (t) columns = new Set(t.fields.map(f => f.name));
+      }
+    }
+
+    if (!columns) {
+      // If we cannot introspect, fail loudly so we don’t guess wrong
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ success: false, error: 'Could not introspect streaming_connections schema' })
+      };
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 2) Build a payload that ONLY includes columns that exist
+    // ─────────────────────────────────────────────────────────────────────────────
+    const payload = {};
+
+    // Always try to set these common columns if present:
+    if (columns.has('user_id')) payload.user_id = userId;
+    if (columns.has('platform')) payload.platform = platform;
+    if (columns.has('platform_user_id')) payload.platform_user_id = normalizedUsername;
+    if (columns.has('is_active')) payload.is_active = true;
+    if (columns.has('updated_at')) payload.updated_at = new Date().toISOString();
+
+    // Store the human username in the *best matching* column that exists
+    const usernameCandidateColumns = [
+      'username',
+      'platform_username',
+      'display_name',
+      'channel_username',
+      'channel_title',
+      'name'
+    ];
+    const nameCol = usernameCandidateColumns.find(c => columns.has(c));
+    if (nameCol) payload[nameCol] = rawUsername; // keep original case for display
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 3) Upsert-style: if row for (user_id, platform) exists -> update; else insert
+    // ─────────────────────────────────────────────────────────────────────────────
+    const restHeaders = {
+      apikey: SUPABASE_SERVICE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+      'Content-Type': 'application/json'
     };
 
-    let writeRes;
+    // Try to find existing connection
+    let existingId = null;
+    if (columns.has('user_id') && columns.has('platform')) {
+      const sel = await fetch(
+        `${SUPABASE_URL}/rest/v1/streaming_connections?user_id=eq.${encodeURIComponent(userId)}&platform=eq.${platform}&select=id`,
+        { headers: restHeaders }
+      );
+      if (!sel.ok) {
+        return { statusCode: 500, body: JSON.stringify({ success: false, error: await sel.text() }) };
+      }
+      const ex = await sel.json();
+      if (Array.isArray(ex) && ex.length > 0) existingId = ex[0].id;
+    }
 
-    if (Array.isArray(existing) && existing.length > 0) {
-      // 2a) Update existing row
-      const id = existing[0].id;
+    let writeRes;
+    if (existingId) {
       writeRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/streaming_connections?id=eq.${id}`,
+        `${SUPABASE_URL}/rest/v1/streaming_connections?id=eq.${existingId}`,
         {
           method: 'PATCH',
-          headers: { ...baseHeaders, Prefer: 'return=representation' },
+          headers: { ...restHeaders, Prefer: 'return=representation' },
           body: JSON.stringify(payload)
         }
       );
     } else {
-      // 2b) Insert new row
+      // Ensure minimally required fields for insert
+      if (!payload.user_id || !payload.platform) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({
+            success: false,
+            error: 'Table appears to be missing user_id or platform columns for insert'
+          })
+        };
+      }
       writeRes = await fetch(`${SUPABASE_URL}/rest/v1/streaming_connections`, {
         method: 'POST',
-        headers: { ...baseHeaders, Prefer: 'return=representation' },
+        headers: { ...restHeaders, Prefer: 'return=representation' },
         body: JSON.stringify(payload)
       });
     }
 
     if (!writeRes.ok) {
-      const t = await writeRes.text();
-      return { statusCode: 500, body: JSON.stringify({ success: false, error: t }) };
+      return { statusCode: 500, body: JSON.stringify({ success: false, error: await writeRes.text() }) };
     }
 
     const data = await writeRes.json();
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ success: true, connection: data[0] || null })
-    };
+    return { statusCode: 200, body: JSON.stringify({ success: true, connection: data[0] || null }) };
   } catch (err) {
     console.error('add-kick-channel error:', err);
     return { statusCode: 500, body: JSON.stringify({ success: false, error: err.message }) };
