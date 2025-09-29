@@ -1,94 +1,103 @@
 // netlify/functions/add-kick-channel.js
-const { supabase } = require('./_supabase');
-
-const json = (status, payload = {}) => ({
-  statusCode: status,
-  headers: {
-    'Content-Type': 'application/json',
-    // CORS so it works from your site and local dev
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST,OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-  },
-  body: JSON.stringify(payload)
-});
+// Dependency-free version (uses Supabase REST, not @supabase/supabase-js)
 
 exports.handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') return json(200);
-  if (event.httpMethod !== 'POST') return json(405, { success: false, error: 'Method not allowed' });
-
   try {
-    const { userId, kickUsername } = JSON.parse(event.body || '{}');
-
-    if (!userId || !kickUsername) {
-      return json(400, { success: false, error: 'Missing userId or kickUsername' });
+    if (event.httpMethod !== 'POST') {
+      return { statusCode: 405, body: 'Method Not Allowed' };
     }
 
-    // Normalize Kick slug (strip leading @, trim)
-    const slug = String(kickUsername).trim().replace(/^@/, '');
-    const isValid = /^[A-Za-z0-9_]+$/.test(slug);
-    if (!isValid) return json(400, { success: false, error: 'Invalid Kick username' });
-
-    // Does a Kick connection already exist?
-    const { data: existing, error: selectError } = await supabase
-      .from('streaming_connections')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('platform', 'kick')
-      .maybeSingle();
-
-    if (selectError) {
-      console.error('Select error:', selectError);
-      return json(500, { success: false, error: 'Database read error' });
-    }
-
-    let writeError = null;
-
-    if (existing) {
-      // Update existing connection
-      const { error } = await supabase
-        .from('streaming_connections')
-        .update({
-          platform_user_id: slug,
-          username: slug,
-          is_active: true,
-          updated_at: new Date().toISOString()
+    const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = process.env;
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          success: false,
+          error: 'Missing SUPABASE_URL or SUPABASE_SERVICE_KEY env vars'
         })
-        .eq('id', existing.id);
-      writeError = error;
+      };
+    }
+
+    const body = JSON.parse(event.body || '{}');
+    const userId = String(body.userId || '').trim();
+    const rawUsername = String(body.kickUsername || '').trim();
+
+    if (!userId || !rawUsername) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ success: false, error: 'Missing userId or kickUsername' })
+      };
+    }
+
+    // very light normalization: allow letters, numbers, underscore, dot, hyphen
+    const username = rawUsername.toLowerCase().replace(/[^a-z0-9._-]/g, '');
+    const platform = 'kick';
+
+    const baseHeaders = {
+      apikey: SUPABASE_SERVICE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+      'Content-Type': 'application/json'
+    };
+
+    // 1) See if a Kick connection already exists for this user
+    const selRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/streaming_connections?user_id=eq.${encodeURIComponent(
+        userId
+      )}&platform=eq.${platform}&select=id`,
+      { headers: baseHeaders }
+    );
+
+    if (!selRes.ok) {
+      const t = await selRes.text();
+      return { statusCode: 500, body: JSON.stringify({ success: false, error: t }) };
+    }
+
+    const existing = await selRes.json();
+
+    // Data to upsert
+    const payload = {
+      user_id: userId,
+      platform,
+      platform_user_id: username, // we store the username as the platform_user_id for Kick
+      username: rawUsername,
+      is_active: true,
+      updated_at: new Date().toISOString()
+    };
+
+    let writeRes;
+
+    if (Array.isArray(existing) && existing.length > 0) {
+      // 2a) Update existing row
+      const id = existing[0].id;
+      writeRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/streaming_connections?id=eq.${id}`,
+        {
+          method: 'PATCH',
+          headers: { ...baseHeaders, Prefer: 'return=representation' },
+          body: JSON.stringify(payload)
+        }
+      );
     } else {
-      // Create new connection
-      const { error } = await supabase
-        .from('streaming_connections')
-        .insert({
-          user_id: userId,
-          platform: 'kick',
-          platform_user_id: slug,
-          username: slug,
-          is_active: true
-        });
-      writeError = error;
+      // 2b) Insert new row
+      writeRes = await fetch(`${SUPABASE_URL}/rest/v1/streaming_connections`, {
+        method: 'POST',
+        headers: { ...baseHeaders, Prefer: 'return=representation' },
+        body: JSON.stringify(payload)
+      });
     }
 
-    if (writeError) {
-      console.error('Write error:', writeError);
-      return json(500, { success: false, error: 'Database write error' });
+    if (!writeRes.ok) {
+      const t = await writeRes.text();
+      return { statusCode: 500, body: JSON.stringify({ success: false, error: t }) };
     }
 
-    // Optional: mirror the URL into user_profiles if that column exists
-    try {
-      await supabase
-        .from('user_profiles')
-        .update({ kick_channel_url: `https://kick.com/${slug}` })
-        .eq('user_id', userId);
-    } catch (e) {
-      // Non-fatal if table/column not present
-      console.warn('user_profiles update skipped:', e?.message);
-    }
-
-    return json(200, { success: true, username: slug });
+    const data = await writeRes.json();
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ success: true, connection: data[0] || null })
+    };
   } catch (err) {
-    console.error('Unhandled error:', err);
-    return json(500, { success: false, error: err.message });
+    console.error('add-kick-channel error:', err);
+    return { statusCode: 500, body: JSON.stringify({ success: false, error: err.message }) };
   }
 };
