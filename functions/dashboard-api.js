@@ -459,7 +459,6 @@ async function generateClip(userId, streamData, supabase, headers) {
     }
 }
 
-
 // Get analytics data
 async function getAnalytics(userId, timeframe, supabase, headers) {
     try {

@@ -1,111 +1,94 @@
-const { createClient } = require('@supabase/supabase-js');
+// netlify/functions/add-kick-channel.js
+const { supabase } = require('./_supabase');
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+const json = (status, payload = {}) => ({
+  statusCode: status,
+  headers: {
+    'Content-Type': 'application/json',
+    // CORS so it works from your site and local dev
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+  },
+  body: JSON.stringify(payload)
+});
 
 exports.handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS'
-      }
-    };
-  }
-
-  if (event.httpMethod !== 'POST') {
-    return { 
-      statusCode: 405, 
-      headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ error: 'Method not allowed' })
-    };
-  }
+  if (event.httpMethod === 'OPTIONS') return json(200);
+  if (event.httpMethod !== 'POST') return json(405, { success: false, error: 'Method not allowed' });
 
   try {
-    const { userId, kickUsername } = JSON.parse(event.body);
+    const { userId, kickUsername } = JSON.parse(event.body || '{}');
 
     if (!userId || !kickUsername) {
-      throw new Error('Missing userId or kickUsername');
+      return json(400, { success: false, error: 'Missing userId or kickUsername' });
     }
 
-    console.log(`Adding Kick channel ${kickUsername} for user ${userId}`);
+    // Normalize Kick slug (strip leading @, trim)
+    const slug = String(kickUsername).trim().replace(/^@/, '');
+    const isValid = /^[A-Za-z0-9_]+$/.test(slug);
+    if (!isValid) return json(400, { success: false, error: 'Invalid Kick username' });
 
-    // Skip Kick API verification due to Cloudflare protection
-    console.log('Skipping Kick API verification due to Cloudflare protection');
+    // Does a Kick connection already exist?
+    const { data: existing, error: selectError } = await supabase
+      .from('streaming_connections')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('platform', 'kick')
+      .maybeSingle();
 
-    // Check if connection already exists - WITH BETTER ERROR HANDLING
-    let existing = null;
-    try {
-      const { data, error } = await supabase
+    if (selectError) {
+      console.error('Select error:', selectError);
+      return json(500, { success: false, error: 'Database read error' });
+    }
+
+    let writeError = null;
+
+    if (existing) {
+      // Update existing connection
+      const { error } = await supabase
         .from('streaming_connections')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('platform', 'kick');
-      
-      if (error) {
-        console.error('Error checking existing connection:', error);
-        // Continue anyway - we'll try to insert
-      } else {
-        existing = data && data.length > 0 ? data[0] : null;
-      }
-    } catch (err) {
-      console.error('Query error:', err);
-      // Continue with insert attempt
+        .update({
+          platform_user_id: slug,
+          username: slug,
+          is_active: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existing.id);
+      writeError = error;
+    } else {
+      // Create new connection
+      const { error } = await supabase
+        .from('streaming_connections')
+        .insert({
+          user_id: userId,
+          platform: 'kick',
+          platform_user_id: slug,
+          username: slug,
+          is_active: true
+        });
+      writeError = error;
     }
 
-    const connectionData = {
-      user_id: userId,
-      platform: 'kick',
-      platform_user_id: `kick_${kickUsername}`,
-      platform_username: kickUsername,
-      access_token: 'PUBLIC_ACCESS',
-      refresh_token: 'NOT_APPLICABLE',
-      is_active: true,
-      created_at: new Date().toISOString()  // FIXED: was connected_at
-    };
+    if (writeError) {
+      console.error('Write error:', writeError);
+      return json(500, { success: false, error: 'Database write error' });
+    }
 
-    // Insert or update with better error handling
+    // Optional: mirror the URL into user_profiles if that column exists
     try {
-      if (existing) {
-        const { error } = await supabase
-          .from('streaming_connections')
-          .update(connectionData)
-          .eq('id', existing.id);
-        
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase
-          .from('streaming_connections')
-          .insert([connectionData])  // Note: wrap in array
-          .select();
-        
-        if (error) throw error;
-        console.log('Inserted connection:', data);
-      }
-    } catch (error) {
-      console.error('Save error:', error);
-      throw error;
+      await supabase
+        .from('user_profiles')
+        .update({ kick_channel_url: `https://kick.com/${slug}` })
+        .eq('user_id', userId);
+    } catch (e) {
+      // Non-fatal if table/column not present
+      console.warn('user_profiles update skipped:', e?.message);
     }
 
-    return {
-      statusCode: 200,
-      headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({
-        success: true,
-        username: kickUsername
-      })
-    };
-
-  } catch (error) {
-    console.error('Kick connection error:', error);
-    return {
-      statusCode: 500,
-      headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ error: error.message })
-    };
+    return json(200, { success: true, username: slug });
+  } catch (err) {
+    console.error('Unhandled error:', err);
+    return json(500, { success: false, error: err.message });
   }
 };

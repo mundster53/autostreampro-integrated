@@ -28,6 +28,19 @@ exports.handler = async (event, context) => {
   }
 
   try {
+    // Initialize Resend with API key
+    if (!process.env.RESEND_API_KEY) {
+      console.error('RESEND_API_KEY not found in environment variables');
+      return {
+        statusCode: 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+        body: JSON.stringify({ error: 'Email service not configured' })
+      };
+    }
+
     const resend = new Resend(process.env.RESEND_API_KEY);
     const { to, subject, html, from, replyTo, tags } = JSON.parse(event.body);
 
@@ -52,6 +65,8 @@ exports.handler = async (event, context) => {
       reply_to: replyTo || 'support@autostreampro.com',
       tags: tags || []
     });
+
+    console.log('Email sent successfully:', data);
 
     return {
       statusCode: 200,

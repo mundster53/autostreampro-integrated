@@ -106,7 +106,7 @@ try {
             }
         })
     });
-    
+    t
     const channelResult = await channelResponse.json();
     
     if (channelResult.success) {

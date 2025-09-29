@@ -422,7 +422,17 @@
                 <div id="kickConnection" style="display: none;">
                     <div class="input-group">
                         <label>Your Kick Username</label>
-                        <input type="text" id="kickUsername" class="input-field" placeholder="Enter your Kick username">
+                        <input
+                            type="text"
+                            id="kickUsername"
+                            class="input-field"
+                            placeholder="Enter your Kick username"
+                            pattern="^[A-Za-z0-9_]{2,25}$"
+                            title="2–25 characters: letters, numbers, and underscores only"
+                            autocomplete="username"
+                            inputmode="latin"
+                            />
+
                         <div class="validation-message" id="kickValidation"></div>
                     </div>
                     <button class="nav-btn btn-next" onclick="connectKick()" style="width: 100%; margin-top: 15px;">
@@ -544,53 +554,89 @@
         let selectedThreshold = 40;
         
         // Platform Connection Functions
-        async function connectKick() {
-            const username = document.getElementById('kickUsername').value.trim();
-            if (!username) {
-                document.getElementById('kickValidation').className = 'validation-message error';
-                document.getElementById('kickValidation').textContent = 'Please enter your Kick username';
-                document.getElementById('kickValidation').style.display = 'block';
-                return;
-            }
-            
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                alert('Please log in first');
-                window.location.href = '/login.html';
-                return;
-            }
-            
-            try {
-                const response = await fetch('/.netlify/functions/add-kick-channel', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        userId: user.id,
-                        kickUsername: username
-                    })
-                });
-                
-                const result = await response.json();
-                if (result.success) {
-                    document.getElementById('kickValidation').className = 'validation-message success';
-                    document.getElementById('kickValidation').textContent = `✓ Connected: ${username}`;
-                    document.getElementById('kickValidation').style.display = 'block';
-                    
-                    // Enable navigation next button
-                    const navNext = document.querySelector('#wizardNav .btn-next');
-                    if (navNext) navNext.disabled = false;
-                } else {
-                    document.getElementById('kickValidation').className = 'validation-message error';
-                    document.getElementById('kickValidation').textContent = 'Could not find that Kick channel';
-                    document.getElementById('kickValidation').style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Kick connection error:', error);
-                document.getElementById('kickValidation').className = 'validation-message error';
-                document.getElementById('kickValidation').textContent = 'Connection error. Please try again.';
-                document.getElementById('kickValidation').style.display = 'block';
-            }
-        }
+
+
+async function connectKick() {
+  const input = document.getElementById('kickUsername');
+  const username = input.value.trim();
+
+  // Basic front-end validation
+  const re = /^[A-Za-z0-9_]{2,25}$/;
+  if (!username || !re.test(username)) {
+    const msg = document.getElementById('kickValidation');
+    msg.className = 'validation-message error';
+    msg.textContent = 'Please enter a valid Kick username (2–25 letters, numbers, underscores).';
+    msg.style.display = 'block';
+    input.focus();
+    return;
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    alert('Please log in first');
+    window.location.href = '/login.html';
+    return;
+  }
+
+  try {
+    // 1) Tell your backend to connect/save the Kick channel (existing flow)
+    const response = await fetch('/.netlify/functions/add-kick-channel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: user.id,
+        kickUsername: username
+      })
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      const msg = document.getElementById('kickValidation');
+      msg.className = 'validation-message error';
+      msg.textContent = result.error || 'Could not verify that Kick channel. Please check the username.';
+      msg.style.display = 'block';
+      return;
+    }
+
+    // 2) ALSO persist slug + canonical URL to user_profiles (for easy reads elsewhere)
+    const { error: profileErr } = await supabase
+      .from('user_profiles')
+      .upsert(
+        {
+          user_id: user.id,
+          kick_channel_slug: username,
+          kick_channel_url: `https://kick.com/${username}`,
+          updated_at: new Date()
+        },
+        { onConflict: 'user_id' }
+      );
+
+    // Do not block wizard if profile save fails; just notify in console
+    if (profileErr) {
+      console.warn('Saved Kick connection, but failed to store slug in user_profiles:', profileErr.message);
+    }
+
+    // Success UI
+    const msg = document.getElementById('kickValidation');
+    msg.className = 'validation-message success';
+    msg.textContent = `✓ Connected: ${username}`;
+    msg.style.display = 'block';
+
+    // Enable the Next button for the wizard
+    const navNext = document.querySelector('#wizardNav .btn-next');
+    if (navNext) navNext.disabled = false;
+
+  } catch (err) {
+    console.error('Kick connection error:', err);
+    const msg = document.getElementById('kickValidation');
+    msg.className = 'validation-message error';
+    msg.textContent = 'Connection error. Please try again.';
+    msg.style.display = 'block';
+  }
+}
+</script>
+
         
         function connectTwitch() {
             const redirectUri = 'https://autostreampro.com/onboarding-wizard.html';

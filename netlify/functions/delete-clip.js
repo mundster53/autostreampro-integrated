@@ -69,7 +69,7 @@ exports.handler = async (event, context) => {
             headers,
             body: JSON.stringify({ 
                 error: 'Failed to delete clip',
-                details: error.message 
+                details: error.message
             })
         };
     }
