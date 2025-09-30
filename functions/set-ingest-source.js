@@ -1,6 +1,6 @@
 // POST /.netlify/functions/set-ingest-source
-// Looks up the active Kick handle for this user in Supabase,
-// sets Railway KICK_CHANNEL, and redeploys the ingest service.
+// Looks up the user's active Kick handle (Option A via userId) or accepts platform_user_id,
+// sets Railway KICK_CHANNEL, then redeploys the ingest service. CommonJS, no extra deps.
 
 const {
   SUPABASE_URL,
@@ -17,10 +17,7 @@ async function gqlWithFallback(query, variables = {}) {
   for (const endpoint of [GQL_V2, GQL_V1]) {
     const res = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RAILWAY_TOKEN}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${RAILWAY_TOKEN}` },
       body: JSON.stringify({ query, variables }),
     });
     if (res.status === 404) continue; // try next endpoint
@@ -33,18 +30,10 @@ async function gqlWithFallback(query, variables = {}) {
 }
 
 async function getActiveKickHandleForUser(userId) {
-  const url = `${SUPABASE_URL}/rest/v1/streaming_connections?select=platform_user_id&platform=eq.kick&is_active=eq.true&user_id=eq.${encodeURIComponent(
-    userId
-  )}&limit=1`;
-
+  const url = `${SUPABASE_URL}/rest/v1/streaming_connections?select=platform_user_id&platform=eq.kick&is_active=eq.true&user_id=eq.${encodeURIComponent(userId)}&limit=1`;
   const res = await fetch(url, {
-    headers: {
-      apikey: SUPABASE_SERVICE_KEY,
-      Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-      Accept: "application/json",
-    },
+    headers: { apikey: SUPABASE_SERVICE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`, Accept: "application/json" },
   });
-
   if (!res.ok) throw new Error(`Supabase HTTP ${res.status}: ${await res.text()}`);
   const rows = await res.json();
   return rows?.[0]?.platform_user_id ?? null;
@@ -53,9 +42,7 @@ async function getActiveKickHandleForUser(userId) {
 async function getFirstEnvironmentId(projectId) {
   const data = await gqlWithFallback(
     `query ($projectId: String!) {
-      project(id: $projectId) {
-        environments(first: 10) { edges { node { id name } } }
-      }
+      project(id: $projectId) { environments(first: 10) { edges { node { id name } } } }
     }`,
     { projectId }
   );
@@ -70,14 +57,7 @@ async function upsertKickChannelVar({ projectId, environmentId, serviceId, kickH
     `mutation ($input: VariableCollectionUpsertInput!) {
       variableCollectionUpsert(input: $input) { id }
     }`,
-    {
-      input: {
-        projectId,
-        environmentId,
-        serviceId,
-        variables: [{ name: "KICK_CHANNEL", value: kickHandle }],
-      },
-    }
+    { input: { projectId, environmentId, serviceId, variables: [{ name: "KICK_CHANNEL", value: kickHandle }] } }
   );
 }
 
@@ -104,7 +84,6 @@ exports.handler = async (event) => {
     if (!RAILWAY_INGEST_KICK_SERVICE_ID) missing.push("RAILWAY_INGEST_KICK_SERVICE_ID");
     if (missing.length) return { statusCode: 500, body: `Missing env: ${missing.join(", ")}` };
 
-    // Normal path (Option A): use userId -> lookup handle in DB
     let kickHandle = platform_user_id;
     if (!kickHandle) {
       if (!userId) return { statusCode: 400, body: "Provide userId or platform_user_id" };
@@ -113,19 +92,10 @@ exports.handler = async (event) => {
     }
 
     const environmentId = await getFirstEnvironmentId(RAILWAY_PROJECT_ID);
-    await upsertKickChannelVar({
-      projectId: RAILWAY_PROJECT_ID,
-      environmentId,
-      serviceId: RAILWAY_INGEST_KICK_SERVICE_ID,
-      kickHandle,
-    });
+    await upsertKickChannelVar({ projectId: RAILWAY_PROJECT_ID, environmentId, serviceId: RAILWAY_INGEST_KICK_SERVICE_ID, kickHandle });
     await restartService({ serviceId: RAILWAY_INGEST_KICK_SERVICE_ID, environmentId });
 
-    return {
-      statusCode: 200,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ok: true, message: `Ingest now set to ${kickHandle}` }),
-    };
+    return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ok: true, message: `Ingest now set to ${kickHandle}` }) };
   } catch (err) {
     return { statusCode: 500, body: `Error: ${err.message}` };
   }
