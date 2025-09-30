@@ -1,56 +1,62 @@
 // functions/railway-debug.js
+const ENDPOINT = 'https://backboard.railway.com/graphql/v2';
+
 exports.handler = async () => {
-  const out = { endpoints: {}, project: null, services: null, envs: null, errors: [] };
-  const eps = [
-    "https://backboard.railway.app/graphql/v2",
-    "https://backboard.railway.app/graphql",
-    "https://backbone.railway.app/graphql/v2",
-  ];
-  const token = process.env.RAILWAY_TOKEN;
-  const pid = process.env.RAILWAY_PROJECT_ID;
-  const sid = process.env.RAILWAY_INGEST_KICK_SERVICE_ID;
+  const mask = v => (v ? `${String(v).slice(0,4)}…len${String(v).length}` : null);
+  const out = {
+    env: {
+      has_TOKEN: !!process.env.RAILWAY_TOKEN,
+      TOKEN_masked: mask(process.env.RAILWAY_TOKEN),
+      has_PROJECT_ID: !!process.env.RAILWAY_PROJECT_ID,
+      PROJECT_ID_masked: mask(process.env.RAILWAY_PROJECT_ID),
+      has_SERVICE_ID: !!process.env.RAILWAY_INGEST_KICK_SERVICE_ID,
+      SERVICE_ID_masked: mask(process.env.RAILWAY_INGEST_KICK_SERVICE_ID),
+    },
+    viewer: null,
+    project: null,
+    status: {}
+  };
 
-  async function tryEp(url, q, v) {
-    try {
-      const r = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ query: q, variables: v || {} }),
+  try {
+    // 1) viewer
+    const v = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.RAILWAY_TOKEN}`,
+      },
+      body: JSON.stringify({ query: 'query{ viewer { id } }' }),
+    });
+    out.status.viewerHTTP = v.status;
+    const vtxt = await v.text();
+    try { out.viewer = JSON.parse(vtxt).data?.viewer || null; }
+    catch { out.status.viewerBody = vtxt; }
+
+    // 2) project (proves token’s team scope)
+    if (process.env.RAILWAY_PROJECT_ID) {
+      const p = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.RAILWAY_TOKEN}`,
+        },
+        body: JSON.stringify({
+          query: 'query($id:String!){ project(id:$id){ id name services(first:5){ edges{ node{ id name } } } environments(first:5){ edges{ node{ id name } } } } }',
+          variables: { id: process.env.RAILWAY_PROJECT_ID },
+        }),
       });
-      out.endpoints[url] = { status: r.status, ok: r.ok };
-      if (!r.ok) { out.endpoints[url].body = await r.text(); return null; }
-      const j = await r.json();
-      if (j.errors) out.endpoints[url].errors = j.errors;
-      return j.data;
-    } catch (e) {
-      out.endpoints[url] = { error: String(e) };
-      return null;
+      out.status.projectHTTP = p.status;
+      const ptxt = await p.text();
+      try { out.project = JSON.parse(ptxt).data?.project || null; }
+      catch { out.status.projectBody = ptxt; }
     }
+  } catch (e) {
+    out.status.error = String(e);
   }
 
-  const basicQ = "query{ viewer { id } }";
-  for (const ep of eps) await tryEp(ep, basicQ);
-
-  // Use first working endpoint to fetch project/services/environments
-  const good = eps.find(e => out.endpoints[e]?.ok);
-  if (good && pid) {
-    const data = await tryEp(good, `query($id:String!){
-      project(id:$id){
-        id name
-        services(first:100){ edges{ node{ id name } } }
-        environments(first:20){ edges{ node{ id name } } }
-      }
-    }`, { id: pid });
-    out.project = data?.project || null;
-    out.services = data?.project?.services || null;
-    out.envs = data?.project?.environments || null;
-
-    // Hint checks
-    if (sid && out.services) {
-      const found = (out.services.edges||[]).some(e => e.node?.id === sid);
-      if (!found) out.errors.push("Service ID not found in this project.");
-    }
-  }
-
-  return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify(out, null, 2) };
+  return {
+    statusCode: 200,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(out, null, 2),
+  };
 };
