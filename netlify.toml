@@ -66,6 +66,11 @@
   to = "/onboarding.html"
   status = 200
 
+  [[redirects]]
+  from = "/api/set-ingest-source"
+  to = "/.netlify/functions/set-ingest-source"
+  status = 200
+
 # AUTOMATIC queue processing every 3 minutes
 [functions."autoProcessQueue"]  
   schedule = "*/3 * * * *"
