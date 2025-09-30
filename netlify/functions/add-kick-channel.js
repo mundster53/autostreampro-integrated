@@ -1,6 +1,7 @@
 // netlify/functions/add-kick-channel.js
 // Dynamically inspects the `streaming_connections` columns via Supabase GraphQL
 // and only writes to columns that actually exist.
+// AFTER a successful write, it calls set-ingest-source with { userId } to point ingest at this user's Kick channel.
 
 exports.handler = async (event) => {
   try {
@@ -173,7 +174,52 @@ exports.handler = async (event) => {
     }
 
     const data = await writeRes.json();
-    return { statusCode: 200, body: JSON.stringify({ success: true, connection: data[0] || null }) };
+    const connection = data[0] || null;
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 4) NEW: Point ingest at this user's Kick channel (Option A: send userId)
+    //     We call our sibling Netlify function *server-side* to avoid any
+    //     client hardcoding. We do NOT fail the whole request if ingest step fails.
+    // ─────────────────────────────────────────────────────────────────────────────
+    let ingest = null;
+    let ingestError = null;
+    try {
+      const base =
+        process.env.URL || // production primary URL (custom domain if set)
+        process.env.DEPLOY_PRIME_URL || // deploy-specific URL
+        ''; // if empty, skip calling
+
+      if (base) {
+        const res = await fetch(`${base}/.netlify/functions/set-ingest-source`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId })
+        });
+        const txt = await res.text();
+        ingest = (res.headers.get('content-type') || '').includes('application/json')
+          ? JSON.parse(txt)
+          : { raw: txt };
+        if (!res.ok) {
+          ingestError = ingest?.message || ingest?.error || txt || `HTTP ${res.status}`;
+          ingest = null;
+        }
+      } else {
+        ingestError = 'No base URL available to call set-ingest-source';
+      }
+    } catch (e) {
+      ingestError = e?.message || String(e);
+    }
+
+    // Final response: always return the DB result; include ingest status if available
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        success: true,
+        connection,
+        ingest: ingest || undefined,
+        ingestError: ingestError || undefined
+      })
+    };
   } catch (err) {
     console.error('add-kick-channel error:', err);
     return { statusCode: 500, body: JSON.stringify({ success: false, error: err.message }) };

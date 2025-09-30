@@ -8,7 +8,7 @@
   NPM_VERSION = "8"
 
 [functions]
-  directory = "netlify/functions"
+  directory = "functions"
   node_bundler = "esbuild"
 
 [[redirects]]

@@ -1,8 +1,6 @@
-// CommonJS to avoid ESM/package.json config
+// GET /.netlify/functions/ping
 exports.handler = async (event) => {
-  if (event.httpMethod !== "GET") {
-    return { statusCode: 405, body: "Use GET" };
-  }
+  if (event.httpMethod !== "GET") return { statusCode: 405, body: "Use GET" };
   return {
     statusCode: 200,
     headers: { "Content-Type": "application/json" },
