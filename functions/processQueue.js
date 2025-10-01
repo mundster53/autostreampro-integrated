@@ -81,11 +81,11 @@ exports.handler = async (event, context) => {
         // Count how many YouTube posts this user already has today.
         // Using your existing pattern: clips.youtube_id != null indicates a published YouTube video.
         const { count: userUploadsToday } = await supabase
-          .from('clips')
+          .from('published_content')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', userId)
-          .not('youtube_id', 'is', null)
-          .gte('created_at', todayISO);
+          .eq('platform', PLATFORM)   // 'youtube'
+          .gte('published_at', todayISO);
 
         // How many we have already taken for this user in THIS run?
         const alreadyThisRun = processedThisRun.get(userId) || 0;
