@@ -1,7 +1,6 @@
-// netlify/functions/add-kick-channel.js
-// Dynamically inspects the `streaming_connections` columns via Supabase GraphQL
-// and only writes to columns that actually exist.
-// AFTER a successful write, it calls set-ingest-source with { userId } to point ingest at this user's Kick channel.
+// functions/add-kick-channel.js
+// Dynamically inspects the `streaming_connections` columns via Supabase GraphQL,
+// writes only to columns that exist, then (on success) tells ingest to point at this user.
 
 exports.handler = async (event) => {
   try {
@@ -87,7 +86,6 @@ exports.handler = async (event) => {
     }
 
     if (!columns) {
-      // If we cannot introspect, fail loudly so we don’t guess wrong
       return {
         statusCode: 500,
         body: JSON.stringify({ success: false, error: 'Could not introspect streaming_connections schema' })
@@ -98,28 +96,22 @@ exports.handler = async (event) => {
     // 2) Build a payload that ONLY includes columns that exist
     // ─────────────────────────────────────────────────────────────────────────────
     const payload = {};
-
-    // Always try to set these common columns if present:
     if (columns.has('user_id')) payload.user_id = userId;
     if (columns.has('platform')) payload.platform = platform;
     if (columns.has('platform_user_id')) payload.platform_user_id = normalizedUsername;
     if (columns.has('is_active')) payload.is_active = true;
     if (columns.has('updated_at')) payload.updated_at = new Date().toISOString();
 
-    // Store the human username in the *best matching* column that exists
+    // Try to store the display name in the best-matching column
     const usernameCandidateColumns = [
-      'username',
-      'platform_username',
-      'display_name',
-      'channel_username',
-      'channel_title',
-      'name'
+      'username', 'platform_username', 'display_name',
+      'channel_username', 'channel_title', 'name'
     ];
     const nameCol = usernameCandidateColumns.find(c => columns.has(c));
-    if (nameCol) payload[nameCol] = rawUsername; // keep original case for display
+    if (nameCol) payload[nameCol] = rawUsername;
 
     // ─────────────────────────────────────────────────────────────────────────────
-    // 3) Upsert-style: if row for (user_id, platform) exists -> update; else insert
+    // 3) Upsert-style write via Supabase REST
     // ─────────────────────────────────────────────────────────────────────────────
     const restHeaders = {
       apikey: SUPABASE_SERVICE_KEY,
@@ -127,7 +119,7 @@ exports.handler = async (event) => {
       'Content-Type': 'application/json'
     };
 
-    // Try to find existing connection
+    // Find existing connection
     let existingId = null;
     if (columns.has('user_id') && columns.has('platform')) {
       const sel = await fetch(
@@ -152,7 +144,6 @@ exports.handler = async (event) => {
         }
       );
     } else {
-      // Ensure minimally required fields for insert
       if (!payload.user_id || !payload.platform) {
         return {
           statusCode: 400,
@@ -177,40 +168,45 @@ exports.handler = async (event) => {
     const connection = data[0] || null;
 
     // ─────────────────────────────────────────────────────────────────────────────
-    // 4) NEW: Point ingest at this user's Kick channel (Option A: send userId)
-    //     We call our sibling Netlify function *server-side* to avoid any
-    //     client hardcoding. We do NOT fail the whole request if ingest step fails.
+    // 4) Tell ingest to point at THIS user's Kick channel (single call)
+    //    server→server, optional ADMIN_SECRET, non-fatal if it hiccups
     // ─────────────────────────────────────────────────────────────────────────────
     let ingest = null;
     let ingestError = null;
     try {
-      const base =
-        process.env.URL || // production primary URL (custom domain if set)
-        process.env.DEPLOY_PRIME_URL || // deploy-specific URL
-        ''; // if empty, skip calling
+      const base = (
+        process.env.SITE_URL ||
+        process.env.URL ||
+        process.env.DEPLOY_PRIME_URL ||
+        ''
+      ).replace(/\/$/, '');
 
       if (base) {
+        const headers = { 'Content-Type': 'application/json' };
+        if (process.env.ADMIN_SECRET) headers['x-admin-secret'] = process.env.ADMIN_SECRET;
+
         const res = await fetch(`${base}/.netlify/functions/set-ingest-source`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId })
+          headers,
+          body: JSON.stringify({ userId }) // no handle hard-coding; function will look it up
         });
+
         const txt = await res.text();
-        ingest = (res.headers.get('content-type') || '').includes('application/json')
-          ? JSON.parse(txt)
-          : { raw: txt };
-        if (!res.ok) {
-          ingestError = ingest?.message || ingest?.error || txt || `HTTP ${res.status}`;
-          ingest = null;
+        const json = (res.headers.get('content-type') || '').includes('application/json')
+          ? JSON.parse(txt) : { raw: txt };
+
+        if (res.ok) {
+          ingest = json;
+        } else {
+          ingestError = json?.error || json?.message || txt || `HTTP ${res.status}`;
         }
       } else {
-        ingestError = 'No base URL available to call set-ingest-source';
+        ingestError = 'No site base URL available to call set-ingest-source';
       }
     } catch (e) {
       ingestError = e?.message || String(e);
     }
 
-    // Final response: always return the DB result; include ingest status if available
     return {
       statusCode: 200,
       body: JSON.stringify({
