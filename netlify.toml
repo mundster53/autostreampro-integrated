@@ -10,6 +10,15 @@
   path = "/.netlify/functions/processQueue"
   schedule = "*/5 * * * *"
 
+[[scheduled]]
+  path = "/.netlify/functions/processQueueTiktok"
+  schedule = "*/5 * * * *"
+
+[[scheduled]]
+  path = "/.netlify/functions/processQueueInstagram"
+  schedule = "*/5 * * * *"
+
+
 [functions]
   directory = "functions"
   node_bundler = "esbuild"
