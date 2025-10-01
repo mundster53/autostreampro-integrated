@@ -1,11 +1,14 @@
 [build]
   publish = "."
-  functions = "netlify/functions"
   command = "npm install"
 
 [build.environment]
   NODE_VERSION = "18"
   NPM_VERSION = "8"
+
+[[scheduled]]
+  path = "/.netlify/functions/processQueue"
+  schedule = "*/5 * * * *"
 
 [functions]
   directory = "functions"
@@ -86,6 +89,7 @@
 
 [functions."autoFixMissingViral"]
   schedule = "*/15 * * * *" 
+
 
 # SEO Performance Tracking - runs daily at 3 AM
 [functions."seo-performance-tracker"]
