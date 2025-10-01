@@ -135,7 +135,8 @@ exports.handler = async (event) => {
           .from('published_content')
           .insert({
             clip_id: upload.clip_id,
-            platform: PLATFORM,
+            user_id: upload.clips.user_id,           // ✅ add this
+            platform: 'instagram',
             platform_post_id: json.mediaId || json.id || null,
             platform_url: json.permalink || null,
             published_at: new Date().toISOString(),

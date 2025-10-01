@@ -149,6 +149,7 @@ exports.handler = async (event, context) => {
           .from('published_content')
           .insert({
             clip_id: upload.clip_id,
+            user_id: upload.clips.user_id,
             platform: 'youtube',
             platform_post_id: response.youtubeId,
             platform_url: response.youtubeUrl || `https://www.youtube.com/watch?v=${response.youtubeId}`,

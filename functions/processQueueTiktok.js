@@ -135,13 +135,14 @@ exports.handler = async (event) => {
           .from('published_content')
           .insert({
             clip_id: upload.clip_id,
-            platform: PLATFORM,
+            user_id: upload.clips.user_id,           // ✅ add this
+            platform: 'tiktok',
             platform_post_id: json.tiktokId || json.publishId || json.id || null,
             platform_url: json.tiktokUrl || null,
             published_at: new Date().toISOString(),
             last_metrics_update: new Date().toISOString(),
             metrics: {}
-          });
+        });
 
         console.log(`[TikTok] Success clip ${upload.clip_id}`);
 
