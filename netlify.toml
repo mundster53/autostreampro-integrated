@@ -47,6 +47,17 @@
   to   = "/.netlify/functions/youtube-auth"
   status = 200
 
+[[redirects]]
+  from = "/auth/tiktok"
+  to   = "/.netlify/functions/tiktok-auth"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/auth/tiktok/callback"
+  to   = "/.netlify/functions/tiktok-auth"
+  status = 200
+  force = true
 
 [[redirects]]
   from = "/auth/*"
@@ -61,11 +72,6 @@
 [[redirects]]
   from = "/auth/instagram/callback"
   to = "/.netlify/functions/instagram-auth"
-  status = 200
-
-[[redirects]]
-  from = "/auth/tiktok/callback"
-  to = "/.netlify/functions/tiktok-auth"
   status = 200
 
 [[redirects]]
