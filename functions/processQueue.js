@@ -44,8 +44,7 @@ exports.handler = async (event, context) => {
           game,
           video_url,
           user_id,
-          created_at,
-          youtube_id
+          created_at
         )
       `)
       .eq('platform', PLATFORM)
@@ -56,9 +55,29 @@ exports.handler = async (event, context) => {
 
     if (error) throw error;
 
-    // Track how many we publish per user within THIS run to avoid overshooting Top-N.
-    const processedThisRun = new Map();
+    
     const todayISO = new Date().toISOString().split('T')[0] + 'T00:00:00';
+
+    // Per-run tracking (per-user, per-platform) to avoid overshooting caps in this invocation
+    const processedPlatformThisRun = new Map(); // key: `${userId}:${PLATFORM}` -> count
+
+    // Cache today's posted clip_ids (unique) per user
+    const postedClipIdsCache = new Map(); // userId -> Set(clip_id)
+
+    async function getPostedSetForUser(userId) {
+    if (postedClipIdsCache.has(userId)) return postedClipIdsCache.get(userId);
+    const { data, error } = await supabase
+      .from('published_content')
+      .select('clip_id')
+      .eq('user_id', userId)
+      .gte('published_at', todayISO);
+    if (error) {
+    console.warn('getPostedSetForUser error', error);
+    }
+    const set = new Set((data || []).map(r => r.clip_id));
+    postedClipIdsCache.set(userId, set);
+    return set;
+  }
 
     for (const upload of (pendingUploads || [])) {
       try {
@@ -88,29 +107,37 @@ exports.handler = async (event, context) => {
         continue;
       }
 
-        // Count how many YouTube posts this user already has today.
-        // Using your existing pattern: clips.youtube_id != null indicates a published YouTube video.
-        const { count: userUploadsToday } = await supabase
+        // ------- UNIQUE CLIP/DAY QUOTA (cross-posting counts as 1) -------
+        const postedSet = await getPostedSetForUser(userId);
+        const uniqueDailyAllowance = topNPerDay;
+
+        // If we've hit the unique quota and THIS clip hasn't been posted anywhere today, skip it.
+        // (If this clip was already posted to another platform today, allow cross-posting.)
+        if (postedSet.size >= uniqueDailyAllowance && !postedSet.has(upload.clip_id)) {
+          console.log(`[YouTube] Skip new clip ${upload.clip_id}: unique quota reached (${postedSet.size}/${uniqueDailyAllowance})`);
+          continue;
+        }
+        // ------- END UNIQUE CLIP/DAY QUOTA -------
+
+        // ------- PER-PLATFORM DAILY CAP (YouTube) -------
+        const { count: platformPublishedToday } = await supabase
           .from('published_content')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', userId)
           .eq('platform', PLATFORM)   // 'youtube'
           .gte('published_at', todayISO);
 
-        // How many we have already taken for this user in THIS run?
-        const alreadyThisRun = processedThisRun.get(userId) || 0;
+        const platformKey = `${userId}:${PLATFORM}`;
+        const usedThisRun = processedPlatformThisRun.get(platformKey) || 0;
+        const platformCap = PLATFORM_DAILY_CAP;
+        const remainingPlatform = platformCap - (platformPublishedToday || 0) - usedThisRun;
 
-        // Available slots today for this user on this platform
-        const dailyAllowance = Math.min(topNPerDay, PLATFORM_DAILY_CAP);
-        const remaining = dailyAllowance - (userUploadsToday || 0) - alreadyThisRun;
-
-        if (remaining <= 0) {
-          console.log(
-            `Skip ${upload.clip_id}: user ${userId} has no remaining ${PLATFORM} slots today ` +
-            `(tier=${tier}, allowance=${dailyAllowance}, used=${userUploadsToday || 0}, thisRun=${alreadyThisRun})`
-          );
-          continue; // go to next pending upload
+        if (remainingPlatform <= 0) {
+          console.log(`[YouTube] Skip ${upload.clip_id}: platform cap reached (used=${platformPublishedToday || 0}, inRun=${usedThisRun}, cap=${platformCap})`);
+          continue;
         }
+        // Note: we do NOT reserve here. We only count after a successful publish.
+        // ------- END PER-PLATFORM DAILY CAP -------
 
         // ---------- END PER-USER LIMITING ----------
 
@@ -166,8 +193,13 @@ exports.handler = async (event, context) => {
             metrics: {}
           });
 
-          // ✅ Count this success toward today's in-run allowance (no charge on failure)
-          processedThisRun.set(userId, (processedThisRun.get(userId) || 0) + 1);
+          // ✅ Count platform usage for this run (so we don't exceed cap during this invocation)
+          processedPlatformThisRun.set(platformKey, (processedPlatformThisRun.get(platformKey) || 0) + 1);
+
+          // ✅ Count a UNIQUE clip only on the first successful publish of this clip today
+          if (!postedSet.has(upload.clip_id)) {
+          postedSet.add(upload.clip_id);
+        }
 
         console.log(`Successfully processed: ${upload.clip_id}`);
 
