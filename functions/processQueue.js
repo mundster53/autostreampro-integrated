@@ -50,7 +50,7 @@ exports.handler = async (event, context) => {
       `)
       .eq('platform', PLATFORM)
       .eq('status', 'pending')
-      .gte('clips.ai_score', 0.40) // Only process clips with score >= 0.40
+      .gte('clips.ai_score', 0.25) // Only process clips with score >= 0.25
       .order('ai_score', { ascending: false, foreignTable: 'clips' })
       .limit(200);
 
@@ -68,7 +68,7 @@ exports.handler = async (event, context) => {
         // Get user's tier (fallback to 'starter'; map any unknown/enterprise to 'elite' if you prefer)
         const { data: userProfile } = await supabase
           .from('user_profiles')
-          .select('subscription_plan')
+          .select('subscription_plan, viral_threshold')
           .eq('user_id', userId)
           .single();
 
@@ -77,6 +77,16 @@ exports.handler = async (event, context) => {
                    : (tierRaw === 'enterprise' ? 'elite' : 'starter');
 
         const topNPerDay = TOPN[tier] ?? TOPN.starter;
+
+        // Per-user viral threshold with 0.25–0.95 server clamp
+        const rawThreshold = Number(userProfile?.viral_threshold);
+        const userThreshold = Math.min(0.95, Math.max(0.25, Number.isFinite(rawThreshold) ? rawThreshold : 0.25));
+
+        // Skip if this clip’s score is below the user’s chosen threshold
+        if ((upload.clips.ai_score ?? 0) < userThreshold) {
+        console.log(`[YouTube] Skip ${upload.clip_id}: score ${upload.clips.ai_score} < threshold ${userThreshold}`);
+        continue;
+      }
 
         // Count how many YouTube posts this user already has today.
         // Using your existing pattern: clips.youtube_id != null indicates a published YouTube video.
@@ -102,8 +112,6 @@ exports.handler = async (event, context) => {
           continue; // go to next pending upload
         }
 
-        // Reserve one slot for this user in this run
-        processedThisRun.set(userId, alreadyThisRun + 1);
         // ---------- END PER-USER LIMITING ----------
 
         // Optional: mark as 'processing' to reduce duplicate work if multiple runners overlap
@@ -157,6 +165,9 @@ exports.handler = async (event, context) => {
             last_metrics_update: new Date().toISOString(),
             metrics: {}
           });
+
+          // ✅ Count this success toward today's in-run allowance (no charge on failure)
+          processedThisRun.set(userId, (processedThisRun.get(userId) || 0) + 1);
 
         console.log(`Successfully processed: ${upload.clip_id}`);
 
