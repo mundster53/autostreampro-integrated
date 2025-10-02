@@ -91,7 +91,6 @@ exports.handler = async (event) => {
           continue;
         }
 
-        processedThisRun.set(userId, alreadyThisRun + 1);
 
         // Optional: reflect attempt
         await supabase
@@ -143,6 +142,9 @@ exports.handler = async (event) => {
             last_metrics_update: new Date().toISOString(),
             metrics: {}
         });
+
+        // ✅ Count this success toward today's in-run allowance (no charge on failure)
+        processedThisRun.set(userId, (processedThisRun.get(userId) || 0) + 1);
 
         console.log(`[TikTok] Success clip ${upload.clip_id}`);
 
