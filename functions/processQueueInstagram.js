@@ -31,7 +31,7 @@ exports.handler = async (event) => {
   try {
     console.log('[IG] Starting queue processing…');
 
-    // Pull a generous batch; enforce limits in code.
+    // 1) Pull a generous batch; enforce limits in code.
     const { data: pendingUploads, error } = await supabase
       .from('publishing_queue')
       .select(`
@@ -47,23 +47,44 @@ exports.handler = async (event) => {
       `)
       .eq('platform', PLATFORM)
       .eq('status', 'pending')
-      .gte('clips.ai_score', 0.40)
+      .gte('clips.ai_score', 0.25) // wider candidate pool
       .order('ai_score', { ascending: false, foreignTable: 'clips' })
       .limit(200);
 
     if (error) throw error;
 
-    const processedThisRun = new Map();
     const todayISO = new Date().toISOString().split('T')[0] + 'T00:00:00';
 
+    // Per-run tracking (per-user, per-platform)
+    const processedPlatformThisRun = new Map(); // key: `${userId}:instagram` -> count
+
+    // Cache today's posted clip_ids (unique) per user
+    const postedClipIdsCache = new Map(); // userId -> Set(clip_id)
+
+    async function getPostedSetForUser(userId) {
+      if (postedClipIdsCache.has(userId)) return postedClipIdsCache.get(userId);
+      const { data, error } = await supabase
+        .from('published_content')
+        .select('clip_id')
+        .eq('user_id', userId)
+        .gte('published_at', todayISO);
+      if (error) {
+        console.warn('[IG] getPostedSetForUser error', error);
+      }
+      const set = new Set((data || []).map(r => r.clip_id));
+      postedClipIdsCache.set(userId, set);
+      return set;
+    }
+
+    // 2) Process pending uploads, highest score first
     for (const upload of (pendingUploads || [])) {
       try {
         const userId = upload.clips.user_id;
 
-        // Get user's tier
+        // User tier + threshold
         const { data: userProfile } = await supabase
           .from('user_profiles')
-          .select('subscription_plan')
+          .select('subscription_plan, viral_threshold')
           .eq('user_id', userId)
           .single();
 
@@ -74,34 +95,50 @@ exports.handler = async (event) => {
 
         const topNPerDay = TOPN[tier] ?? TOPN.starter;
 
-        // Already published today on Instagram? (use published_content as source of truth)
-        const { count: publishedToday } = await supabase
+        // Per-user viral threshold with 0.25–0.95 clamp
+        const rawThreshold = Number(userProfile?.viral_threshold);
+        const userThreshold = Math.min(0.95, Math.max(0.25, Number.isFinite(rawThreshold) ? rawThreshold : 0.25));
+        if ((upload.clips.ai_score ?? 0) < userThreshold) {
+          console.log(`[IG] Skip ${upload.clip_id}: score ${upload.clips.ai_score} < threshold ${userThreshold}`);
+          continue;
+        }
+
+        // Unique-clip/day quota (cross-posting counts as 1)
+        const postedSet = await getPostedSetForUser(userId);
+        const uniqueDailyAllowance = topNPerDay;
+
+        if (postedSet.size >= uniqueDailyAllowance && !postedSet.has(upload.clip_id)) {
+          console.log(`[IG] Skip new clip ${upload.clip_id}: unique quota reached (${postedSet.size}/${uniqueDailyAllowance})`);
+          continue;
+        }
+
+        // Per-platform daily cap (Instagram)
+        const { count: platformPublishedToday } = await supabase
           .from('published_content')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', userId)
           .eq('platform', PLATFORM)
           .gte('published_at', todayISO);
 
-        const alreadyThisRun = processedThisRun.get(userId) || 0;
-        const dailyAllowance = Math.min(topNPerDay, PLATFORM_DAILY_CAP);
-        const remaining = dailyAllowance - (publishedToday || 0) - alreadyThisRun;
+        const platformKey = `${userId}:${PLATFORM}`;
+        const usedThisRun = processedPlatformThisRun.get(platformKey) || 0;
+        const remainingPlatform = PLATFORM_DAILY_CAP - (platformPublishedToday || 0) - usedThisRun;
 
-        if (remaining <= 0) {
-          console.log(`[IG] Skip ${upload.clip_id}: user ${userId} out of slots (tier=${tier})`);
+        if (remainingPlatform <= 0) {
+          console.log(`[IG] Skip ${upload.clip_id}: platform cap reached (used=${platformPublishedToday || 0}, inRun=${usedThisRun}, cap=${PLATFORM_DAILY_CAP})`);
           continue;
         }
 
-
-        // Optional: reflect attempt
+        // Mark attempt (optional)
         await supabase
           .from('publishing_queue')
           .update({
-            status: 'pending',
+            status: 'pending', // keep status model
             attempts: (upload.attempts || 0) + 1
           })
           .eq('id', upload.id);
 
-        // Call your Instagram publisher
+        // 3) Publish to Instagram (your existing function)
         const resp = await fetch(
           'https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/post-to-instagram',
           {
@@ -120,7 +157,7 @@ exports.handler = async (event) => {
           throw new Error(json.error || 'Instagram publish failed');
         }
 
-        // Mark queue item completed
+        // 4) Success bookkeeping
         await supabase
           .from('publishing_queue')
           .update({
@@ -129,13 +166,12 @@ exports.handler = async (event) => {
           })
           .eq('id', upload.id);
 
-        // Record in published_content
         await supabase
           .from('published_content')
           .insert({
             clip_id: upload.clip_id,
-            user_id: upload.clips.user_id,           // ✅ add this
-            platform: 'instagram',
+            user_id: upload.clips.user_id,
+            platform: PLATFORM,
             platform_post_id: json.mediaId || json.id || null,
             platform_url: json.permalink || null,
             published_at: new Date().toISOString(),
@@ -143,11 +179,15 @@ exports.handler = async (event) => {
             metrics: {}
           });
 
-          // ✅ Count this success toward today's in-run allowance (no charge on failure)
-          processedThisRun.set(userId, (processedThisRun.get(userId) || 0) + 1);
+        // Count platform usage for this run (so we don't exceed cap during this invocation)
+        processedPlatformThisRun.set(platformKey, (processedPlatformThisRun.get(platformKey) || 0) + 1);
+
+        // Count a UNIQUE clip only on the first successful publish of this clip today
+        if (!postedSet.has(upload.clip_id)) {
+          postedSet.add(upload.clip_id);
+        }
 
         console.log(`[IG] Success clip ${upload.clip_id}`);
-
       } catch (e) {
         console.error(`[IG] Upload error for ${upload?.clip_id}:`, e.message);
         await supabase
