@@ -32,6 +32,7 @@ exports.handler = async (event, context) => {
 
   try {
     console.log('Starting queue processing...');
+    const nowIso = new Date().toISOString();
 
     // Pull a generous pending batch (highest ai_score first); we'll enforce per-user/day limits below.
     const { data: pendingUploads, error } = await supabase
@@ -49,6 +50,7 @@ exports.handler = async (event, context) => {
       `)
       .eq('platform', PLATFORM)
       .eq('status', 'pending')
+      .or(`(next_attempt_at.is.null,next_attempt_at.lte.${nowIso})`) // only retry-ready or never-scheduled
       .gte('clips.ai_score', 0.25) // Only process clips with score >= 0.25
       .order('ai_score', { ascending: false, foreignTable: 'clips' })
       .limit(200);
@@ -205,14 +207,22 @@ exports.handler = async (event, context) => {
 
       } catch (uploadError) {
         console.error(`Upload error for ${upload.clip_id}:`, uploadError.message);
+        const attemptNo = (upload.attempts || 0) + 1;
 
-        await supabase
-          .from('publishing_queue')
-          .update({
-            status: 'failed',
-            last_error: uploadError.message
-          })
-          .eq('id', upload.id);
+      // backoff schedule (minutes). You can override via env later if you want.
+      const backoffMins = [5, 15, 60, 180, 360]; // 5m, 15m, 1h, 3h, 6h
+      const delayMin = backoffMins[Math.min(attemptNo - 1, backoffMins.length - 1)];
+      const nextAttemptAt = new Date(Date.now() + delayMin * 60 * 1000).toISOString();
+
+      await supabase
+        .from('publishing_queue')
+        .update({
+          status: 'pending',           // stay pending; scheduler will skip until next_attempt_at
+          last_error: uploadError.message,
+          next_attempt_at: nextAttemptAt
+          // NOTE: attempts was already incremented earlier in your "mark attempt" update
+      })
+      .eq('id', upload.id);
       }
     }
 
