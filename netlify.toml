@@ -41,6 +41,13 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
+# must be placed BEFORE the generic /auth/* rule
+[[redirects]]
+  from = "/auth/youtube"
+  to   = "/.netlify/functions/youtube-auth"
+  status = 200
+
+
 [[redirects]]
   from = "/auth/*"
   to = "/.netlify/functions/:splat"
@@ -59,11 +66,6 @@
 [[redirects]]
   from = "/auth/tiktok/callback"
   to = "/.netlify/functions/tiktok-auth"
-  status = 200
-
-[[redirects]]
-  from = "/auth/youtube/callback"
-  to = "/.netlify/functions/youtube-auth"
   status = 200
 
 [[redirects]]
