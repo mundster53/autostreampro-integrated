@@ -18,6 +18,9 @@
   path = "/.netlify/functions/processQueueInstagram"
   schedule = "*/5 * * * *"
 
+[[scheduled]]
+  path = "/.netlify/functions/monitor-kick-streams"
+  schedule = "*/2 * * * *"   # every 2 minutes while you test; you can relax later
 
 [functions]
   directory = "functions"
@@ -86,9 +89,6 @@
 # AUTOMATIC queue processing every 3 minutes
 [functions."autoProcessQueue"]  
   schedule = "*/3 * * * *"
-
-[functions."monitor-kick-streams-scheduled"]
-  schedule = "*/5 * * * *"
 
 [functions."autoUploadClips"]
   schedule = "*/5 * * * *"  # Upload to YouTube every 5 minutes
