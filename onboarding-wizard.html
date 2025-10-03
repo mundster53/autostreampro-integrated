@@ -129,14 +129,12 @@
 
         <div id="youtubeConnection" style="display:none">
           <button
-          class="nav-btn btn-next"
-          id="youtubeConnectBtn"
-          type="button"
-          style="display:block;width:100%;text-align:center;background:#ff0000"
-          >
-          Connect with YouTube
+            class="nav-btn btn-next"
+            id="youtubeConnectBtn"
+            type="button"
+            style="display:block;width:100%;text-align:center;background:#ff0000">
+            Connect with YouTube
           </button>
-
           <p style="color:#666;font-size:.9rem;text-align:center;margin-top:15px">You'll be redirected to YouTube to authorize the connection</p>
         </div>
       </div>
@@ -173,8 +171,8 @@
             <div style="font-size:.875rem;color:#666">60% viral threshold - Only the best 1-2 clips</div>
           </div>
           <div class="setting-option" data-threshold="25">
-          <div style="font-weight:600">📈 Growth Mode</div>
-          <div style="font-size:.875rem;color:#666">25% viral threshold - More clips, 8-10 per stream</div>
+            <div style="font-weight:600">📈 Growth Mode</div>
+            <div style="font-size:.875rem;color:#666">25% viral threshold - More clips, 8-10 per stream</div>
           </div>
         </div>
       </div>
@@ -215,22 +213,23 @@
 
     // ---------- OAuth config ----------
     const twitchClientId = 'mzjsqcwxj9mexsa8vaimtzanbe7pll';
-    const googleClientId = '17381198225-gn5qnqdlhuehbhlva9ro046r5qbssfrn.apps.googleusercontent.com';
 
     // ---------- Wizard state ----------
     let currentStep = 1;
     let selectedPlatform = null;
     let selectedPublishPlatforms = [];
-    let selectedThreshold = 40;
+    let selectedThreshold = 40; // percent
 
     // ---------- Platform connections ----------
     async function connectKick() {
-      const username = document.getElementById('kickUsername').value.trim();
+      const username = (document.getElementById('kickUsername')?.value || '').trim();
       const valEl = document.getElementById('kickValidation');
       if (!username) {
-        valEl.className = 'validation-message error';
-        valEl.textContent = 'Please enter your Kick username';
-        valEl.style.display = 'block';
+        if (valEl) {
+          valEl.className = 'validation-message error';
+          valEl.textContent = 'Please enter your Kick username';
+          valEl.style.display = 'block';
+        }
         return;
       }
 
@@ -245,19 +244,25 @@
         });
         const result = await resp.json();
         if (result.success) {
-          valEl.className = 'validation-message success';
-          valEl.textContent = `✓ Connected: ${username}`;
-          valEl.style.display = 'block';
+          if (valEl) {
+            valEl.className = 'validation-message success';
+            valEl.textContent = `✓ Connected: ${username}`;
+            valEl.style.display = 'block';
+          }
           document.getElementById('nextBtn').disabled = false; // allow Next
         } else {
-          valEl.className = 'validation-message error';
-          valEl.textContent = result.error || 'Could not verify that Kick channel';
-          valEl.style.display = 'block';
+          if (valEl) {
+            valEl.className = 'validation-message error';
+            valEl.textContent = result.error || 'Could not verify that Kick channel';
+            valEl.style.display = 'block';
+          }
         }
       } catch (e) {
-        valEl.className = 'validation-message error';
-        valEl.textContent = 'Connection error. Please try again.';
-        valEl.style.display = 'block';
+        if (valEl) {
+          valEl.className = 'validation-message error';
+          valEl.textContent = 'Connection error. Please try again.';
+          valEl.style.display = 'block';
+        }
       }
     }
 
@@ -267,7 +272,6 @@
       const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=twitch&force_verify=true`;
       window.location.href = authUrl;
     }
-
 
     // ---------- UI helpers ----------
     function showPlatformConnection() {
@@ -342,6 +346,7 @@
       if (!user) { alert('Please log in first'); window.location.href='/login.html'; return; }
 
       try {
+        // Save UI preferences (percent value)
         const { error } = await supabase
           .from('user_preferences')
           .upsert({
@@ -353,26 +358,20 @@
             auto_post: true,
             updated_at: new Date()
           }, { onConflict: 'user_id' });
+        if (error) throw error;
 
-          // Also persist threshold in user_profiles as a decimal (0.25, 0.40, 0.60)
-          const { error: upErr } = await supabase
+        // Persist decimal threshold for backend (0.25–0.95)
+        const { error: upErr } = await supabase
           .from('user_profiles')
           .upsert(
-            {
-              user_id: user.id,
-              viral_threshold: (selectedThreshold / 100)
-            },
+            { user_id: user.id, viral_threshold: (selectedThreshold / 100) },
             { onConflict: 'user_id' }
           );
         if (upErr) throw upErr;
 
-
-        if (error) throw error;
-
         document.getElementById('content5').classList.remove('active');
         document.getElementById('contentSuccess').classList.add('active');
         document.getElementById('wizardNav').style.display='none';
-
         document.getElementById('step5').classList.remove('active');
         document.getElementById('step5').classList.add('completed');
         document.getElementById('step5').innerHTML='✓';
@@ -444,81 +443,66 @@
       document.getElementById('kickVerifyBtn').addEventListener('click', connectKick);
       document.getElementById('twitchConnectBtn').addEventListener('click', connectTwitch);
 
+      // YouTube button → server route (no client Google URL)
       const ytWizardBtn = document.getElementById('youtubeConnectBtn');
       if (ytWizardBtn) {
-      ytWizardBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const returnTo = encodeURIComponent('/onboarding-wizard.html#youtube');
-      window.location.href = `/auth/youtube?return_to=${returnTo}`;
-      });
+        ytWizardBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const returnTo = encodeURIComponent('/onboarding-wizard.html#youtube');
+          window.location.href = `/auth/youtube?return_to=${returnTo}`;
+        });
       }
 
+      // Kick enter key
       const kickInput = document.getElementById('kickUsername');
       if (kickInput) kickInput.addEventListener('keypress', e=>{ if (e.key==='Enter') connectKick(); });
 
-      // Handle OAuth return
-const urlParams = new URLSearchParams(window.location.search);
-const code = urlParams.get('code');
-const state = urlParams.get('state');
+      // Handle OAuth returns:
+      // 1) Twitch returns with ?code&state=twitch to this page
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      const state = urlParams.get('state');
+      if (code && state === 'twitch') {
+        selectedPlatform = 'twitch';
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('step1').classList.add('completed');
+        document.getElementById('step1').innerHTML='✓';
+        document.getElementById('line1').classList.add('completed');
+        document.getElementById('step2').classList.remove('upcoming');
+        document.getElementById('step2').classList.add('completed');
+        document.getElementById('step2').innerHTML='✓';
+        document.getElementById('line2').classList.add('completed');
+        document.getElementById('content1').classList.remove('active');
+        document.getElementById('content2').classList.remove('active');
+        currentStep = 3;
+        document.getElementById('content3').classList.add('active');
+        document.getElementById('step3').classList.remove('upcoming');
+        document.getElementById('step3').classList.add('active');
+        updateNavigationState();
+        window.history.replaceState({}, document.title, '/onboarding-wizard.html');
+      }
 
-// 1) Twitch returns with ?code&state=twitch to this page
-if (code && state === 'twitch') {
-  selectedPlatform = 'twitch';
-
-  // mark step 1 & 2 complete, jump to 3
-  document.getElementById('step1').classList.remove('active');
-  document.getElementById('step1').classList.add('completed');
-  document.getElementById('step1').innerHTML='✓';
-  document.getElementById('line1').classList.add('completed');
-
-  document.getElementById('step2').classList.remove('upcoming');
-  document.getElementById('step2').classList.add('completed');
-  document.getElementById('step2').innerHTML='✓';
-  document.getElementById('line2').classList.add('completed');
-
-  document.getElementById('content1').classList.remove('active');
-  document.getElementById('content2').classList.remove('active');
-
-  currentStep = 3;
-  document.getElementById('content3').classList.add('active');
-  document.getElementById('step3').classList.remove('upcoming');
-  document.getElementById('step3').classList.add('active');
-
-  updateNavigationState();
-  // strip query so refresh doesn't re-run
-  window.history.replaceState({}, document.title, '/onboarding-wizard.html');
-}
-
-// 2) YouTube returns via server → redirect to #youtube (no ?code here)
-if (location.hash === '#youtube') {
-  selectedPlatform = 'youtube';
-
-  // mark step 1 & 2 complete, jump to 3
-  document.getElementById('step1').classList.remove('active');
-  document.getElementById('step1').classList.add('completed');
-  document.getElementById('step1').innerHTML='✓';
-  document.getElementById('line1').classList.add('completed');
-
-  document.getElementById('step2').classList.remove('upcoming');
-  document.getElementById('step2').classList.add('completed');
-  document.getElementById('step2').innerHTML='✓';
-  document.getElementById('line2').classList.add('completed');
-
-  document.getElementById('content1').classList.remove('active');
-  document.getElementById('content2').classList.remove('active');
-
-  currentStep = 3;
-  document.getElementById('content3').classList.add('active');
-  document.getElementById('step3').classList.remove('upcoming');
-  document.getElementById('step3').classList.add('active');
-
-  updateNavigationState();
-  // strip the hash so refresh doesn't re-run
-  history.replaceState({}, document.title, '/onboarding-wizard.html');
-}
-
+      // 2) YouTube returns via server → redirect to #youtube (no ?code here)
+      if (location.hash === '#youtube') {
+        selectedPlatform = 'youtube';
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('step1').classList.add('completed');
+        document.getElementById('step1').innerHTML='✓';
+        document.getElementById('line1').classList.add('completed');
+        document.getElementById('step2').classList.remove('upcoming');
+        document.getElementById('step2').classList.add('completed');
+        document.getElementById('step2').innerHTML='✓';
+        document.getElementById('line2').classList.add('completed');
+        document.getElementById('content1').classList.remove('active');
+        document.getElementById('content2').classList.remove('active');
+        currentStep = 3;
+        document.getElementById('content3').classList.add('active');
+        document.getElementById('step3').classList.remove('upcoming');
+        document.getElementById('step3').classList.add('active');
+        updateNavigationState();
+        history.replaceState({}, document.title, '/onboarding-wizard.html');
+      }
     });
   </script>
-
 </body>
 </html>
