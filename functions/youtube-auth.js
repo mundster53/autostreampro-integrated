@@ -14,7 +14,25 @@ function baseUrlFromHeaders(headers = {}) {
   return `${proto}://${host}`;
 }
 
-function buildYouTubeAuthUrl(baseUrl, clientId) {
+// encode a small "return_to" in OAuth state
+function encodeState(returnTo) {
+  try {
+    return Buffer.from(JSON.stringify({ r: returnTo || '/dashboard.html' }))
+      .toString('base64url');
+  } catch {
+    return Buffer.from(JSON.stringify({ r: '/dashboard.html' })).toString('base64url');
+  }
+}
+function decodeState(state) {
+  try {
+    const obj = JSON.parse(Buffer.from(state || '', 'base64url').toString('utf8'));
+    return (obj && typeof obj.r === 'string') ? obj.r : '/dashboard.html';
+  } catch {
+    return '/dashboard.html';
+  }
+}
+
+function buildYouTubeAuthUrl(baseUrl, clientId, returnTo) {
   const redirectUri = `${baseUrl}/auth/youtube/callback`;
   const scope = [
     'https://www.googleapis.com/auth/youtube.upload',
@@ -27,7 +45,8 @@ function buildYouTubeAuthUrl(baseUrl, clientId) {
     access_type: 'offline',
     prompt: 'consent',
     include_granted_scopes: 'true',
-    scope
+    scope,
+    state: encodeState(returnTo)
   });
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 }
@@ -65,7 +84,7 @@ async function exchangeCodeForTokens({ code, clientId, clientSecret, redirectUri
     err.details = data;
     throw err;
   }
-  return data; // { access_token, refresh_token, expires_in, scope, token_type }
+  return data; // { access_token, refresh_token, expires_in, scope, token_type, ... }
 }
 
 async function fetchYouTubeChannel(accessToken) {
@@ -104,19 +123,21 @@ exports.handler = async (event) => {
   try {
     const qs = event.queryStringParameters || {};
     const method = event.httpMethod || 'GET';
+    const accept = (event.headers?.accept || '').toLowerCase();
 
     const clientId = process.env.YOUTUBE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.YOUTUBE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET;
-    if (!clientId || !clientSecret) {
-      return json(500, { error: 'Missing YouTube client credentials in env.' });
-    }
 
     const baseUrl = process.env.PUBLIC_BASE_URL || baseUrlFromHeaders(event.headers || {});
     const redirectUri = `${baseUrl}/auth/youtube/callback`;
 
-    // --- START FLOW: GET with no ?code → redirect to Google
+    // --- START FLOW: GET with no ?code → redirect to Google (only need clientId here)
     if (method === 'GET' && !qs.code && !qs.error) {
-      const authUrl = buildYouTubeAuthUrl(baseUrl, clientId);
+      if (!clientId) {
+        return json(500, { error: 'Missing YOUTUBE_CLIENT_ID/GOOGLE_CLIENT_ID' });
+      }
+      const returnTo = qs.return_to || '/dashboard.html';
+      const authUrl = buildYouTubeAuthUrl(baseUrl, clientId, returnTo);
       return {
         statusCode: 302,
         headers: {
@@ -144,14 +165,19 @@ exports.handler = async (event) => {
       }
     }
     if (!code) {
-      const authUrl = buildYouTubeAuthUrl(baseUrl, clientId);
+      const authUrl = buildYouTubeAuthUrl(baseUrl, clientId, qs.return_to);
       return json(400, { error: 'No authorization code provided', auth_url: authUrl });
+    }
+
+    // For token exchange we DO require both id + secret
+    if (!clientId || !clientSecret) {
+      return json(500, { error: 'Missing YouTube client credentials in env.' });
     }
 
     // Exchange code → tokens
     const token = await exchangeCodeForTokens({ code, clientId, clientSecret, redirectUri });
 
-    // Optional: get channel info (nice for UI)
+    // Optional: get channel info (handy for UI)
     let channel = null;
     try {
       channel = await fetchYouTubeChannel(token.access_token);
@@ -177,6 +203,25 @@ exports.handler = async (event) => {
     }
     */
 
+    // ---------- Browser-friendly callback redirect ----------
+    // Prefer the return target from OAuth state; fall back to query or dashboard.
+    const returnTo = qs.state ? decodeState(qs.state) : (qs.return_to || '/dashboard.html');
+
+    // If this was a browser GET (user clicked a link), redirect back to the app.
+    // If it's an XHR/POST (your UI doing AJAX), return JSON instead.
+    if (method === 'GET' && !accept.includes('application/json')) {
+      return {
+        statusCode: 302,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Cache-Control': 'no-store',
+          Location: returnTo
+        },
+        body: ''
+      };
+    }
+
+    // JSON response for programmatic callers (AJAX)
     return json(200, {
       success: true,
       platform: 'youtube',

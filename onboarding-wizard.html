@@ -128,7 +128,15 @@
         </div>
 
         <div id="youtubeConnection" style="display:none">
-          <button class="nav-btn btn-next" id="youtubeConnectBtn" style="width:100%;background:#ff0000">Connect with YouTube</button>
+          <button
+          class="nav-btn btn-next"
+          id="youtubeConnectBtn"
+          type="button"
+          style="display:block;width:100%;text-align:center;background:#ff0000"
+          >
+          Connect with YouTube
+          </button>
+
           <p style="color:#666;font-size:.9rem;text-align:center;margin-top:15px">You'll be redirected to YouTube to authorize the connection</p>
         </div>
       </div>
@@ -260,12 +268,6 @@
       window.location.href = authUrl;
     }
 
-    function connectYouTube() {
-      const redirectUri = 'https://autostreampro.com/onboarding-wizard.html';
-      const scope = 'https://www.googleapis.com/auth/youtube.upload+https://www.googleapis.com/auth/youtube.readonly';
-      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent&state=youtube`;
-      window.location.href = authUrl;
-    }
 
     // ---------- UI helpers ----------
     function showPlatformConnection() {
@@ -428,7 +430,15 @@
       document.getElementById('backBtn').addEventListener('click', previousStep);
       document.getElementById('kickVerifyBtn').addEventListener('click', connectKick);
       document.getElementById('twitchConnectBtn').addEventListener('click', connectTwitch);
-      document.getElementById('youtubeConnectBtn').addEventListener('click', connectYouTube);
+
+      const ytWizardBtn = document.getElementById('youtubeConnectBtn');
+      if (ytWizardBtn) {
+      ytWizardBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const returnTo = encodeURIComponent('/onboarding-wizard.html#youtube');
+      window.location.href = `/auth/youtube?return_to=${returnTo}`;
+      });
+      }
 
       const kickInput = document.getElementById('kickUsername');
       if (kickInput) kickInput.addEventListener('keypress', e=>{ if (e.key==='Enter') connectKick(); });
@@ -465,5 +475,7 @@
       }
     });
   </script>
+
+
 </body>
 </html>
