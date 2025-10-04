@@ -22,6 +22,12 @@
   path = "/.netlify/functions/monitor-kick-streams"
   schedule = "*/2 * * * *"   # every 2 minutes while you test; you can relax later
 
+  [[scheduled]]
+path = "/.netlify/functions/refresh-all-hls"
+# Every 7 minutes
+schedule = "*/7 * * * *"
+
+
 [functions]
   directory = "functions"
   node_bundler = "esbuild"
