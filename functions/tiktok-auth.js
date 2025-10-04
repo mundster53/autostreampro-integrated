@@ -1,200 +1,186 @@
-// functions/tiktok-auth.js
-const fetch = require('node-fetch');
-const { createClient } = require('@supabase/supabase-js');
+// netlify/functions/tiktok-auth.js
+//
+// Handles BOTH routes via your existing redirects:
+//   GET /auth/tiktok                -> builds TikTok OAuth URL (start)
+//   GET /auth/tiktok/callback?code -> exchanges code, stores tokens, enables Direct Post if requested
+//
+// Required env vars (set in Netlify):
+//   TIKTOK_CLIENT_ID
+//   TIKTOK_CLIENT_SECRET
+//   TIKTOK_REDIRECT_URI   (e.g., https://autostreampro.com/auth/tiktok/callback)
+// Optional env vars:
+//   TIKTOK_API_BASE       (default: https://open.tiktokapis.com)
+//   TIKTOK_SCOPES_BASE    (default used below: "user.info.basic video.upload video.publish")
+//   TIKTOK_SCOPES_DIRECT  (extra scopes if your app has Direct Post product; may be empty)
+//
+// Depends on: netlify/functions/_shared/supabase.js (service role client)
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+import fetch from 'node-fetch';
+import { supabase } from './_shared/supabase.js';
 
-// ---------- helpers ----------
-function baseUrlFromHeaders(headers = {}) {
-  const host = headers['x-forwarded-host'] || headers['host'];
-  const proto = headers['x-forwarded-proto'] || 'https';
-  return `${proto}://${host}`;
+export const handler = async (event) => {
+  try {
+    if (event.httpMethod !== 'GET') {
+      return json(405, { error: 'Method Not Allowed' });
+    }
+
+    const qs = event.queryStringParameters || {};
+    // If TikTok sent us back with a code, treat as callback
+    if (qs.code) {
+      return await handleCallback(qs);
+    }
+    // Otherwise, start auth
+    return await handleStart(qs);
+  } catch (err) {
+    return redirect(withError('/onboarding-wizard.html#tiktok', 'unexpected_error'));
+  }
+};
+
+/* -------------------------------
+ * Start: build TikTok authorize URL
+ * ----------------------------- */
+async function handleStart(qs) {
+  const user = qs.user;                      // required: your user's UUID
+  const direct = qs.direct === '1';          // optional: request Direct Post enablement
+  const returnTo = normalizeReturn(qs.return_to) || '/onboarding-wizard.html#tiktok';
+
+  if (!user) return json(400, { error: 'Missing user id' });
+
+  const clientId    = process.env.TIKTOK_CLIENT_ID;
+  const redirectUri = process.env.TIKTOK_REDIRECT_URI;
+  const baseScopes  = (process.env.TIKTOK_SCOPES_BASE || 'user.info.basic video.upload video.publish').trim();
+  const directScopes= (process.env.TIKTOK_SCOPES_DIRECT || '').trim();
+  const scopes      = (baseScopes + (direct && directScopes ? ' ' + directScopes : '')).trim();
+
+  if (!clientId || !redirectUri || !scopes) {
+    return json(500, { error: 'Missing TikTok OAuth env vars' });
+  }
+
+  const state = base64urlEncode(JSON.stringify({ user, direct: direct ? 1 : 0, return_to: returnTo }));
+
+  // TikTok OAuth v2 authorize endpoint
+  const authorizeUrl = new URL('https://www.tiktok.com/v2/auth/authorize/');
+  authorizeUrl.searchParams.set('client_key', clientId);
+  authorizeUrl.searchParams.set('response_type', 'code');
+  authorizeUrl.searchParams.set('redirect_uri', redirectUri);
+  authorizeUrl.searchParams.set('scope', scopes);
+  authorizeUrl.searchParams.set('state', state);
+
+  return redirect(authorizeUrl.toString());
 }
 
-function buildTikTokAuthUrl(baseUrl, clientKey, state = null) {
-  const redirectUri = `${baseUrl}/auth/tiktok/callback`;
-  const scope = ['user.info.basic', 'video.upload', 'video.publish'].join(',');
-  const params = new URLSearchParams({
-    client_key: clientKey,
-    redirect_uri: redirectUri,
-    response_type: 'code',
-    scope,
-    state: state || Math.random().toString(36).slice(2, 10),
-  });
-  return `https://www.tiktok.com/v2/auth/authorize/?${params.toString()}`;
-}
+/* ---------------------------------
+ * Callback: exchange code, upsert DB
+ * ------------------------------- */
+async function handleCallback(qs) {
+  const code  = qs.code;
+  const state = qs.state || '';
+  const stateObj = safeParseState(state);
+  const userId   = stateObj.user;
+  const directReq= !!stateObj.direct;
+  const returnTo = normalizeReturn(stateObj.return_to) || '/onboarding-wizard.html#tiktok';
 
-function json(statusCode, body) {
-  return {
-    statusCode,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Content-Type': 'application/json',
-      'Cache-Control': 'no-store',
-    },
-    body: JSON.stringify(body),
-  };
-}
+  if (!code || !userId) {
+    return redirect(returnTo);
+  }
 
-async function exchangeCodeForTokens({ code, clientKey, clientSecret, redirectUri }) {
-  const tokenUrl = 'https://open.tiktokapis.com/v2/oauth/token/';
-  const res = await fetch(tokenUrl, {
+  const base         = process.env.TIKTOK_API_BASE || 'https://open.tiktokapis.com';
+  const clientId     = process.env.TIKTOK_CLIENT_ID;
+  const clientSecret = process.env.TIKTOK_CLIENT_SECRET;
+  const redirectUri  = process.env.TIKTOK_REDIRECT_URI;
+
+  if (!clientId || !clientSecret || !redirectUri) {
+    return redirect(withError(returnTo, 'missing_env'));
+  }
+
+  // (1) Exchange code -> tokens
+  const tokenRes = await fetch(`${base}/v2/oauth/token/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
-      client_key: clientKey,
+      client_key: clientId,
       client_secret: clientSecret,
       code,
       grant_type: 'authorization_code',
-      redirect_uri: redirectUri, // important for some apps; safe to send
-    }),
+      redirect_uri: redirectUri
+    })
   });
-
-  const data = await res.json();
-  if (!res.ok || !data.access_token) {
-    const msg = data?.message || data?.error || 'Token exchange failed';
-    const details = data;
-    const err = new Error(msg);
-    err.details = details;
-    throw err;
+  const tokenJson = await tokenRes.json().catch(() => ({}));
+  if (!tokenRes.ok || !tokenJson?.access_token) {
+    return redirect(withError(returnTo, 'token_exchange_failed'));
   }
-  return data; // contains access_token, refresh_token, expires_in, refresh_expires_in, etc.
-}
 
-async function fetchTikTokUser(accessToken) {
-  const url = 'https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name,avatar_url';
-  const res = await fetch(url, {
-    method: 'GET',
-    headers: { Authorization: `Bearer ${accessToken}` },
+  const accessToken = tokenJson.access_token;
+  const refreshToken = tokenJson.refresh_token || null;
+  const expiresIn = Number(tokenJson.expires_in || 0);
+  const expiresAt = expiresIn ? new Date(Date.now() + expiresIn * 1000).toISOString() : null;
+
+  // (2) Fetch user info to get open_id (platform_user_id)
+  const infoRes = await fetch(`${base}/v2/user/info/?fields=open_id,display_name`, {
+    headers: { Authorization: `Bearer ${accessToken}` }
   });
-  const data = await res.json();
-  if (!res.ok) {
-    const msg = data?.message || 'Failed to fetch TikTok user';
-    const err = new Error(msg);
-    err.details = data;
-    throw err;
-  }
-  const u = data?.data?.user || {};
-  return {
-    open_id: u.open_id || null,
-    display_name: u.display_name || null,
-    avatar_url: u.avatar_url || null,
+  const infoJson = await infoRes.json().catch(() => ({}));
+  const platformUserId = infoJson?.data?.user?.open_id || infoJson?.data?.open_id || null;
+
+  // (3) Upsert streaming_connections for (user, 'tiktok')
+  const upsert = {
+    user_id: userId,
+    platform: 'tiktok',
+    platform_user_id: platformUserId,
+    access_token: accessToken,
+    refresh_token: refreshToken,
+    expires_at: expiresAt,
+    is_active: true
   };
+  if (directReq) {
+    upsert.direct_post_enabled = true;
+    upsert.direct_post_approved_at = new Date().toISOString();
+  }
+
+  const { error: upErr } = await supabase
+    .from('streaming_connections')
+    .upsert(upsert, { onConflict: 'user_id,platform' });
+
+  if (upErr) {
+    return redirect(withError(returnTo, 'db_upsert_failed'));
+  }
+
+  return redirect(returnTo);
 }
 
-// ---------- handler ----------
-exports.handler = async (event) => {
-  // CORS preflight
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      },
-      body: '',
-    };
-  }
-
+/* ----------------
+ * helpers
+ * -------------- */
+function json(statusCode, obj) {
+  return { statusCode, body: JSON.stringify(obj) };
+}
+function redirect(url) {
+  return { statusCode: 302, headers: { Location: url }, body: '' };
+}
+function withError(u, code) {
+  const url = new URL(normalizeReturn(u), 'https://autostreampro.com');
+  url.searchParams.set('err', code);
+  return url.pathname + url.search + url.hash;
+}
+function normalizeReturn(u) {
+  if (!u || typeof u !== 'string') return '';
   try {
-    const qs = event.queryStringParameters || {};
-    const method = event.httpMethod || 'GET';
-
-    const clientKey = process.env.TIKTOK_CLIENT_KEY || process.env.TIKTOK_CLIENT_ID;
-    const clientSecret = process.env.TIKTOK_CLIENT_SECRET;
-    if (!clientKey || !clientSecret) {
-      return json(500, { error: 'Missing TikTok client credentials in env.' });
-    }
-
-    const baseUrl =
-      process.env.PUBLIC_BASE_URL || baseUrlFromHeaders(event.headers || {});
-    const redirectUri = `${baseUrl}/auth/tiktok/callback`;
-
-    // --- START FLOW: GET with no ?code → redirect to TikTok
-    if (method === 'GET' && !qs.code && !qs.error) {
-      const authUrl = buildTikTokAuthUrl(baseUrl, clientKey, qs.state);
-      return {
-        statusCode: 302,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Cache-Control': 'no-store',
-          Location: authUrl,
-        },
-        body: '',
-      };
-    }
-
-    // If TikTok returned an error on callback
-    if (method === 'GET' && qs.error) {
-      return json(400, { error: 'TikTok authorization error', details: qs });
-    }
-
-    // --- CALLBACK / EXCHANGE: support both GET ?code=... and POST { code }
-    let code = qs.code;
-    if (!code && method === 'POST' && event.body) {
-      try {
-        const body = JSON.parse(event.body);
-        code = body.code;
-      } catch {
-        // ignore parse errors
-      }
-    }
-    if (!code) {
-      // Expose an auth_url to let SPAs kick off manually if needed
-      const authUrl = buildTikTokAuthUrl(baseUrl, clientKey);
-      return json(400, { error: 'No authorization code provided', auth_url: authUrl });
-    }
-
-    // Exchange code → tokens
-    const token = await exchangeCodeForTokens({
-      code,
-      clientKey,
-      clientSecret,
-      redirectUri,
-    });
-
-    // Fetch user profile (open_id etc.)
-    const user = await fetchTikTokUser(token.access_token);
-
-    // If you want to persist in Supabase, uncomment and adapt to your schema:
-    /*
-    const { data: authUser } = await supabase.auth.getUser(); // if you pass session JWT
-    const currentUserId = authUser?.user?.id; // or pass userId via state/param
-    if (currentUserId) {
-      await supabase.from('publishing_connections').upsert({
-        user_id: currentUserId,
-        platform: 'tiktok',
-        access_token: token.access_token,
-        refresh_token: token.refresh_token,
-        expires_at: new Date(Date.now() + (token.expires_in || 0) * 1000).toISOString(),
-        profile_id: user.open_id,
-        profile_name: user.display_name,
-        avatar_url: user.avatar_url
-      }, { onConflict: 'user_id,platform' });
-    }
-    */
-
-    // Return a clean payload; UI can store as needed
-    return json(200, {
-      success: true,
-      platform: 'tiktok',
-      access_token: token.access_token,
-      refresh_token: token.refresh_token,
-      expires_in: token.expires_in,
-      refresh_expires_in: token.refresh_token_expires_in || token.refresh_expires_in,
-      user: {
-        id: user.open_id,
-        username: user.display_name,
-        avatar_url: user.avatar_url,
-      },
-    });
-  } catch (err) {
-    console.error('TikTok auth error:', err.message, err.details || '');
-    return json(500, { error: 'Authentication failed', details: err.message, more: err.details });
+    // allow only site-internal paths (avoid open redirects)
+    const url = new URL(u, 'https://autostreampro.com');
+    return url.pathname + url.search + url.hash;
+  } catch {
+    return '';
   }
-};
+}
+function base64urlEncode(s) {
+  return Buffer.from(s, 'utf8').toString('base64')
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/,'');
+}
+function base64urlDecode(s) {
+  const pad = s.length % 4 ? 4 - (s.length % 4) : 0;
+  const b64 = s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat(pad);
+  return Buffer.from(b64, 'base64').toString('utf8');
+}
+function safeParseState(state) {
+  try { return JSON.parse(base64urlDecode(state)); } catch { return {}; }
+}

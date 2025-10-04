@@ -48,7 +48,7 @@
   status = 200
 
 [[redirects]]
-  from = "/auth/tiktok"
+  from = "/auth/tiktok.html"
   to   = "/.netlify/functions/tiktok-auth"
   status = 200
   force = true
