@@ -47,6 +47,12 @@
   to   = "/.netlify/functions/youtube-auth"
   status = 200
 
+  [[redirects]]
+  from = "/auth/tiktok"
+  to   = "/.netlify/functions/tiktok-auth"
+  status = 200
+  force  = true
+
 [[redirects]]
   from = "/auth/tiktok.html"
   to   = "/.netlify/functions/tiktok-auth"
@@ -84,10 +90,12 @@
   to = "/dashboard.html"
   status = 200
 
+# netlify.toml — serve the wizard page
 [[redirects]]
   from = "/onboarding/*"
-  to = "/onboarding.html"
+  to   = "/onboarding-wizard.html"
   status = 200
+  force  = true
 
   [[redirects]]
   from = "/api/set-ingest-source"
