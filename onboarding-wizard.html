@@ -567,7 +567,7 @@
           const { data: { user } } = await supabase.auth.getUser();
           if (!user) { setStatus('Please log in first.', true); window.location.href='/login.html'; return; }
           const returnTo = encodeURIComponent('/onboarding-wizard.html#tiktok');
-          window.location.href = `/auth/tiktok?user=${encodeURIComponent(user.id)}&direct=1&return_to=${returnTo}`;
+          window.location.href = `/auth/tiktok?user=${encodeURIComponent(user.id)}&direct=0&return_to=${returnTo}`;
         } catch (e) {
           setStatus('Could not start TikTok connect. Please try again.', true);
         }
