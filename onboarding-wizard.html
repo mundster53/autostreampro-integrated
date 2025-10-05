@@ -545,17 +545,6 @@
     });
   </script>
 
-
-// 4) DEV: immediately start TikTok OAuth if ?start=tiktok
-const startParam = urlParams.get('start');
-if (startParam === 'tiktok') {
-  const { data: { user: oauthUser } } = await supabase.auth.getUser();
-  if (oauthUser) {
-    const returnTo = encodeURIComponent('/onboarding-wizard.html#tiktok');
-    window.location.href = `/auth/tiktok?user=${encodeURIComponent(oauthUser.id)}&direct=1&return_to=${returnTo}`;
-    return; // stop executing after redirect
-  }
-}
   <script>
 (function () {
   function ready(fn){ document.readyState !== 'loading' ? fn() : document.addEventListener('DOMContentLoaded', fn); }
