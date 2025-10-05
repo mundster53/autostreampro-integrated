@@ -48,7 +48,7 @@ exports.handler = async (event) => {
       `)
       .eq('platform', PLATFORM)
       .eq('status', 'pending')
-      .or(`(next_attempt_at.is.null,next_attempt_at.lte.${nowIso})`) // retry-ready or never scheduled
+      .or(`next_attempt_at.is.null,next_attempt_at.lte.${nowIso}`) // retry-ready or never scheduled
       .gte('clips.ai_score', 0.25) // wider candidate pool
       .order('ai_score', { ascending: false, foreignTable: 'clips' })
       .limit(200);
