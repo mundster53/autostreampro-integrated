@@ -342,45 +342,53 @@
     }
 
     async function completeSetup() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { alert('Please log in first'); window.location.href='/login.html'; return; }
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) { alert('Please log in first'); window.location.href='/login.html'; return; }
 
-      try {
-        // Save UI preferences (percent value)
-        const { error } = await supabase
-          .from('user_preferences')
-          .upsert({
-            user_id: user.id,
-            viral_threshold: selectedThreshold,
-            clip_length: 30,
-            auto_clips: true,
-            auto_titles: true,
-            auto_post: true,
-            updated_at: new Date()
-          }, { onConflict: 'user_id' });
-        if (error) throw error;
+  try {
+    // Save UI preferences (percent value)
+    const { error } = await supabase
+      .from('user_preferences')
+      .upsert({
+        user_id: user.id,
+        viral_threshold: selectedThreshold,
+        clip_length: 30,
+        auto_clips: true,
+        auto_titles: true,
+        auto_post: true,
+        updated_at: new Date()
+      }, { onConflict: 'user_id' });
+    if (error) throw error;
 
-        // Persist decimal threshold for backend (0.25–0.95)
-        const { error: upErr } = await supabase
-          .from('user_profiles')
-          .upsert(
-            { user_id: user.id, viral_threshold: (selectedThreshold / 100) },
-            { onConflict: 'user_id' }
-          );
-        if (upErr) throw upErr;
+    // Persist decimal threshold for backend (0.25–0.95)
+    const { error: upErr } = await supabase
+      .from('user_profiles')
+      .upsert(
+        { user_id: user.id, viral_threshold: (selectedThreshold / 100) },
+        { onConflict: 'user_id' }
+      );
+    if (upErr) throw upErr;
 
-        document.getElementById('content5').classList.remove('active');
-        document.getElementById('contentSuccess').classList.add('active');
-        document.getElementById('wizardNav').style.display='none';
-        document.getElementById('step5').classList.remove('active');
-        document.getElementById('step5').classList.add('completed');
-        document.getElementById('step5').innerHTML='✓';
-        document.getElementById('line4').classList.add('completed');
-      } catch(e) {
-        console.error('Error saving preferences:', e);
-        alert('Failed to save settings. Please try again.');
-      }
-    }
+    // ✅ NEW: force-refresh this user's live HLS so monitoring starts immediately
+    await fetch('/.netlify/functions/refresh-all-hls', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ userId: user.id }),
+    });
+
+    // Success UI
+    document.getElementById('content5').classList.remove('active');
+    document.getElementById('contentSuccess').classList.add('active');
+    document.getElementById('wizardNav').style.display='none';
+    document.getElementById('step5').classList.remove('active');
+    document.getElementById('step5').classList.add('completed');
+    document.getElementById('step5').innerHTML='✓';
+    document.getElementById('line4').classList.add('completed');
+  } catch(e) {
+    console.error('Error saving preferences:', e);
+    alert('Failed to save settings. Please try again.');
+  }
+}
 
     // ---------- Auth & onboarding checks ----------
     async function checkAuth() {
@@ -504,5 +512,88 @@
       }
     });
   </script>
+
+  <script>
+(function () {
+  function ready(fn){ document.readyState !== 'loading' ? fn() : document.addEventListener('DOMContentLoaded', fn); }
+  function setStatus(html, isError=false) {
+    const box = document.getElementById('publishConnections');
+    if (!box) return;
+    box.innerHTML = `<div style="padding:12px;border-radius:8px;${isError ? 'background:#fee2e2;color:#991b1b' : 'background:#ecfdf5;color:#065f46'}">${html}</div>`;
+  }
+  function q(name){ return document.getElementById(name); }
+
+  ready(function () {
+    const tiktokTile = document.querySelector('.platform-option[data-publish="tiktok"]');
+    const youtubeTile = document.querySelector('.platform-option[data-publish="youtube"]');
+
+    // 1) Start TikTok OAuth (server-side) when the TikTok tile is clicked
+    if (tiktokTile) {
+      tiktokTile.style.cursor = 'pointer';
+      tiktokTile.addEventListener('click', async function () {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) { setStatus('Please log in first.', true); window.location.href='/login.html'; return; }
+          const returnTo = encodeURIComponent('/onboarding-wizard.html#tiktok');
+          window.location.href = `/auth/tiktok?user=${encodeURIComponent(user.id)}&direct=1&return_to=${returnTo}`;
+        } catch (e) {
+          setStatus('Could not start TikTok connect. Please try again.', true);
+        }
+      });
+    }
+
+    // 2) (Optional) YouTube tile consistency — if you want it to trigger server route directly
+    if (youtubeTile && !youtubeTile.dataset.wired) {
+      youtubeTile.dataset.wired = '1';
+      youtubeTile.style.cursor = 'pointer';
+      youtubeTile.addEventListener('click', function () {
+        window.location.href = '/auth/youtube?return_to=' + encodeURIComponent('/onboarding-wizard.html#youtube');
+      });
+    }
+
+    // 3) Handle return from TikTok: land on /onboarding-wizard.html#tiktok
+    if (location.hash === '#tiktok') {
+      // Ensure the wizard is on Step 3 visually
+      try {
+        q('content1')?.classList.remove('active');
+        q('content2')?.classList.remove('active');
+        q('content3')?.classList.add('active');
+
+        q('step1')?.classList.remove('active'); q('step1')?.classList.add('completed'); if (q('step1')) q('step1').innerHTML = '✓';
+        q('line1')?.classList.add('completed');
+        q('step2')?.classList.remove('upcoming'); q('step2')?.classList.add('completed'); if (q('step2')) q('step2').innerHTML = '✓';
+        q('line2')?.classList.add('completed');
+        q('step3')?.classList.remove('upcoming'); q('step3')?.classList.add('active');
+      } catch {}
+
+      // Select the TikTok tile and enable Next
+      const tile = tiktokTile;
+      if (tile && !tile.classList.contains('selected')) tile.classList.add('selected');
+      if (Array.isArray(window.selectedPublishPlatforms)) {
+        if (!window.selectedPublishPlatforms.includes('tiktok')) window.selectedPublishPlatforms.push('tiktok');
+      }
+      if (typeof window.updateNavigationState === 'function') window.updateNavigationState();
+
+      // Status message (and error mapping if present)
+      const err = new URLSearchParams(window.location.search).get('err');
+      if (err) {
+        const msgMap = {
+          missing_env: 'TikTok auth is misconfigured on the server (missing env vars).',
+          token_exchange_failed: 'TikTok did not grant access. Please try again.',
+          db_upsert_failed: 'Connected to TikTok, but failed saving your connection. Try again.',
+          unexpected_error: 'Unexpected error while connecting TikTok. Please try again.'
+        };
+        setStatus(`TikTok: ${msgMap[err] || ('Error: ' + err)}`, true);
+      } else {
+        setStatus('TikTok connected ✔ Auto-post enabled for your account.');
+      }
+
+      // Clean querystring but keep #tiktok
+      history.replaceState({}, document.title, '/onboarding-wizard.html#tiktok');
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
