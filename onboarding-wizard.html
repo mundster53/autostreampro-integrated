@@ -510,30 +510,41 @@
         updateNavigationState();
         history.replaceState({}, document.title, '/onboarding-wizard.html');
       }
+
+      // 3) DEV: jump straight to Step 3 if ?step=3 (bypass Kick/Twitch during testing)
+      if (urlParams.get('step') === '3') {
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('step1').classList.add('completed');
+        document.getElementById('step1').innerHTML='✓';
+        document.getElementById('line1').classList.add('completed');
+
+        document.getElementById('step2').classList.remove('upcoming');
+        document.getElementById('step2').classList.add('completed');
+        document.getElementById('step2').innerHTML='✓';
+        document.getElementById('line2').classList.add('completed');
+
+        document.getElementById('content1').classList.remove('active');
+        document.getElementById('content2').classList.remove('active');
+        currentStep = 3;
+        document.getElementById('content3').classList.add('active');
+        document.getElementById('step3').classList.remove('upcoming');
+        document.getElementById('step3').classList.add('active');
+        updateNavigationState();
+      }
+
+      // 4) DEV: immediately start TikTok OAuth if ?start=tiktok
+      if (urlParams.get('start') === 'tiktok') {
+        const { data: { user: oauthUser } } = await supabase.auth.getUser();
+        if (oauthUser) {
+          const returnTo = encodeURIComponent('/onboarding-wizard.html#tiktok');
+          window.location.href = `/auth/tiktok?user=${encodeURIComponent(oauthUser.id)}&direct=1&return_to=${returnTo}`;
+          return; // stop executing after redirect
+        }
+      }
+
     });
   </script>
-// 3) DEV: jump straight to the Publishing step if ?step=3 (bypass Kick/Twitch during testing)
-const forceStep = urlParams.get('step');
-if (forceStep === '3') {
-  // Mark steps 1 & 2 as completed and show Step 3, same visuals as your Twitch/YT handlers
-  document.getElementById('step1').classList.remove('active');
-  document.getElementById('step1').classList.add('completed');
-  document.getElementById('step1').innerHTML='✓';
-  document.getElementById('line1').classList.add('completed');
 
-  document.getElementById('step2').classList.remove('upcoming');
-  document.getElementById('step2').classList.add('completed');
-  document.getElementById('step2').innerHTML='✓';
-  document.getElementById('line2').classList.add('completed');
-
-  document.getElementById('content1').classList.remove('active');
-  document.getElementById('content2').classList.remove('active');
-  currentStep = 3;
-  document.getElementById('content3').classList.add('active');
-  document.getElementById('step3').classList.remove('upcoming');
-  document.getElementById('step3').classList.add('active');
-  updateNavigationState();
-}
 
 // 4) DEV: immediately start TikTok OAuth if ?start=tiktok
 const startParam = urlParams.get('start');
