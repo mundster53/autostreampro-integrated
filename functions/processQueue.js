@@ -50,7 +50,7 @@ exports.handler = async (event, context) => {
       `)
       .eq('platform', PLATFORM)
       .eq('status', 'pending')
-      .or(`(next_attempt_at.is.null,next_attempt_at.lte.${nowIso})`) // only retry-ready or never-scheduled
+      .or(`next_attempt_at.is.null,next_attempt_at.lte.${nowIso}`) // only retry-ready or never-scheduled
       .gte('clips.ai_score', 0.25) // Only process clips with score >= 0.25
       .order('ai_score', { ascending: false, foreignTable: 'clips' })
       .limit(200);
