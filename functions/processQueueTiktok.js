@@ -16,6 +16,8 @@ const TOPN = {
   elite:   +(process.env.TOPN_ELITE   ?? 20),
 };
 
+const BASE_URL = process.env.PUBLIC_BASE_URL || process.env.SITE_URL || 'https://autostreampro.com';
+
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return {
@@ -41,7 +43,7 @@ exports.handler = async (event) => {
           ai_score,
           title,
           game,
-          video_url,
+          manual_clip_url, video_url, metadata,
           user_id,
           created_at
         )
@@ -142,13 +144,19 @@ exports.handler = async (event) => {
 
         // 3) Publish to TikTok
         const resp = await fetch(
-          'https://beautiful-rugelach-bda4b4.netlify.app/.netlify/functions/upload-to-tiktok',
-          {
+        `${BASE_URL}/.netlify/functions/upload-to-tiktok`,
+        {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ clipId: upload.clip_id })
-          }
+            body: JSON.stringify({
+            clipId: upload.clip_id,
+            userId: upload.clips.user_id,
+            title: upload.clips.title || 'AutoStreamPro Upload',
+            privacy: 'SELF_ONLY'
+            })
+        }
         );
+
 
         if (!resp.ok) {
           const txt = await resp.text();
