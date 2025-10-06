@@ -1,6 +1,45 @@
 const fetch = globalThis.fetch;
 const { createClient } = require('@supabase/supabase-js');
 
+// --- TikTok token refresh helper ---
+async function refreshTikTokToken({ userId, refreshToken }) {
+  const url = 'https://open.tiktokapis.com/v2/oauth/token/';
+  const body = {
+    client_key: process.env.TIKTOK_CLIENT_KEY,
+    client_secret: process.env.TIKTOK_CLIENT_SECRET,
+    grant_type: 'refresh_token',
+    refresh_token: refreshToken,
+  };
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.access_token) {
+    throw new Error(`refresh_failed: ${JSON.stringify(json).slice(0,200)}`);
+  }
+
+  const expiresInSec = Number(json.expires_in || 0);
+  const newExpiresAt = expiresInSec ? new Date(Date.now() + expiresInSec * 1000).toISOString() : null;
+
+  await supabase
+    .from('streaming_connections')
+    .update({
+      access_token: json.access_token,
+      refresh_token: json.refresh_token || refreshToken,
+      expires_at: newExpiresAt,
+      updated_at: new Date().toISOString()
+    })
+    .eq('user_id', userId)
+    .eq('platform', 'tiktok');
+
+  return { accessToken: json.access_token, refreshToken: json.refresh_token || refreshToken };
+}
+
+
 const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_KEY
@@ -47,20 +86,38 @@ exports.handler = async (event, context) => {
             throw new Error('TikTok not connected');
         }
 
-        // Check creator info first (required by TikTok)
-        const creatorInfoResponse = await fetch('https://open.tiktokapis.com/v2/post/publish/creator_info/query/', {
+        // Check creator info first (required by TikTok) — refresh token on 401/403
+        let accessToken = connection.access_token;
+        let refreshToken = connection.refresh_token;
+
+        const creatorInfoUrl = 'https://open.tiktokapis.com/v2/post/publish/creator_info/query/';
+
+        async function queryCreatorInfo(token) {
+        return fetch(creatorInfoUrl, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${connection.access_token}`,
-                'Content-Type': 'application/json'
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
             }
         });
+        }
+
+        let creatorInfoResponse = await queryCreatorInfo(accessToken);
+
+        // If token is expired/invalid, refresh once and retry
+        if (!creatorInfoResponse.ok && (creatorInfoResponse.status === 401 || creatorInfoResponse.status === 403)) {
+        const refreshed = await refreshTikTokToken({ userId, refreshToken });
+        accessToken = refreshed.accessToken;
+        refreshToken = refreshed.refreshToken;
+        creatorInfoResponse = await queryCreatorInfo(accessToken);
+        }
 
         const creatorInfo = await creatorInfoResponse.json();
-
         if (!creatorInfoResponse.ok) {
-            throw new Error('Failed to get creator info');
+        const msg = creatorInfo?.message || creatorInfo?.error?.message || creatorInfo?.error || `HTTP ${creatorInfoResponse.status}`;
+        throw new Error(`Failed to get creator info: ${msg}`);
         }
+
 
         // Resolve a canonical video URL (manual_clip_url > video_url > metadata)
         const sourceUrl =
@@ -80,7 +137,7 @@ exports.handler = async (event, context) => {
         const uploadResponse = await fetch('https://open.tiktokapis.com/v2/post/publish/video/init/', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${connection.access_token}`,
+                'Authorization': `Bearer ${access_token}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
