@@ -198,6 +198,7 @@ exports.handler = async (event) => {
         }
 
         console.log(`[TikTok] Success clip ${upload.clip_id}`);
+
       } catch (e) {
         console.error(`[TikTok] Upload error for ${upload?.clip_id}:`, e.message);
         
@@ -210,10 +211,10 @@ exports.handler = async (event) => {
           .from('publishing_queue')
           .update({
             status: 'pending',            // stay pending; scheduler skips until next_attempt_at
-            next_attempt_at: nextAttemptAt
-            // attempts already incremented earlier in your "mark attempt" update
-            
-          })
+            next_attempt_at: nextAttemptAt,
+            last_error: (e?.message || 'unknown error').toString().slice(0, 500)
+        })
+
           .eq('id', upload.id);
       }
     }
