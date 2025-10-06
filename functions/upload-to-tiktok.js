@@ -1,23 +1,33 @@
 const fetch = globalThis.fetch;
 const { createClient } = require('@supabase/supabase-js');
 
-// --- TikTok token refresh helper ---
+// --- TikTok token refresh helper (form-encoded) ---
 async function refreshTikTokToken({ userId, refreshToken }) {
   const url = 'https://open.tiktokapis.com/v2/oauth/token/';
-  const body = {
-    client_key: process.env.TIKTOK_CLIENT_KEY,
-    client_secret: process.env.TIKTOK_CLIENT_SECRET,
-    grant_type: 'refresh_token',
-    refresh_token: refreshToken,
-  };
+
+  const form = new URLSearchParams();
+  form.set('client_key', process.env.TIKTOK_CLIENT_KEY);
+  form.set('client_secret', process.env.TIKTOK_CLIENT_SECRET);
+  form.set('grant_type', 'refresh_token');
+  form.set('refresh_token', refreshToken);
 
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    headers: {
+      // TikTok requires form-encoded content type:
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: form.toString()
   });
 
-  const json = await res.json();
+  let json;
+  try {
+    json = await res.json();
+  } catch {
+    const txt = await res.text();
+    throw new Error(`refresh_failed_nonjson: ${txt.slice(0,200)}`);
+  }
+
   if (!res.ok || !json.access_token) {
     throw new Error(`refresh_failed: ${JSON.stringify(json).slice(0,200)}`);
   }
@@ -38,7 +48,6 @@ async function refreshTikTokToken({ userId, refreshToken }) {
 
   return { accessToken: json.access_token, refreshToken: json.refresh_token || refreshToken };
 }
-
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
