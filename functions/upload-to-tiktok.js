@@ -62,6 +62,20 @@ exports.handler = async (event, context) => {
             throw new Error('Failed to get creator info');
         }
 
+        // Resolve a canonical video URL (manual_clip_url > video_url > metadata)
+        const sourceUrl =
+        clip.manual_clip_url ||
+        clip.video_url ||
+        (clip?.metadata?.video_url) ||
+        (clip?.metadata?.s3_key
+            ? `https://autostreampro-clips.s3.us-east-2.amazonaws.com/${clip.metadata.s3_key}`
+            : null);
+
+        if (!sourceUrl) {
+        throw new Error('No playable video URL resolved for this clip');
+        }
+
+
         // Initialize TikTok upload
         const uploadResponse = await fetch('https://open.tiktokapis.com/v2/post/publish/video/init/', {
             method: 'POST',
@@ -79,7 +93,7 @@ exports.handler = async (event, context) => {
                 },
                 source_info: {
                     source: 'PULL_FROM_URL',
-                    video_url: clip.video_url
+                    video_url: sourceUrl
                 }
             })
         });
