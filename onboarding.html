@@ -1156,6 +1156,83 @@ window.addEventListener('DOMContentLoaded', () => {
 }
         
     </script>
+
+<script>
+(async function handleYouTubeOAuthCallback() {
+  // 1) If there’s no ?code= in the URL, nothing to do.
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const error = params.get('error');
+  if (error) {
+    console.warn('YouTube OAuth error:', error);
+    return; // show a toast if you like
+  }
+  if (!code) return;
+
+  // 2) Exchange the code via your Netlify function (which now uses /auth/youtube/callback)
+  const fxUrl = '/.netlify/functions/youtube-auth';
+  const fxRes = await fetch(fxUrl, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ code })
+  });
+  const fxJson = await fxRes.json();
+  if (!fxRes.ok || !fxJson.access_token) {
+    console.error('YouTube token exchange failed:', fxJson);
+    alert('YouTube connect failed. Please try again.');
+    return;
+  }
+
+  // 3) Get your Supabase session JWT (adjust this to however you store it)
+  // If you already initialize Supabase in this page, use that; otherwise,
+  // replace the line below with your existing “get current session token” code.
+  const supa = window.supabase; // assuming you load supabase earlier on the page
+  let jwt = null;
+  try {
+    const { data: { session } } = await supa.auth.getSession();
+    jwt = session?.access_token || null;
+  } catch (e) {}
+  if (!jwt) {
+    alert('Please sign in first, then connect YouTube.');
+    return;
+  }
+
+  // 4) Save the connection (this hits your existing Netlify function)
+  const saveRes = await fetch('/.netlify/functions/save-connection', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${jwt}`
+    },
+    body: JSON.stringify({
+      platform: 'youtube',
+      platformUserId: fxJson.channel_id || 'unknown',
+      username: fxJson.channel_title || 'YouTube Channel',
+      accessToken: fxJson.access_token,
+      refreshToken: fxJson.refresh_token || null
+    })
+  });
+  const saveJson = await saveRes.json();
+  if (!saveRes.ok) {
+    console.error('Save connection failed:', saveJson);
+    alert('Could not save your YouTube connection.');
+    return;
+  }
+
+  // 5) Update the UI: set your checkmark and “Connected to YouTube” label.
+  // Adjust selectors to match your page.
+  try {
+    document.querySelector('#youtube-status')?.classList.add('connected');
+    const label = document.querySelector('#youtube-label');
+    if (label) label.textContent = `Connected: ${fxJson.channel_title || 'YouTube'}`;
+  } catch {}
+
+  // 6) Clean up the URL (remove ?code=...)
+  window.history.replaceState({}, '', window.location.pathname);
+})();
+</script>
+
+
 </body>
 </html>
   }

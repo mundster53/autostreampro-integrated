@@ -62,18 +62,25 @@ console.log('User ID:', user.id);
         // Save to streaming_connections table (NEW TABLE)
         const { data, error } = await supabase
             .from('streaming_connections')
-            .upsert({
-                user_id: user.id,
-                platform: platform.toLowerCase(),
-                platform_user_id: platformUserId || platform,
-                platform_username: username || platform,
-                access_token: accessToken,
-                refresh_token: refreshToken,
-                is_active: true,
-                updated_at: new Date().toISOString()
-            }, {
-                onConflict: 'user_id,platform'
-            });
+            // Save to streaming_connections table (match actual columns)
+const row = {
+  user_id: user.id,
+  platform: String(platform || '').toLowerCase(),
+  platform_user_id: platformUserId || null,
+  platform_username: username || platform || null,
+  refresh_token: refreshToken || null,
+  channel_id: (String(platform).toLowerCase() === 'youtube' ? (platformUserId || null) : null),
+  is_active: true,
+  updated_at: new Date().toISOString(),
+};
+
+const upsertRes = await supabase
+  .from('streaming_connections')
+  .upsert(row, { onConflict: 'user_id,platform' })
+  .select();
+
+if (upsertRes.error) throw upsertRes.error;
+
 
         if (error) throw error;
 

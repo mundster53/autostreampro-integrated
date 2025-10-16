@@ -5,6 +5,16 @@ const { createClient } = require('@supabase/supabase-js');
 async function refreshTikTokToken({ userId, refreshToken }) {
   const url = 'https://open.tiktokapis.com/v2/oauth/token/';
 
+  // --- Mode toggle: 0 = Inbox (drafts, needs video.upload), 1 = Direct Post (needs video.publish)
+  const USE_DIRECT_POST = process.env.TIKTOK_USE_DIRECT_POST === '1';
+
+  const INIT_URL = USE_DIRECT_POST
+  ? 'https://open.tiktokapis.com/v2/post/publish/video/init/'
+  : 'https://open.tiktokapis.com/v2/post/publish/inbox/video/init/';
+
+  const CREATOR_INFO_URL = 'https://open.tiktokapis.com/v2/post/publish/creator_info/query/';
+
+
   const form = new URLSearchParams();
   form.set('client_key', process.env.TIKTOK_CLIENT_KEY);
   form.set('client_secret', process.env.TIKTOK_CLIENT_SECRET);
