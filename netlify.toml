@@ -72,6 +72,12 @@ schedule = "*/7 * * * *"
   force = true
 
 [[redirects]]
+  from = "/auth/youtube/callback"
+  to   = "/.netlify/functions/youtube-auth"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/auth/*"
   to = "/.netlify/functions/:splat"
   status = 200
