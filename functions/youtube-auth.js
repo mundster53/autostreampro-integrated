@@ -1,5 +1,5 @@
 // functions/youtube-auth.js
-const fetch = require('node-fetch');
+
 const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
@@ -66,7 +66,7 @@ function json(statusCode, body) {
 
 async function exchangeCodeForTokens({ code, clientId, clientSecret, redirectUri }) {
   const tokenUrl = 'https://oauth2.googleapis.com/token';
-  const res = await fetch(tokenUrl, {
+  const res = await globalThis.fetch(tokenUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
@@ -88,7 +88,8 @@ async function exchangeCodeForTokens({ code, clientId, clientSecret, redirectUri
 }
 
 async function fetchYouTubeChannel(accessToken) {
-  const res = await fetch('https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true', {
+  const res = await globalThis.fetch('https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true', {
+
     headers: { Authorization: `Bearer ${accessToken}` }
   });
   const data = await res.json();
