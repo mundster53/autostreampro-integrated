@@ -126,11 +126,20 @@ exports.handler = async (event) => {
     const method = event.httpMethod || 'GET';
     const accept = (event.headers?.accept || '').toLowerCase();
 
-    const clientId = process.env.YOUTUBE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.YOUTUBE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET;
+    const clientId = process.env.YOUTUBE_CLIENT_ID;
+const clientSecret = process.env.YOUTUBE_CLIENT_SECRET;
+if (!clientId || !clientSecret) {
+  return json(500, { error: 'Missing YOUTUBE_CLIENT_ID / YOUTUBE_CLIENT_SECRET in Netlify env' });
+}
 
     const baseUrl = process.env.PUBLIC_BASE_URL || baseUrlFromHeaders(event.headers || {});
     const redirectUri = `${baseUrl}/auth/youtube/callback`;
+
+    console.log('[yt-auth] baseUrl =', baseUrl);
+    console.log('[yt-auth] redirectUri =', redirectUri);
+    console.log('[yt-auth] clientId  =', process.env.YOUTUBE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID);
+    console.log('[yt-auth] path/method/qs =', event.path, event.httpMethod, event.queryStringParameters);
+
 
 
     // --- START FLOW: GET with no ?code → redirect to Google (only need clientId here)
