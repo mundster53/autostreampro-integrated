@@ -130,7 +130,8 @@ exports.handler = async (event) => {
     const clientSecret = process.env.YOUTUBE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET;
 
     const baseUrl = process.env.PUBLIC_BASE_URL || baseUrlFromHeaders(event.headers || {});
-    const redirectUri = `${baseUrl}/onboarding.html`;
+    const redirectUri = `${baseUrl}/auth/youtube/callback`;
+
 
     // --- START FLOW: GET with no ?code → redirect to Google (only need clientId here)
     if (method === 'GET' && !qs.code && !qs.error) {
