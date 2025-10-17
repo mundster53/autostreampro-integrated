@@ -1,250 +1,172 @@
-// functions/youtube-auth.js
+// netlify/functions/youtube-auth.js
+// Single-file YouTube OAuth handler (Option B + legacy POST), no 500s on Google errors.
 
-const { createClient } = require('@supabase/supabase-js');
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
+const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
+const REDIRECT = process.env.OAUTH_REDIRECT_YT || 'https://autostreampro.com/auth/youtube/callback';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+const CORS = {
+  "Access-Control-Allow-Origin": "*", // optionally pin to APP_ORIGIN after you confirm flows
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
 
-// ---------- helpers ----------
-function baseUrlFromHeaders(headers = {}) {
-  const host = headers['x-forwarded-host'] || headers['host'];
-  const proto = headers['x-forwarded-proto'] || 'https';
-  return `${proto}://${host}`;
+const YT_SCOPES = [
+  "https://www.googleapis.com/auth/youtube.upload",
+  "https://www.googleapis.com/auth/youtube",
+].join(" ");
+
+function json(status, body, extra = {}) {
+  return {
+    statusCode: status,
+    headers: { "Content-Type": "application/json", ...CORS, ...extra },
+    body: JSON.stringify(body),
+  };
 }
 
-// encode a small "return_to" in OAuth state
-function encodeState(returnTo) {
+function redirect(url) {
+  return {
+    statusCode: 302,
+    headers: { Location: url, ...CORS },
+    body: "",
+  };
+}
+
+function safeReturnTo(v) {
   try {
-    return Buffer.from(JSON.stringify({ r: returnTo || '/dashboard.html' }))
-      .toString('base64url');
+    if (!v) return "/onboarding.html";
+    const base = new URL(REDIRECT);           // derive allowed origin from REDIRECT
+    const u = new URL(v, base);               // make absolute on same origin
+    return u.origin === base.origin ? (u.pathname + (u.search || "")) : "/onboarding.html";
   } catch {
-    return Buffer.from(JSON.stringify({ r: '/dashboard.html' })).toString('base64url');
+    return "/onboarding.html";
   }
 }
-function decodeState(state) {
-  try {
-    const obj = JSON.parse(Buffer.from(state || '', 'base64url').toString('utf8'));
-    return (obj && typeof obj.r === 'string') ? obj.r : '/dashboard.html';
-  } catch {
-    return '/dashboard.html';
-  }
+
+function parseQuery(event) {
+  const qp = new URLSearchParams(event.queryStringParameters || {});
+  // Netlify already parses, but ensure string form too (for state)
+  return qp;
 }
 
-function buildYouTubeAuthUrl(baseUrl, clientId, returnTo) {
-  const redirectUri = `${baseUrl}/auth/youtube/callback`;
-  const scope = [
-    'https://www.googleapis.com/auth/youtube.upload',
-    'https://www.googleapis.com/auth/youtube'
-  ].join(' ');
+async function exchangeCodeForTokens(code) {
   const params = new URLSearchParams({
-    client_id: clientId,
-    redirect_uri: redirectUri,
-    response_type: 'code',
-    access_type: 'offline',
-    prompt: 'consent',
-    include_granted_scopes: 'true',
-    scope,
-    state: encodeState(returnTo)
+    code,
+    client_id: CLIENT_ID,
+    client_secret: CLIENT_SECRET,
+    redirect_uri: REDIRECT,
+    grant_type: "authorization_code",
   });
-  return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-}
 
-function json(statusCode, body) {
-  return {
-    statusCode,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Content-Type': 'application/json',
-      'Cache-Control': 'no-store'
-    },
-    body: JSON.stringify(body)
-  };
-}
-
-async function exchangeCodeForTokens({ code, clientId, clientSecret, redirectUri }) {
-  const tokenUrl = 'https://oauth2.googleapis.com/token';
-  const res = await globalThis.fetch(tokenUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      client_id: clientId,
-      client_secret: clientSecret,
-      code,
-      grant_type: 'authorization_code',
-      redirect_uri: redirectUri
-    })
+  const res = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: params.toString(),
   });
-  const data = await res.json();
-  if (!res.ok || !data.access_token) {
-    const msg = data?.error_description || data?.error || 'Token exchange failed';
-    const err = new Error(msg);
-    err.details = data;
-    throw err;
-  }
-  return data; // { access_token, refresh_token, expires_in, scope, token_type, ... }
+
+  let text = "";
+  try { text = await res.text(); } catch {}
+
+  // Try to parse JSON body if present
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch {}
+
+  return { ok: res.ok, status: res.status, data, text };
 }
 
-async function fetchYouTubeChannel(accessToken) {
-  const res = await globalThis.fetch('https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true', {
-
-    headers: { Authorization: `Bearer ${accessToken}` }
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    const err = new Error(data?.error?.message || 'Failed to fetch channel');
-    err.details = data;
-    throw err;
-  }
-  const ch = (data.items && data.items[0]) || {};
-  return {
-    id: ch.id || null,
-    title: ch.snippet?.title || null,
-    thumbnail: ch.snippet?.thumbnails?.default?.url || null
-  };
-}
-
-// ---------- handler ----------
 exports.handler = async (event) => {
-  // CORS preflight
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
-      },
-      body: ''
-    };
-  }
-
   try {
-    const qs = event.queryStringParameters || {};
-    const method = event.httpMethod || 'GET';
-    const accept = (event.headers?.accept || '').toLowerCase();
+    const { httpMethod, path } = event;
 
-    const clientId = process.env.YOUTUBE_CLIENT_ID;
-const clientSecret = process.env.YOUTUBE_CLIENT_SECRET;
-if (!clientId || !clientSecret) {
-  return json(500, { error: 'Missing YOUTUBE_CLIENT_ID / YOUTUBE_CLIENT_SECRET in Netlify env' });
-}
+    // CORS preflight
+    if (httpMethod === "OPTIONS") {
+      return { statusCode: 200, headers: { ...CORS }, body: "" };
+    }
 
-    const baseUrl = process.env.PUBLIC_BASE_URL || baseUrlFromHeaders(event.headers || {});
-    const redirectUri = `${baseUrl}/auth/youtube/callback`;
+    // Basic env guard (returns 500 with clear JSON, not an unhandled throw)
+    if (!CLIENT_ID || !CLIENT_SECRET) {
+      return json(500, { error: "server_misconfig", message: "Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET" });
+    }
 
-    console.log('[yt-auth] baseUrl =', baseUrl);
-    console.log('[yt-auth] redirectUri =', redirectUri);
-    console.log('[yt-auth] clientId  =', process.env.YOUTUBE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID);
-    console.log('[yt-auth] path/method/qs =', event.path, event.httpMethod, event.queryStringParameters);
+    const qp = parseQuery(event);
+    const stateRaw = qp.get("state");
+    let return_to = qp.get("return_to");
+    if (!return_to && stateRaw) {
+      try { return_to = JSON.parse(stateRaw).r; } catch {}
+    }
+    const returnPath = safeReturnTo(return_to);
 
+    // Route: start OAuth (Option B)
+    if (httpMethod === "GET" && path.endsWith("/auth/youtube")) {
+      const authURL = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+      authURL.searchParams.set("client_id", CLIENT_ID);
+      authURL.searchParams.set("redirect_uri", REDIRECT);
+      authURL.searchParams.set("response_type", "code");
+      authURL.searchParams.set("access_type", "offline");
+      authURL.searchParams.set("prompt", "consent");
+      authURL.searchParams.set("include_granted_scopes", "true");
+      authURL.searchParams.set("scope", YT_SCOPES);
+      authURL.searchParams.set("state", JSON.stringify({ r: returnPath }));
+      return redirect(authURL.toString());
+    }
 
+    // Route: callback (Option B)
+    if (httpMethod === "GET" && path.endsWith("/auth/youtube/callback")) {
+      const code = qp.get("code");
 
-    // --- START FLOW: GET with no ?code → redirect to Google (only need clientId here)
-    if (method === 'GET' && !qs.code && !qs.error) {
-      if (!clientId) {
-        return json(500, { error: 'Missing YOUTUBE_CLIENT_ID/GOOGLE_CLIENT_ID' });
+      if (!code) {
+        // Instead of 500 or re-launching OAuth, bounce with explicit error
+        const u = new URL(returnPath, REDIRECT);
+        u.searchParams.set("error", "missing_code");
+        return redirect(u.toString());
       }
-      const returnTo = qs.return_to || '/dashboard.html';
-      const authUrl = buildYouTubeAuthUrl(baseUrl, clientId, returnTo);
-      return {
-        statusCode: 302,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Cache-Control': 'no-store',
-          Location: authUrl
-        },
-        body: ''
-      };
-    }
 
-    // Callback error
-    if (method === 'GET' && qs.error) {
-      return json(400, { error: 'YouTube authorization error', details: qs });
-    }
-
-    // --- CALLBACK / EXCHANGE: support both GET ?code=... and POST { code }
-    let code = qs.code;
-    if (!code && method === 'POST' && event.body) {
-      try {
-        const body = JSON.parse(event.body);
-        code = body.code;
-      } catch {
-        /* ignore */
+      const { ok, status, data, text } = await exchangeCodeForTokens(code);
+      if (!ok || (data && data.error)) {
+        const u = new URL(returnPath, REDIRECT);
+        u.searchParams.set("error", (data && data.error) || "token_exchange_failed");
+        u.searchParams.set("status", String(status));
+        if (data && data.error_description) u.searchParams.set("desc", data.error_description.slice(0, 200));
+        else if (text) u.searchParams.set("desc", text.slice(0, 200));
+        return redirect(u.toString());
       }
-    }
-    if (!code) {
-      const authUrl = buildYouTubeAuthUrl(baseUrl, clientId, qs.return_to);
-      return json(400, { error: 'No authorization code provided', auth_url: authUrl });
-    }
 
-    // For token exchange we DO require both id + secret
-    if (!clientId || !clientSecret) {
-      return json(500, { error: 'Missing YouTube client credentials in env.' });
+      // At this point you have tokens. Persist them server-side if needed.
+      const u = new URL(returnPath, REDIRECT);
+      u.searchParams.set("ok", "1");
+      return redirect(u.toString());
     }
 
-    // Exchange code → tokens
-    const token = await exchangeCodeForTokens({ code, clientId, clientSecret, redirectUri });
-
-    // Optional: get channel info (handy for UI)
-    let channel = null;
-    try {
-      channel = await fetchYouTubeChannel(token.access_token);
-    } catch (e) {
-      console.warn('[YouTube] channel fetch warning:', e.message);
+    // Route: legacy POST with { code }
+    if (httpMethod === "POST") {
+      let body = {};
+      try { body = JSON.parse(event.body || "{}"); } catch {}
+      const code = body.code;
+      const rt = safeReturnTo(body.return_to || return_to);
+      if (!code) {
+        return json(400, {
+          error: "No authorization code provided",
+          auth_url: `${new URL('/auth/youtube', REDIRECT).toString()}?return_to=${encodeURIComponent(rt)}`
+        });
+      }
+      const { ok, status, data, text } = await exchangeCodeForTokens(code);
+      if (!ok || (data && data.error)) {
+        return json(400, {
+          error: (data && data.error) || "token_exchange_failed",
+          status,
+          desc: (data && data.error_description) || (text || "").slice(0, 200)
+        });
+      }
+      return json(200, { ok: true });
     }
 
-    // Optional: persist in Supabase (adapt to your schema)
-    /*
-    const { data: authUser } = await supabase.auth.getUser(); // if you pass a session JWT
-    const currentUserId = authUser?.user?.id; // or supply via state
-    if (currentUserId) {
-      await supabase.from('publishing_connections').upsert({
-        user_id: currentUserId,
-        platform: 'youtube',
-        access_token: token.access_token,
-        refresh_token: token.refresh_token,
-        expires_at: new Date(Date.now() + (token.expires_in || 0) * 1000).toISOString(),
-        profile_id: channel?.id || null,
-        profile_name: channel?.title || null,
-        avatar_url: channel?.thumbnail || null
-      }, { onConflict: 'user_id,platform' });
-    }
-    */
-
-    // ---------- Browser-friendly callback redirect ----------
-    // Prefer the return target from OAuth state; fall back to query or dashboard.
-    const returnTo = qs.state ? decodeState(qs.state) : (qs.return_to || '/dashboard.html');
-
-    // If this was a browser GET (user clicked a link), redirect back to the app.
-    // If it's an XHR/POST (your UI doing AJAX), return JSON instead.
-    if (method === 'GET' && !accept.includes('application/json')) {
-      return {
-        statusCode: 302,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Cache-Control': 'no-store',
-          Location: returnTo
-        },
-        body: ''
-      };
-    }
-
-    // JSON response for programmatic callers (AJAX)
+    // Fallback: brief help
     return json(200, {
-      success: true,
-      platform: 'youtube',
-      access_token: token.access_token,
-      refresh_token: token.refresh_token,
-      expires_in: token.expires_in,
-      scope: token.scope,
-      token_type: token.token_type,
-      channel
+      ok: true,
+      routes: ["/auth/youtube", "/auth/youtube/callback", "POST /.netlify/functions/youtube-auth"],
     });
   } catch (err) {
-    console.error('YouTube auth error:', err.message, err.details || '');
-    return json(500, { error: 'Authentication failed', details: err.message, more: err.details });
+    // Final safety net: never leak stack to users
+    return json(500, { error: "internal_error" });
   }
 };
