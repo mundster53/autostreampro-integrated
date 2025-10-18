@@ -1232,6 +1232,37 @@ window.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  // Read query parameters from the URL
+  const q = new URLSearchParams(location.search);
+  const ok = q.get('ok');
+  const err = q.get('error');
+  const desc = q.get('desc') || '';
+  const status = q.get('status') || '';
+
+  // Find the element on your page that shows connection status
+  // (You can change this selector to whatever element you already have)
+  const statusEl = document.querySelector('[data-youtube-status]');
+
+  if (ok === '1' && !err) {
+    if (statusEl) statusEl.textContent = '✅ YouTube connected successfully';
+    alert('YouTube connected successfully!');
+    return;
+  }
+
+  if (err) {
+    const msg = `YouTube connect failed: ${err}${status ? ` (${status})` : ''}${desc ? ' — ' + decodeURIComponent(desc) : ''}`;
+    if (statusEl) statusEl.textContent = msg;
+    alert(msg);
+    return;
+  }
+
+  // Neutral state (nothing special in URL)
+  if (statusEl) statusEl.textContent = 'Connect your YouTube account';
+});
+</script>
+
 
 </body>
 </html>
