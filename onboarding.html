@@ -304,31 +304,12 @@
                     </button>
                 </div>
                 
-<!-- ========================= -->
-<!-- YOUTUBE CONNECTION BLOCK -->
-<!-- ========================= -->
 <div class="platform-card" data-platform="youtube">
   <div class="platform-icon youtube-icon">Y</div>
   <div class="platform-name">YouTube</div>
-
-  <!-- Connect button (default visible) -->
-  <button class="connect-btn" id="youtubeBtn">
-    Connect YouTube
-  </button>
-
-  <!-- Connected state (hidden until connected) -->
-  <div id="youtubeConnected" style="display:none; margin-top:10px;">
-    <div style="
-      background:#d1fae5;
-      color:#065f46;
-      padding:10px;
-      border-radius:8px;
-      font-weight:600;
-      text-align:center;
-    ">
-      ✓ Connected
-    </div>
-  </div>
+  <button class="connect-btn" id="youtubeBtn">Connect YouTube</button>
+  <button class="disconnect-btn" id="youtubeDisconnectBtn" onclick="disconnectYouTube()">Disconnect YouTube</button>
+</div>
 
   <!-- Disconnect button (hidden until connected) -->
   <button class="disconnect-btn" id="youtubeDisconnectBtn" style="display:none; margin-top:10px;">
@@ -727,13 +708,13 @@ updateConnectedPlatforms();
 });
         
 
+// ---- YOUTUBE CONNECT / DISCONNECT ----
 document.getElementById('youtubeBtn').addEventListener('click', () => {
   window.location.href = '/auth/youtube?return_to=/onboarding.html';
 });
 
 async function disconnectYouTube() {
   if (!confirm('Disconnect YouTube?')) return;
-
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -741,24 +722,22 @@ async function disconnectYouTube() {
       return;
     }
 
-    const response = await fetch('/.netlify/functions/disconnect-youtube', {
+    const res = await fetch('/.netlify/functions/disconnect-youtube', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: user.id })
     });
 
-    const result = await response.json();
-    if (response.ok && result.success) {
-      // Reset UI to disconnected
+    const result = await res.json();
+    if (res.ok && result.success) {
+      const card = document.querySelector('[data-platform="youtube"]');
+      card.classList.remove('connected');
       const btn = document.getElementById('youtubeBtn');
       btn.innerHTML = 'Connect YouTube';
       btn.disabled = false;
-      btn.classList.remove('connected');
-
       const disc = document.getElementById('youtubeDisconnectBtn');
-      disc.disabled = true;
-
-      showSuccess('YouTube disconnected successfully.');
+      disc.disabled = false;
+      showSuccess('YouTube disconnected successfully');
       await checkConnections();
     } else {
       showError('Failed to disconnect YouTube');
@@ -768,6 +747,43 @@ async function disconnectYouTube() {
     showError('Error disconnecting YouTube');
   }
 }
+
+async function checkYouTubeConnection() {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('streaming_connections')
+      .select('platform')
+      .eq('user_id', user.id)
+      .eq('platform', 'youtube')
+      .eq('is_active', true)
+      .maybeSingle();
+
+    const connectBtn = document.getElementById('youtubeBtn');
+    const disconnectBtn = document.getElementById('youtubeDisconnectBtn');
+    const card = document.querySelector('[data-platform="youtube"]');
+
+    if (data) {
+      card.classList.add('connected');
+      connectBtn.innerHTML = '✓ Connected';
+      connectBtn.disabled = true;
+      disconnectBtn.disabled = false;
+    } else {
+      card.classList.remove('connected');
+      connectBtn.innerHTML = 'Connect YouTube';
+      connectBtn.disabled = false;
+      disconnectBtn.disabled = false;
+    }
+  } catch (err) {
+    console.error('checkYouTubeConnection error:', err);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', checkYouTubeConnection);
+
+
 
 // Update YouTube UI based on database
 async function checkYouTubeConnection() {
