@@ -305,23 +305,19 @@
                 </div>
                 
                 <!-- YouTube -->
-                    <div class="platform-card" data-platform="youtube">
-                    <div class="platform-icon youtube-icon">Y</div>
-                    <div class="platform-name">YouTube</div>
-                    <button class="connect-btn" id="youtubeBtn">
-                    Connect YouTube
-                    </button>
-                    <div data-youtube-status style="margin-top:10px;color:#333;"></div>
-                    <div class="success-message" id="youtubeSuccess" style="display: none;">
-                    ✓ Connected as <span id="youtubeUsername"></span>
-                    <button onclick="disconnectYouTube()" style="margin-left: 10px; font-size: 12px;">
-                    Disconnect
-                        </button>
-                    </div>
-                    <button class="disconnect-btn" id="youtubeDisconnectBtn">
-                    Disconnect YouTube
-                        </button>
-</div>
+        <div class="platform-card" data-platform="youtube">
+        <div class="platform-icon youtube-icon">Y</div>
+        <div class="platform-name">YouTube</div>
+
+        <button class="connect-btn" id="youtubeBtn">Connect YouTube</button>
+
+        <!-- Hidden until connected (same behavior as Twitch) -->
+        <button class="disconnect-btn" id="youtubeDisconnectBtn" style="display:none;">
+            Disconnect YouTube
+        </button>
+        </div>
+
+        </div>
                 
                 <!-- Instagram -->
                 <div class="platform-card" data-platform="instagram">
