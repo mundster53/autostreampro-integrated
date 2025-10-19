@@ -815,7 +815,8 @@ async function checkConnections() {
   });
 
   // Hide specific disconnect buttons up front
-
+  const ytDisc = document.getElementById('youtubeDisconnectBtn');
+  if (ytDisc) ytDisc.style.display = 'none';
   const twDisc = document.getElementById('twitchDisconnectBtn');
   if (twDisc) twDisc.style.display = 'none';
 
