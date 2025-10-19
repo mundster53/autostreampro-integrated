@@ -299,7 +299,7 @@
                     <button class="connect-btn" id="twitchBtn">
                         Connect Twitch
                     </button>
-                    <button onclick="disconnectPlatform('twitch')" class="disconnect-btn" style="margin-top: 10px;">
+                    <button class="disconnect-btn" id="twitchDisconnectBtn">
                         Disconnect Twitch
                     </button>
                 </div>
@@ -311,13 +311,14 @@
                     <button class="connect-btn" id="youtubeBtn">
                     Connect YouTube
                     </button>
+                    <div data-youtube-status style="margin-top:10px;color:#333;"></div>
                     <div class="success-message" id="youtubeSuccess" style="display: none;">
                     ✓ Connected as <span id="youtubeUsername"></span>
                     <button onclick="disconnectYouTube()" style="margin-left: 10px; font-size: 12px;">
                     Disconnect
                         </button>
                     </div>
-                    <button onclick="disconnectYouTube()" class="disconnect-btn">
+                    <button class="disconnect-btn" id="youtubeDisconnectBtn">
                     Disconnect YouTube
                         </button>
 </div>
@@ -459,7 +460,6 @@
         
         // OAuth Configuration
 const twitchClientId = 'mzjsqcwxj9mexsa8vaimtzanbe7pll';  // Your REAL Twitch Client ID
-const googleClientId = '17381198225-gn5qnqdlhuehbhlva9ro046r5qbssfrn.apps.googleusercontent.com';
         
         // Get current user
         async function getCurrentUser() {
@@ -494,14 +494,95 @@ const googleClientId = '17381198225-gn5qnqdlhuehbhlva9ro046r5qbssfrn.apps.google
             const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=twitch&force_verify=true`;
             window.location.href = authUrl;
         });
-        
-        // Connect YouTube
-document.getElementById('youtubeBtn').addEventListener('click', () => {
-    const redirectUri = 'https://autostreampro.com/onboarding.html';
-    const scope = 'https://www.googleapis.com/auth/youtube.upload';  // ← ONLY upload
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent&state=youtube`;
-    window.location.href = authUrl;
+
+        // === Twitch disconnect (CSP-safe) ===
+document.addEventListener('DOMContentLoaded', () => {
+  const twBtn = document.getElementById('twitchDisconnectBtn');
+  if (!twBtn) return;
+
+  twBtn.addEventListener('click', async () => {
+    if (!confirm('Disconnect Twitch?')) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { alert('Please log in first'); return; }
+
+      const res = await fetch('/.netlify/functions/disconnect-twitch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id })
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.error || 'Failed to disconnect Twitch');
+
+      // UI updates
+      const twCard = document.querySelector('[data-platform="twitch"]');
+      twCard?.classList?.remove('connected');
+
+      const connectBtn = document.getElementById('twitchBtn');
+      if (connectBtn) { connectBtn.style.display = 'block'; connectBtn.disabled = false; connectBtn.innerHTML = 'Connect Twitch'; }
+
+      if (typeof checkConnections === 'function') await checkConnections();
+      if (typeof showSuccess === 'function') showSuccess('Twitch disconnected successfully');
+      else alert('Twitch disconnected successfully');
+    } catch (err) {
+      console.error('Disconnect Twitch failed:', err);
+      if (typeof showError === 'function') showError('Failed to disconnect Twitch');
+      else alert('Failed to disconnect Twitch');
+    }
+  });
 });
+        
+        // Connect YouTube (Option B only: server-driven OAuth)
+document.getElementById('youtubeBtn').addEventListener('click', () => {
+  window.location.href = '/auth/youtube?return_to=/onboarding.html';
+});
+
+ // YouTube disconnect (CSP-safe)//
+
+document.addEventListener('DOMContentLoaded', () => {
+  const ytBtn = document.getElementById('youtubeDisconnectBtn');
+  if (!ytBtn) return;
+
+  ytBtn.addEventListener('click', async () => {
+    if (!confirm('Disconnect YouTube? You can reconnect anytime.')) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { alert('Please log in first'); return; }
+
+      const res = await fetch('/.netlify/functions/disconnect-youtube', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id })
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.error || 'Failed to disconnect YouTube');
+
+      // UI updates
+      const youtubeCard = document.querySelector('[data-platform="youtube"]');
+      youtubeCard?.classList?.remove('connected');
+
+      const connectBtn = document.getElementById('youtubeBtn');
+      if (connectBtn) { connectBtn.style.display = 'block'; connectBtn.disabled = false; connectBtn.innerHTML = 'Connect YouTube'; }
+
+      const successBlock = document.getElementById('youtubeSuccess');
+      if (successBlock) successBlock.style.display = 'none';
+
+      const statusEl = document.querySelector('[data-youtube-status]');
+      if (statusEl) statusEl.textContent = 'YouTube disconnected';
+
+      if (typeof checkConnections === 'function') await checkConnections();
+      if (typeof showSuccess === 'function') showSuccess('YouTube disconnected successfully');
+      else alert('YouTube disconnected successfully');
+    } catch (err) {
+      console.error('Disconnect YouTube failed:', err);
+      if (typeof showError === 'function') showError('Failed to disconnect YouTube');
+      else alert('Failed to disconnect YouTube');
+    }
+  });
+});
+
         // Connect TikTok
 document.getElementById('tiktokBtn').addEventListener('click', () => {
     const state = Math.random().toString(36).substring(7);
@@ -662,14 +743,14 @@ async function savePlatformConnection(platform, data) {
                 }
             }
             
-           if (state === 'youtube') {
+           // Legacy Option A path disabled
+if (false && state === 'youtube') {
     try {
         const response = await fetch('/.netlify/functions/youtube-auth', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ code })
         });
-        
         const data = await response.json();
         if (data.access_token) {
             await savePlatformConnection('youtube', {
@@ -711,46 +792,75 @@ async function savePlatformConnection(platform, data) {
             window.history.replaceState({}, document.title, '/onboarding.html');
         }
         
-        // Check existing connections
-        // Check existing connections
-// Check existing connections
+
+// Check existing connections (REPLACE the whole function with this)
 async function checkConnections() {
-    const user = await getCurrentUser();
-    if (!user) return;
-    
-    // FORCE FRESH CHECK - no caching
-    const { data, error } = await supabase
-        .from('streaming_connections')
-        .select('platform')
-        .eq('user_id', user.id)
-        .eq('is_active', true);  // Only active connections
-    
-    // First, reset ALL platforms to disconnected
-    const allPlatforms = ['youtube', 'twitch', 'kick', 'tiktok'];
-    allPlatforms.forEach(platform => {
-        const card = document.querySelector(`[data-platform="${platform}"]`);
-        if (card) {
-            card.classList.remove('connected');
-            const btn = card.querySelector('.connect-btn');
-            if (btn) {
-                btn.innerHTML = `Connect ${platform.charAt(0).toUpperCase() + platform.slice(1)}`;
-                btn.disabled = false;
-            }
-        }
-    });
-    
-    // Then only mark as connected what's actually in database
-    if (data) {
-        data.forEach(conn => {
-            const card = document.querySelector(`[data-platform="${conn.platform}"]`);
-            if (card) {
-                card.classList.add('connected');
-                const btn = card.querySelector('.connect-btn');
-                btn.innerHTML = '<span class="connected-status">✓ Connected</span>';
-                btn.disabled = true;
-            }
-        });
+  const user = await getCurrentUser();
+  if (!user) return;
+
+  // 1) Query active connections from DB
+  const { data, error } = await supabase
+    .from('streaming_connections')
+    .select('platform')
+    .eq('user_id', user.id)
+    .eq('is_active', true);
+
+  // 2) Reset ALL platforms to disconnected (UI) and HIDE disconnect buttons
+  const allPlatforms = ['youtube', 'twitch', 'kick', 'tiktok'];
+  allPlatforms.forEach((platform) => {
+    const card = document.querySelector(`[data-platform="${platform}"]`);
+    if (card) {
+      card.classList.remove('connected');
+      const btn = card.querySelector('.connect-btn');
+      if (btn) {
+        btn.innerHTML = `Connect ${platform.charAt(0).toUpperCase() + platform.slice(1)}`;
+        btn.disabled = false;
+        btn.style.display = 'block';
+      }
     }
+  });
+
+  // Hide specific disconnect buttons up front
+  const ytDisc = document.getElementById('youtubeDisconnectBtn');
+  if (ytDisc) ytDisc.style.display = 'none';
+  const twDisc = document.getElementById('twitchDisconnectBtn');
+  if (twDisc) twDisc.style.display = 'none';
+
+  // 3) Mark only DB-backed connections as connected and SHOW their disconnect buttons
+  if (data) {
+    data.forEach((conn) => {
+      const platform = conn.platform;
+      const card = document.querySelector(`[data-platform="${platform}"]`);
+      if (!card) return;
+
+      card.classList.add('connected');
+
+      const btn = card.querySelector('.connect-btn');
+      if (btn) {
+        btn.innerHTML = '<span class="connected-status">✓ Connected</span>';
+        btn.disabled = true;
+        // If you prefer to hide the connect button when connected:
+        // btn.style.display = 'none';
+      }
+
+      // Show the corresponding disconnect button for connected platforms
+      if (platform === 'youtube') {
+        const d = document.getElementById('youtubeDisconnectBtn');
+        if (d) d.style.display = 'block';
+      }
+      if (platform === 'twitch') {
+        const d = document.getElementById('twitchDisconnectBtn');
+        if (d) d.style.display = 'block';
+      }
+    });
+  }
+
+  // 4) (Optional) Update any “connection count” UI you have
+  const statusElement = document.getElementById('connectionStatus');
+  if (statusElement) {
+    const connectedCount = (data || []).length;
+    statusElement.textContent = `${connectedCount} of 4 platforms connected`;
+  }
 }    
         document.getElementById('saveBtn').addEventListener('click', async () => {
     const user = await getCurrentUser();
@@ -1157,80 +1267,6 @@ window.addEventListener('DOMContentLoaded', () => {
         
     </script>
 
-<script>
-(async function handleYouTubeOAuthCallback() {
-  // 1) If there’s no ?code= in the URL, nothing to do.
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get('code');
-  const error = params.get('error');
-  if (error) {
-    console.warn('YouTube OAuth error:', error);
-    return; // show a toast if you like
-  }
-  if (!code) return;
-
-  // 2) Exchange the code via your Netlify function (which now uses /auth/youtube/callback)
-  const fxUrl = '/.netlify/functions/youtube-auth';
-  const fxRes = await fetch(fxUrl, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ code })
-  });
-  const fxJson = await fxRes.json();
-  if (!fxRes.ok || !fxJson.access_token) {
-    console.error('YouTube token exchange failed:', fxJson);
-    alert('YouTube connect failed. Please try again.');
-    return;
-  }
-
-  // 3) Get your Supabase session JWT (adjust this to however you store it)
-  // If you already initialize Supabase in this page, use that; otherwise,
-  // replace the line below with your existing “get current session token” code.
-  const supa = window.supabase; // assuming you load supabase earlier on the page
-  let jwt = null;
-  try {
-    const { data: { session } } = await supa.auth.getSession();
-    jwt = session?.access_token || null;
-  } catch (e) {}
-  if (!jwt) {
-    alert('Please sign in first, then connect YouTube.');
-    return;
-  }
-
-  // 4) Save the connection (this hits your existing Netlify function)
-  const saveRes = await fetch('/.netlify/functions/save-connection', {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'authorization': `Bearer ${jwt}`
-    },
-    body: JSON.stringify({
-      platform: 'youtube',
-      platformUserId: fxJson.channel_id || 'unknown',
-      username: fxJson.channel_title || 'YouTube Channel',
-      accessToken: fxJson.access_token,
-      refreshToken: fxJson.refresh_token || null
-    })
-  });
-  const saveJson = await saveRes.json();
-  if (!saveRes.ok) {
-    console.error('Save connection failed:', saveJson);
-    alert('Could not save your YouTube connection.');
-    return;
-  }
-
-  // 5) Update the UI: set your checkmark and “Connected to YouTube” label.
-  // Adjust selectors to match your page.
-  try {
-    document.querySelector('#youtube-status')?.classList.add('connected');
-    const label = document.querySelector('#youtube-label');
-    if (label) label.textContent = `Connected: ${fxJson.channel_title || 'YouTube'}`;
-  } catch {}
-
-  // 6) Clean up the URL (remove ?code=...)
-  window.history.replaceState({}, '', window.location.pathname);
-})();
-</script>
 
 <script>
 window.addEventListener('DOMContentLoaded', () => {
@@ -1266,5 +1302,3 @@ window.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-  }
-}
