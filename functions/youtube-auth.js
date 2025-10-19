@@ -12,8 +12,7 @@ const CORS = {
 };
 
 const YT_SCOPES = [
-  "https://www.googleapis.com/auth/youtube.upload",
-  "https://www.googleapis.com/auth/youtube",
+  "https://www.googleapis.com/auth/youtube.upload"
 ].join(" ");
 
 function json(status, body, extra = {}) {
@@ -103,7 +102,6 @@ exports.handler = async (event) => {
       authURL.searchParams.set("redirect_uri", REDIRECT);
       authURL.searchParams.set("response_type", "code");
       authURL.searchParams.set("access_type", "offline");
-      authURL.searchParams.set("prompt", "consent");
       authURL.searchParams.set("include_granted_scopes", "true");
       authURL.searchParams.set("scope", YT_SCOPES);
       authURL.searchParams.set("state", JSON.stringify({ r: returnPath }));
