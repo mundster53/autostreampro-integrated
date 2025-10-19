@@ -309,80 +309,10 @@
   <div class="platform-icon youtube-icon">Y</div>
   <div class="platform-name">YouTube</div>
   <button class="connect-btn" id="youtubeBtn">Connect YouTube</button>
-  <button class="disconnect-btn" id="youtubeDisconnectBtn">Disconnect YouTube</button>
+  <button class="disconnect-btn" id="youtubeDisconnectBtn">
+    Disconnect YouTube
+  </button>
 </div>
-
-
-<script>
-  // --- YOUTUBE CONNECT ---
-  document.getElementById('youtubeBtn').addEventListener('click', () => {
-    window.location.href = '/auth/youtube?return_to=/onboarding.html';
-  });
-
-  // --- YOUTUBE DISCONNECT ---
-  document.getElementById('youtubeDisconnectBtn').addEventListener('click', async () => {
-    if (!confirm('Disconnect YouTube?')) return;
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        alert('Please log in first');
-        return;
-      }
-
-      const res = await fetch('/.netlify/functions/disconnect-youtube', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id })
-      });
-
-      const result = await res.json();
-      if (res.ok && result.success) {
-        // Reset to disconnected state
-        document.getElementById('youtubeBtn').style.display = 'block';
-        document.getElementById('youtubeConnected').style.display = 'none';
-        document.getElementById('youtubeDisconnectBtn').style.display = 'none';
-        showSuccess('YouTube disconnected successfully.');
-        await checkConnections();
-      } else {
-        alert('Failed to disconnect YouTube: ' + (result.error || 'unknown error'));
-      }
-    } catch (err) {
-      alert('Error disconnecting YouTube: ' + err.message);
-    }
-  });
-
-  // --- UPDATE CONNECTION VISIBILITY ---
-  async function checkConnections() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data, error } = await supabase
-      .from('streaming_connections')
-      .select('platform')
-      .eq('user_id', user.id)
-      .eq('is_active', true);
-
-    // Reset defaults
-    document.getElementById('youtubeBtn').style.display = 'block';
-    document.getElementById('youtubeConnected').style.display = 'none';
-    document.getElementById('youtubeDisconnectBtn').style.display = 'none';
-
-    // Apply connected states
-    if (data) {
-      data.forEach(conn => {
-        if (conn.platform === 'youtube') {
-          document.getElementById('youtubeBtn').style.display = 'none';
-          document.getElementById('youtubeConnected').style.display = 'block';
-          document.getElementById('youtubeDisconnectBtn').style.display = 'block';
-        }
-      });
-    }
-  }
-
-  // --- RUN CHECK ON LOAD ---
-  window.addEventListener('DOMContentLoaded', checkConnections);
-</script>
 
                 
                 <!-- Instagram -->
@@ -594,24 +524,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
-        
-        // Connect YouTube (Option B only: server-driven OAuth)
-document.getElementById('youtubeBtn').addEventListener('click', () => {
-  window.location.href = '/auth/youtube?return_to=/onboarding.html';
-});
 
- // YouTube disconnect (CSP-safe)//
-
+// === YOUTUBE CONNECT / DISCONNECT (final unified version) ===
 document.addEventListener('DOMContentLoaded', () => {
-  const ytBtn = document.getElementById('youtubeDisconnectBtn');
-  if (!ytBtn) return;
+  const ytConnectBtn = document.getElementById('youtubeBtn');
+  const ytDisconnectBtn = document.getElementById('youtubeDisconnectBtn');
+  const ytCard = document.querySelector('[data-platform="youtube"]');
 
-  ytBtn.addEventListener('click', async () => {
-    if (!confirm('Disconnect YouTube? You can reconnect anytime.')) return;
+  if (!ytConnectBtn || !ytDisconnectBtn || !ytCard) return;
+
+  // Connect to YouTube
+  ytConnectBtn.addEventListener('click', () => {
+    window.location.href = '/auth/youtube?return_to=/onboarding.html';
+  });
+
+  // Disconnect YouTube
+  ytDisconnectBtn.addEventListener('click', async () => {
+    if (!confirm('Disconnect YouTube?')) return;
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { alert('Please log in first'); return; }
+      if (!user) {
+        alert('Please log in first.');
+        return;
+      }
 
       const res = await fetch('/.netlify/functions/disconnect-youtube', {
         method: 'POST',
@@ -619,30 +555,51 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({ userId: user.id })
       });
       const json = await res.json().catch(() => ({}));
-      if (!res.ok || !json.success) throw new Error(json.error || 'Failed to disconnect YouTube');
 
-      // UI updates
-      const youtubeCard = document.querySelector('[data-platform="youtube"]');
-      youtubeCard?.classList?.remove('connected');
+      if (!res.ok || !json.success) throw new Error(json.error || 'Disconnect failed.');
 
-      const connectBtn = document.getElementById('youtubeBtn');
-      if (connectBtn) { connectBtn.style.display = 'block'; connectBtn.disabled = false; connectBtn.innerHTML = 'Connect YouTube'; }
+      // Reset UI (mirror Twitch logic)
+      ytCard.classList.remove('connected');
+      ytConnectBtn.innerHTML = 'Connect YouTube';
+      ytConnectBtn.disabled = false;
+      ytDisconnectBtn.style.display = 'none';
 
-      const successBlock = document.getElementById('youtubeSuccess');
-      if (successBlock) successBlock.style.display = 'none';
-
-      const statusEl = document.querySelector('[data-youtube-status]');
-      if (statusEl) statusEl.textContent = 'YouTube disconnected';
-
-      if (typeof checkConnections === 'function') await checkConnections();
-      if (typeof showSuccess === 'function') showSuccess('YouTube disconnected successfully');
-      else alert('YouTube disconnected successfully');
+      if (typeof showSuccess === 'function')
+        showSuccess('YouTube disconnected successfully.');
+      await checkConnections();
     } catch (err) {
       console.error('Disconnect YouTube failed:', err);
-      if (typeof showError === 'function') showError('Failed to disconnect YouTube');
-      else alert('Failed to disconnect YouTube');
+      if (typeof showError === 'function') showError('Failed to disconnect YouTube.');
     }
   });
+
+  // Check YouTube connection state
+  async function checkYouTubeConnection() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from('streaming_connections')
+      .select('platform')
+      .eq('user_id', user.id)
+      .eq('platform', 'youtube')
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (data) {
+      ytCard.classList.add('connected');
+      ytConnectBtn.innerHTML = '✓ Connected';
+      ytConnectBtn.disabled = true;
+      ytDisconnectBtn.style.display = 'block';
+    } else {
+      ytCard.classList.remove('connected');
+      ytConnectBtn.innerHTML = 'Connect YouTube';
+      ytConnectBtn.disabled = false;
+      ytDisconnectBtn.style.display = 'none';
+    }
+  }
+
+  checkYouTubeConnection();
 });
 
         // Connect TikTok
@@ -702,118 +659,7 @@ updateConnectedPlatforms();
     }
     
 });
-        
-
-// ---- YOUTUBE CONNECT / DISCONNECT ----
-document.getElementById('youtubeBtn').addEventListener('click', () => {
-  window.location.href = '/auth/youtube?return_to=/onboarding.html';
-});
-
-async function disconnectYouTube() {
-  if (!confirm('Disconnect YouTube?')) return;
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      alert('Please log in first');
-      return;
-    }
-
-    const res = await fetch('/.netlify/functions/disconnect-youtube', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: user.id })
-    });
-
-    const result = await res.json();
-    if (res.ok && result.success) {
-      const card = document.querySelector('[data-platform="youtube"]');
-      card.classList.remove('connected');
-      const btn = document.getElementById('youtubeBtn');
-      btn.innerHTML = 'Connect YouTube';
-      btn.disabled = false;
-      const disc = document.getElementById('youtubeDisconnectBtn');
-      disc.disabled = false;
-      showSuccess('YouTube disconnected successfully');
-      await checkConnections();
-    } else {
-      showError('Failed to disconnect YouTube');
-    }
-  } catch (err) {
-    console.error('Disconnect YouTube error:', err);
-    showError('Error disconnecting YouTube');
-  }
-}
-
-async function checkYouTubeConnection() {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data, error } = await supabase
-      .from('streaming_connections')
-      .select('platform')
-      .eq('user_id', user.id)
-      .eq('platform', 'youtube')
-      .eq('is_active', true)
-      .maybeSingle();
-
-    const connectBtn = document.getElementById('youtubeBtn');
-    const disconnectBtn = document.getElementById('youtubeDisconnectBtn');
-    const card = document.querySelector('[data-platform="youtube"]');
-
-    if (data) {
-      card.classList.add('connected');
-      connectBtn.innerHTML = '✓ Connected';
-      connectBtn.disabled = true;
-      disconnectBtn.disabled = false;
-    } else {
-      card.classList.remove('connected');
-      connectBtn.innerHTML = 'Connect YouTube';
-      connectBtn.disabled = false;
-      disconnectBtn.disabled = false;
-    }
-  } catch (err) {
-    console.error('checkYouTubeConnection error:', err);
-  }
-}
-
-window.addEventListener('DOMContentLoaded', checkYouTubeConnection);
-
-
-
-// Update YouTube UI based on database
-async function checkYouTubeConnection() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-
-  const { data, error } = await supabase
-    .from('streaming_connections')
-    .select('platform')
-    .eq('user_id', user.id)
-    .eq('platform', 'youtube')
-    .eq('is_active', true)
-    .maybeSingle();
-
-  const connectBtn = document.getElementById('youtubeBtn');
-  const disconnectBtn = document.getElementById('youtubeDisconnectBtn');
-
-  if (data) {
-    connectBtn.innerHTML = '✓ Connected';
-    connectBtn.disabled = true;
-    connectBtn.classList.add('connected');
-    disconnectBtn.disabled = false;
-  } else {
-    connectBtn.innerHTML = 'Connect YouTube';
-    connectBtn.disabled = false;
-    connectBtn.classList.remove('connected');
-    disconnectBtn.disabled = true;
-  }
-}
-
-window.addEventListener('DOMContentLoaded', checkYouTubeConnection);
-
-
-
+    
       // Save platform connection
 async function savePlatformConnection(platform, data) {
     try {
@@ -1185,61 +1031,6 @@ async function connectKick() {
     } catch (error) {
         console.error('Kick connection error:', error);
         alert('Failed to connect Kick');
-    }
-}
-// YouTube disconnect
-async function disconnectYouTube() {
-    if (!confirm('Disconnect YouTube? You can reconnect to refresh tokens.')) return;
-    
-    try {
-    
-        // GET THE USER FIRST
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            alert('Please log in first');
-            return;
-        }
-        const response = await fetch('/.netlify/functions/disconnect-youtube', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                userId: user.id
-            })
-        });
-        
-        if (response.ok) {
-            // Update ALL visual indicators
-            const youtubeCard = document.querySelector('[data-platform="youtube"]');
-            
-            // Remove connected status from card
-            youtubeCard.classList.remove('connected');
-            
-            // Show connect button
-            document.getElementById('youtubeBtn').style.display = 'block';
-            document.getElementById('youtubeBtn').disabled = false;
-            document.getElementById('youtubeBtn').innerHTML = 'Connect YouTube';
-            
-            // Hide success message
-            document.getElementById('youtubeSuccess').style.display = 'none';
-            
-            // Update any connected status text
-            const connectedSpan = youtubeCard.querySelector('.connected-status');
-            if (connectedSpan) {
-                connectedSpan.remove();
-            }
-            
-            showSuccess('YouTube disconnected successfully');
-            
-            // Update the connection counter if you have one
-            updateConnectedPlatforms();
-            // Force recheck connections from database
-            await checkConnections();
-        } else {
-            const error = await response.json();
-            alert('Failed to disconnect YouTube: ' + error.error);
-        }
-    } catch (error) {
-        alert('Failed to disconnect YouTube: ' + error.message);
     }
 }
 
