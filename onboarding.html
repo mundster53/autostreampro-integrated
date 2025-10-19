@@ -723,8 +723,85 @@ updateConnectedPlatforms();
         console.error('Kick connection error:', error);
         alert('Failed to connect Kick');
     }
+    
 });
         
+
+document.getElementById('youtubeBtn').addEventListener('click', () => {
+  window.location.href = '/auth/youtube?return_to=/onboarding.html';
+});
+
+async function disconnectYouTube() {
+  if (!confirm('Disconnect YouTube?')) return;
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      alert('Please log in first');
+      return;
+    }
+
+    const response = await fetch('/.netlify/functions/disconnect-youtube', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id })
+    });
+
+    const result = await response.json();
+    if (response.ok && result.success) {
+      // Reset UI to disconnected
+      const btn = document.getElementById('youtubeBtn');
+      btn.innerHTML = 'Connect YouTube';
+      btn.disabled = false;
+      btn.classList.remove('connected');
+
+      const disc = document.getElementById('youtubeDisconnectBtn');
+      disc.disabled = true;
+
+      showSuccess('YouTube disconnected successfully.');
+      await checkConnections();
+    } else {
+      showError('Failed to disconnect YouTube');
+    }
+  } catch (err) {
+    console.error('Disconnect YouTube error:', err);
+    showError('Error disconnecting YouTube');
+  }
+}
+
+// Update YouTube UI based on database
+async function checkYouTubeConnection() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data, error } = await supabase
+    .from('streaming_connections')
+    .select('platform')
+    .eq('user_id', user.id)
+    .eq('platform', 'youtube')
+    .eq('is_active', true)
+    .maybeSingle();
+
+  const connectBtn = document.getElementById('youtubeBtn');
+  const disconnectBtn = document.getElementById('youtubeDisconnectBtn');
+
+  if (data) {
+    connectBtn.innerHTML = '✓ Connected';
+    connectBtn.disabled = true;
+    connectBtn.classList.add('connected');
+    disconnectBtn.disabled = false;
+  } else {
+    connectBtn.innerHTML = 'Connect YouTube';
+    connectBtn.disabled = false;
+    connectBtn.classList.remove('connected');
+    disconnectBtn.disabled = true;
+  }
+}
+
+window.addEventListener('DOMContentLoaded', checkYouTubeConnection);
+
+
+
       // Save platform connection
 async function savePlatformConnection(platform, data) {
     try {
