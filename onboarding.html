@@ -309,9 +309,7 @@
   <div class="platform-icon youtube-icon">Y</div>
   <div class="platform-name">YouTube</div>
   <button class="connect-btn" id="youtubeBtn">Connect YouTube</button>
-  <button class="disconnect-btn" id="youtubeDisconnectBtn">
-    Disconnect YouTube
-  </button>
+  <button class="disconnect-btn" id="youtubeDisconnectBtn">Disconnect YouTube</button>
 </div>
 
                 
@@ -525,23 +523,22 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// === YOUTUBE CONNECT / DISCONNECT (final unified version) ===
+// === FINAL YOUTUBE CONNECT / DISCONNECT (full parity with Twitch) ===
 document.addEventListener('DOMContentLoaded', () => {
+  const ytCard = document.querySelector('[data-platform="youtube"]');
   const ytConnectBtn = document.getElementById('youtubeBtn');
   const ytDisconnectBtn = document.getElementById('youtubeDisconnectBtn');
-  const ytCard = document.querySelector('[data-platform="youtube"]');
 
-  if (!ytConnectBtn || !ytDisconnectBtn || !ytCard) return;
+  if (!ytCard || !ytConnectBtn || !ytDisconnectBtn) return;
 
-  // Connect to YouTube
+  // --- CONNECT YOUTUBE ---
   ytConnectBtn.addEventListener('click', () => {
     window.location.href = '/auth/youtube?return_to=/onboarding.html';
   });
 
-  // Disconnect YouTube
+  // --- DISCONNECT YOUTUBE ---
   ytDisconnectBtn.addEventListener('click', async () => {
     if (!confirm('Disconnect YouTube?')) return;
-
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -554,27 +551,26 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user.id })
       });
+
       const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.error || 'Disconnect failed');
 
-      if (!res.ok || !json.success) throw new Error(json.error || 'Disconnect failed.');
-
-      // Reset UI (mirror Twitch logic)
+      // Update UI (same as Twitch)
       ytCard.classList.remove('connected');
       ytConnectBtn.innerHTML = 'Connect YouTube';
       ytConnectBtn.disabled = false;
       ytDisconnectBtn.style.display = 'none';
 
-      if (typeof showSuccess === 'function')
-        showSuccess('YouTube disconnected successfully.');
+      showSuccess('YouTube disconnected successfully.');
       await checkConnections();
     } catch (err) {
-      console.error('Disconnect YouTube failed:', err);
-      if (typeof showError === 'function') showError('Failed to disconnect YouTube.');
+      console.error('YouTube disconnect failed:', err);
+      showError('Failed to disconnect YouTube.');
     }
   });
 
-  // Check YouTube connection state
-  async function checkYouTubeConnection() {
+  // --- INITIAL CONNECTION CHECK ---
+  async function updateYouTubeState() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -588,7 +584,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (data) {
       ytCard.classList.add('connected');
-      ytConnectBtn.innerHTML = '✓ Connected';
+      ytConnectBtn.innerHTML = '<span class="connected-status">✓ Connected</span>';
       ytConnectBtn.disabled = true;
       ytDisconnectBtn.style.display = 'block';
     } else {
@@ -599,8 +595,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  checkYouTubeConnection();
+  updateYouTubeState();
 });
+
 
         // Connect TikTok
 document.getElementById('tiktokBtn').addEventListener('click', () => {
