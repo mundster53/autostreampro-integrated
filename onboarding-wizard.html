@@ -443,7 +443,57 @@
           el.classList.add('selected');
           selectedThreshold = parseInt(el.getAttribute('data-threshold'),10);
         });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+      
+
       });
+
+      // --- YouTube: finalize after callback (?youtube_code=...) ---
+const youtubeCode = urlParams.get('youtube_code');
+if (youtubeCode) {
+  try {
+    // Exchange code on server (requires functions/youtube-exchange.js deployed)
+    const r = await signedFetch('/.netlify/functions/youtube-exchange', {
+      method: 'POST',
+      body: JSON.stringify({ code: youtubeCode })
+    });
+    if (!r.ok) {
+      console.error('youtube-exchange failed', await r.text());
+      alert('YouTube connection failed. Please try again.');
+    } else {
+      // Advance the wizard to Step 3, like your Twitch flow does
+      selectedPlatform = 'youtube';
+      document.getElementById('step1').classList.remove('active');
+      document.getElementById('step1').classList.add('completed');
+      document.getElementById('step1').innerHTML='✓';
+      document.getElementById('line1').classList.add('completed');
+      document.getElementById('step2').classList.remove('upcoming');
+      document.getElementById('step2').classList.add('completed');
+      document.getElementById('step2').innerHTML='✓';
+      document.getElementById('line2').classList.add('completed');
+      document.getElementById('content1').classList.remove('active');
+      document.getElementById('content2').classList.remove('active');
+      currentStep = 3;
+      document.getElementById('content3').classList.add('active');
+      document.getElementById('step3').classList.remove('upcoming');
+      document.getElementById('step3').classList.add('active');
+      updateNavigationState();
+    }
+  } catch (e) {
+    console.error(e);
+    alert('YouTube connection error. Please try again.');
+  } finally {
+    // Clean the URL (remove ?youtube_code=...) but keep on wizard
+    const p = new URLSearchParams(window.location.search);
+    p.delete('youtube_code');
+    const clean = new URL(window.location.href);
+    clean.search = p.toString();
+    history.replaceState({}, document.title, clean.toString());
+  }
+}
 
       // Buttons
       document.getElementById('nextBtn').addEventListener('click', nextStep);
@@ -456,7 +506,7 @@
       if (ytWizardBtn) {
         ytWizardBtn.addEventListener('click', (e) => {
           e.preventDefault();
-          const returnTo = encodeURIComponent('/onboarding-wizard.html#youtube');
+          const returnTo = encodeURIComponent('/onboarding-wizard.html');
           window.location.href = `/auth/youtube?return_to=${returnTo}`;
         });
       }
@@ -625,6 +675,20 @@
     }
   });
 })();
+
+  async function signedFetch(url, options = {}) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) throw new Error('Not signed in');
+    return fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        ...(options.headers || {})
+      }
+    });
+  }
+
 </script>
 
 </body>
