@@ -1,159 +1,22 @@
+# netlify.toml (minimal, known-good)
+
 [build]
   publish = "."
   command = "npm install"
-
-[build.environment]
-  NODE_VERSION = "18"
-  NPM_VERSION = "8"
-
-[[scheduled]]
-  path = "/.netlify/functions/processQueue"
-  schedule = "*/5 * * * *"
-
-[[scheduled]]
-  path = "/.netlify/functions/processQueueTiktok"
-  schedule = "*/5 * * * *"
-
-[[scheduled]]
-  path = "/.netlify/functions/processQueueInstagram"
-  schedule = "*/5 * * * *"
-
-[[scheduled]]
-  path = "/.netlify/functions/monitor-kick-streams"
-  schedule = "*/2 * * * *"   # every 2 minutes while you test; you can relax later
-
-  [[scheduled]]
-path = "/.netlify/functions/refresh-all-hls"
-# Every 7 minutes
-schedule = "*/7 * * * *"
-
-[[redirects]]
-  from = "/api/stripe/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/stripe/webhook"
-  to = "/.netlify/functions/stripe-webhook"
-  status = 200
-
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
-  [[redirects]]
-  from = "/auth/tiktok"
-  to   = "/.netlify/functions/tiktok-auth"
-  status = 200
-  force  = true
-
-[[redirects]]
-  from = "/auth/tiktok.html"
-  to   = "/.netlify/functions/tiktok-auth"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/auth/tiktok/callback"
-  to   = "/.netlify/functions/tiktok-auth"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/auth/youtube/callback"
-  to   = "/functions/youtube-auth"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/auth/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/auth/twitter/callback"
-  to = "/.netlify/functions/twitter-auth"
-  status = 200
-
-[[redirects]]
-  from = "/auth/instagram/callback"
-  to = "/.netlify/functions/instagram-auth"
-  status = 200
-
-[[redirects]]
-  from = "/auth/twitch/callback"
-  to = "/.netlify/functions/twitch-auth"
-  status = 200
-
-[[redirects]]
-  from = "/dashboard/*"
-  to = "/dashboard.html"
-  status = 200
-  
-
-[[redirects]]
-  from = "/auth/youtube"
-  to = "/.netlify/functions/youtube-oauth"
-  status = 200
-  force = true 
-
-[[redirects]]
-  from = "/auth/youtube/callback"
-  to   = "/.netlify/functions/youtube-callback"
-  status = 200
-  force = true
-
-# netlify.toml — serve the wizard page
-[[redirects]]
-  from = "/onboarding/*"
-  to   = "/onboarding-wizard.html"
-  status = 200
-  force  = true
-
-  [[redirects]]
-  from = "/api/set-ingest-source"
-  to = "/.netlify/functions/set-ingest-source"
-  status = 200
-
-# AUTOMATIC queue processing every 3 minutes
-[functions."autoProcessQueue"]  
-  schedule = "*/3 * * * *"
-
-[functions."autoUploadClips"]
-  schedule = "*/5 * * * *"  # Upload to YouTube every 5 minutes
-
-[functions."cleanupAllStorage"]
-  schedule = "*/30 * * * *"
-
-[functions."autoFixMissingViral"]
-  schedule = "*/15 * * * *" 
 
 [functions]
   directory = "functions"
   node_bundler = "esbuild"
 
-# SEO Performance Tracking - runs daily at 3 AM
-[functions."seo-performance-tracker"]
-  schedule = "0 3 * * *"
+# ——— OAuth redirects (very specific, with force) ———
+[[redirects]]
+  from = "/auth/youtube"
+  to   = "/.netlify/functions/youtube-oauth"
+  status = 200
+  force  = true
 
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "connect-src 'self' https://dykxhmdozgccawkbxejd.supabase.co https://api.openai.com https://api.replicate.com https://autostreampro-backend-production.up.railway.app wss:"
-
-[context.production.environment]
-  NODE_ENV = "production"
-  ENVIRONMENT = "production"
-
-[context.deploy-preview.environment]
-  NODE_ENV = "staging"
-  ENVIRONMENT = "staging"
-
-[context.branch-deploy.environment]
-  NODE_ENV = "development"
-  ENVIRONMENT = "development"
+[[redirects]]
+  from = "/auth/youtube/callback"
+  to   = "/.netlify/functions/youtube-callback"
+  status = 200
+  force  = true
