@@ -1,3 +1,6 @@
+console.log("🚀 HIT youtube-oauth.js");
+
+
 // netlify/functions/youtube-oauth.js
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const REDIRECT = process.env.OAUTH_REDIRECT_YT || 'https://autostreampro.com/auth/youtube/callback';
