@@ -723,6 +723,22 @@ async function savePlatformConnection(platform, data) {
             const code = urlParams.get('code');
             const state = urlParams.get('state');
 
+            // ADD THIS ENTIRE BLOCK - Check for YouTube success first
+    if (urlParams.get('youtube') === 'success' || urlParams.get('youtube_connected') === 'true') {
+        console.log('YouTube connection successful, refreshing connections...');
+        showSuccess('YouTube connected successfully!');
+        
+        // Clean URL
+        window.history.replaceState({}, document.title, '/onboarding.html');
+        
+        // Force refresh connections from database
+        setTimeout(async () => {
+            await checkConnections();
+        }, 500);
+        
+        return;
+    }
+
         // ADD THIS NEW CHECK FOR YOUTUBE SUCCESS
     if (urlParams.get('youtube_connected') === 'true') {
         const ytCard = document.querySelector('[data-platform="youtube"]');
