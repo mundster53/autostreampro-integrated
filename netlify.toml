@@ -27,11 +27,6 @@ path = "/.netlify/functions/refresh-all-hls"
 # Every 7 minutes
 schedule = "*/7 * * * *"
 
-
-[functions]
-  directory = "functions"
-  node_bundler = "esbuild"
-
 [[redirects]]
   from = "/api/stripe/*"
   to = "/.netlify/functions/:splat"
