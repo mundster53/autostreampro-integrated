@@ -102,6 +102,11 @@ schedule = "*/7 * * * *"
   to = "/dashboard.html"
   status = 200
 
+[[redirects]]
+  from = "/auth/youtube"
+  to = "/.netlify/functions/youtube-oauth"
+  status = 200
+
 # netlify.toml — serve the wizard page
 [[redirects]]
   from = "/onboarding/*"
