@@ -14,30 +14,37 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body || '{}');
     const { platform, platformUserId, accessToken, refreshToken, username, userId } = body;
 
+    console.log('[save-connection] Incoming payload:', body);
+
     if (!platform || !userId) {
+      console.error('Missing required fields');
       return { statusCode: 400, body: JSON.stringify({ error: 'Missing required fields' }) };
     }
 
-    // Upsert (insert or update if already connected)
     const { data, error } = await supabase
       .from('streaming_connections')
       .upsert({
         user_id: userId,
         platform,
-        platform_user_id: platformUserId,
-        access_token: accessToken,
-        refresh_token: refreshToken,
-        username,
+        platform_user_id: platformUserId || platform,
+        access_token: accessToken || '',
+        refresh_token: refreshToken || '',
+        username: username || platform,
         is_active: true,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id,platform' })
       .select();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
 
+    console.log('[save-connection] Success:', data);
     return { statusCode: 200, body: JSON.stringify({ success: true, data }) };
+
   } catch (err) {
-    console.error('save-connection error:', err);
+    console.error('save-connection handler error:', err);
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 };
