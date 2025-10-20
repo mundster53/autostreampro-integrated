@@ -95,11 +95,13 @@ schedule = "*/7 * * * *"
   from = "/dashboard/*"
   to = "/dashboard.html"
   status = 200
+  
 
 [[redirects]]
   from = "/auth/youtube"
   to = "/.netlify/functions/youtube-oauth"
   status = 200
+  force = true 
 
 [[redirects]]
   from = "/auth/youtube/callback"
@@ -132,6 +134,9 @@ schedule = "*/7 * * * *"
 [functions."autoFixMissingViral"]
   schedule = "*/15 * * * *" 
 
+[functions]
+  directory = "functions"
+  node_bundler = "esbuild"
 
 # SEO Performance Tracking - runs daily at 3 AM
 [functions."seo-performance-tracker"]
