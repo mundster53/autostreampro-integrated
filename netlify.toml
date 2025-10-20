@@ -101,6 +101,12 @@ schedule = "*/7 * * * *"
   to = "/.netlify/functions/youtube-oauth"
   status = 200
 
+[[redirects]]
+  from = "/auth/youtube/callback"
+  to   = "/.netlify/functions/youtube-callback"
+  status = 200
+  force = true
+
 # netlify.toml — serve the wizard page
 [[redirects]]
   from = "/onboarding/*"
