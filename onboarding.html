@@ -723,6 +723,30 @@ async function savePlatformConnection(platform, data) {
             const code = urlParams.get('code');
             const state = urlParams.get('state');
 
+        // ADD THIS NEW CHECK FOR YOUTUBE SUCCESS
+    if (urlParams.get('youtube_connected') === 'true') {
+        const ytCard = document.querySelector('[data-platform="youtube"]');
+        if (ytCard) {
+            ytCard.classList.add('connected');
+            const ytBtn = document.getElementById('youtubeBtn');
+            ytBtn.innerHTML = '<span class="connected-status">✓ Connected</span>';
+            ytBtn.disabled = true;
+            
+            const ytDisconnectBtn = document.getElementById('youtubeDisconnectBtn');
+            if (ytDisconnectBtn) {
+                ytDisconnectBtn.style.display = 'block';
+            }
+        }
+        
+        showSuccess('YouTube connected successfully!');
+        // Clean URL
+        window.history.replaceState({}, document.title, '/onboarding.html');
+        
+        // Refresh connections from database
+        await checkConnections();
+        return;
+    }
+
 // ADD THIS FOR TIKTOK
     if (urlParams.get('tiktok') === 'connected') {
         await savePlatformConnection('tiktok', {
@@ -834,51 +858,62 @@ async function checkConnections() {
         btn.disabled = false;
         btn.style.display = 'block';
       }
+      
+      // Hide ALL disconnect buttons initially
+      const disconnectBtn = card.querySelector('.disconnect-btn');
+      if (disconnectBtn) {
+        disconnectBtn.style.display = 'none';
+      }
     }
   });
 
-  // Hide specific disconnect buttons up front
+  // Also hide specific disconnect buttons by ID (for safety)
   const ytDisc = document.getElementById('youtubeDisconnectBtn');
   if (ytDisc) ytDisc.style.display = 'none';
   const twDisc = document.getElementById('twitchDisconnectBtn');
   if (twDisc) twDisc.style.display = 'none';
 
   // 3) Mark only DB-backed connections as connected and SHOW their disconnect buttons
-  if (data) {
+  if (data && data.length > 0) {
     data.forEach((conn) => {
       const platform = conn.platform;
       const card = document.querySelector(`[data-platform="${platform}"]`);
       if (!card) return;
 
+      // Add connected class to card
       card.classList.add('connected');
 
+      // Update connect button to show connected status
       const btn = card.querySelector('.connect-btn');
       if (btn) {
         btn.innerHTML = '<span class="connected-status">✓ Connected</span>';
         btn.disabled = true;
-        // If you prefer to hide the connect button when connected:
-        // btn.style.display = 'none';
       }
 
-      // Show the corresponding disconnect button for connected platforms
+      // Show the disconnect button for this platform
+      const disconnectBtn = card.querySelector('.disconnect-btn');
+      if (disconnectBtn) {
+        disconnectBtn.style.display = 'block';
+      }
+
+      // Also show by specific ID (backup method)
       if (platform === 'youtube') {
         const d = document.getElementById('youtubeDisconnectBtn');
         if (d) d.style.display = 'block';
-      }
-      if (platform === 'twitch') {
+      } else if (platform === 'twitch') {
         const d = document.getElementById('twitchDisconnectBtn');
         if (d) d.style.display = 'block';
       }
     });
   }
 
-  // 4) (Optional) Update any “connection count” UI you have
+  // 4) Update any "connection count" UI you have
   const statusElement = document.getElementById('connectionStatus');
   if (statusElement) {
     const connectedCount = (data || []).length;
     statusElement.textContent = `${connectedCount} of 4 platforms connected`;
   }
-}    
+}
         document.getElementById('saveBtn').addEventListener('click', async () => {
     const user = await getCurrentUser();
     if (!user) return;
