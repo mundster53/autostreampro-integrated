@@ -67,7 +67,7 @@ schedule = "*/7 * * * *"
 
 [[redirects]]
   from = "/auth/youtube/callback"
-  to   = "/.netlify/functions/youtube-auth"
+  to   = "/functions/youtube-auth"
   status = 200
   force = true
 
