@@ -47,12 +47,6 @@ schedule = "*/7 * * * *"
   to = "/.netlify/functions/:splat"
   status = 200
 
-# must be placed BEFORE the generic /auth/* rule
-[[redirects]]
-  from = "/auth/youtube"
-  to   = "/.netlify/functions/youtube-auth"
-  status = 200
-
   [[redirects]]
   from = "/auth/tiktok"
   to   = "/.netlify/functions/tiktok-auth"
