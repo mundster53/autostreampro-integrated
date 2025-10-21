@@ -443,11 +443,12 @@ function markYouTubeSelected() {
       await checkOnboardingStatus();
 
       // Load current connections so Step 3 behaves correctly
-try {
-  const conn = await fetchConnections();
-  yConnected = conn.youtube;
-  if (yConnected) markYouTubeSelected();
-} catch {}
+    try {
+      const conn = await fetchConnections();
+      yConnected = conn.youtube;
+      if (yConnected) markYouTubeSelected();
+      window.yConnected = yConnected;
+    } catch {}
 
 
       // Step 1 selections
@@ -460,7 +461,6 @@ try {
           // NEW: remember & select YouTube so we don't re-auth on tile click
           yConnected = true;
           markYouTubeSelected();
-    
         });
       });
 
@@ -485,55 +485,6 @@ try {
           el.classList.add('selected');
           selectedThreshold = parseInt(el.getAttribute('data-threshold'),10);
         });
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        const state = urlParams.get('state');
-
-        // --- YouTube: finalize after callback (?youtube_code=...) ---
-const youtubeCode = urlParams.get('youtube_code');
-if (youtubeCode) {
-  try {
-    // If you've deployed functions/youtube-exchange.js, you can persist the tokens now:
-    /*
-    const r = await signedFetch('/.netlify/functions/youtube-exchange', {
-      method: 'POST',
-      body: JSON.stringify({ code: youtubeCode })
-    });
-    if (!r.ok) {
-      console.error('youtube-exchange failed', await r.text());
-      alert('YouTube connection failed. Please try again.');
-    }
-    */
-
-    // Advance the wizard to Step 3 (same visuals you use for Twitch)
-    selectedPlatform = 'youtube';
-    document.getElementById('step1').classList.remove('active');
-    document.getElementById('step1').classList.add('completed');
-    document.getElementById('step1').innerHTML='✓';
-    document.getElementById('line1').classList.add('completed');
-    document.getElementById('step2').classList.remove('upcoming');
-    document.getElementById('step2').classList.add('completed');
-    document.getElementById('step2').innerHTML='✓';
-    document.getElementById('line2').classList.add('completed');
-    document.getElementById('content1').classList.remove('active');
-    document.getElementById('content2').classList.remove('active');
-    currentStep = 3;
-    document.getElementById('content3').classList.add('active');
-    document.getElementById('step3').classList.remove('upcoming');
-    document.getElementById('step3').classList.add('active');
-    updateNavigationState();
-  } catch (e) {
-    console.error(e);
-    alert('YouTube connection error. Please try again.');
-  } finally {
-    // Clean URL (?youtube_code=...) but stay on wizard
-    urlParams.delete('youtube_code');
-    const clean = new URL(window.location.href);
-    clean.search = urlParams.toString();
-    history.replaceState({}, document.title, clean.toString());
-  }
-}
       
       });
 
@@ -567,6 +518,10 @@ if (youtubeCode) {
       document.getElementById('step3').classList.remove('upcoming');
       document.getElementById('step3').classList.add('active');
       updateNavigationState();
+      // remember connection & update the Step-3 tile
+      yConnected = true;
+      window.yConnected = true;
+      markYouTubeSelected();
     }
   } catch (e) {
     console.error(e);
@@ -646,26 +601,7 @@ if (ytWizardBtn) {
         window.history.replaceState({}, document.title, '/onboarding-wizard.html');
       }
 
-      // 2) YouTube returns via server → redirect to #youtube (no ?code here)
-      if (location.hash === '#youtube') {
-        selectedPlatform = 'youtube';
-        document.getElementById('step1').classList.remove('active');
-        document.getElementById('step1').classList.add('completed');
-        document.getElementById('step1').innerHTML='✓';
-        document.getElementById('line1').classList.add('completed');
-        document.getElementById('step2').classList.remove('upcoming');
-        document.getElementById('step2').classList.add('completed');
-        document.getElementById('step2').innerHTML='✓';
-        document.getElementById('line2').classList.add('completed');
-        document.getElementById('content1').classList.remove('active');
-        document.getElementById('content2').classList.remove('active');
-        currentStep = 3;
-        document.getElementById('content3').classList.add('active');
-        document.getElementById('step3').classList.remove('upcoming');
-        document.getElementById('step3').classList.add('active');
-        updateNavigationState();
-        history.replaceState({}, document.title, '/onboarding-wizard.html');
-      }
+
 
       // 3) DEV: jump straight to Step 3 if ?step=3 (bypass Kick/Twitch during testing)
       if (urlParams.get('step') === '3') {
@@ -698,7 +634,18 @@ if (ytWizardBtn) {
         }
       }
 
+      // Make shared state/functions available to the second <script>
+          window.yConnected = yConnected;
+          window.selectedPublishPlatforms = selectedPublishPlatforms;
+          window.updateNavigationState = updateNavigationState;
+
     });
+
+      // Make shared state/functions available to the second <script>
+      window.yConnected = yConnected;
+      window.selectedPublishPlatforms = selectedPublishPlatforms;
+      window.updateNavigationState = updateNavigationState;
+
   </script>
 
   <script>
