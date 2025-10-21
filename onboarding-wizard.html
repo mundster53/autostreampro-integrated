@@ -220,6 +220,36 @@
     let selectedPublishPlatforms = [];
     let selectedThreshold = 40; // percent
 
+    // --- YouTube connection state (Step 3 should not re-auth if already connected)
+let yConnected = false;
+
+async function fetchConnections() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { youtube: false };
+  const { data, error } = await supabase
+    .from('streaming_connections')
+    .select('youtube_connected')
+    .eq('user_id', user.id)
+    .maybeSingle();
+  return { youtube: !!(data && data.youtube_connected) };
+}
+
+function markYouTubeSelected() {
+  // select the Step 3 YouTube tile and enable Next (no OAuth)
+  const ytTile = document.querySelector('.platform-option[data-publish="youtube"]');
+  if (ytTile && !ytTile.classList.contains('selected')) ytTile.classList.add('selected');
+  if (!selectedPublishPlatforms.includes('youtube')) selectedPublishPlatforms.push('youtube');
+  if (typeof updateNavigationState === 'function') updateNavigationState();
+  // Optional status message pane you already render:
+  const box = document.getElementById('publishConnections');
+  if (box) {
+    box.innerHTML = `<div style="padding:12px;border-radius:8px;background:#ecfdf5;color:#065f46">
+      YouTube connected ✔ — we’ll publish clips there.
+    </div>`;
+  }
+}
+
+
     // ---------- Platform connections ----------
     async function connectKick() {
       const username = (document.getElementById('kickUsername')?.value || '').trim();
@@ -412,6 +442,14 @@
       await checkAuth();
       await checkOnboardingStatus();
 
+      // Load current connections so Step 3 behaves correctly
+try {
+  const conn = await fetchConnections();
+  yConnected = conn.youtube;
+  if (yConnected) markYouTubeSelected();
+} catch {}
+
+
       // Step 1 selections
       document.querySelectorAll('[data-platform]').forEach(el=>{
         el.addEventListener('click', ()=>{
@@ -419,6 +457,10 @@
           el.classList.add('selected');
           selectedPlatform = el.getAttribute('data-platform');
           updateNavigationState();
+          // NEW: remember & select YouTube so we don't re-auth on tile click
+          yConnected = true;
+          markYouTubeSelected();
+    
         });
       });
 
@@ -545,15 +587,35 @@ if (youtubeCode) {
       document.getElementById('kickVerifyBtn').addEventListener('click', connectKick);
       document.getElementById('twitchConnectBtn').addEventListener('click', connectTwitch);
 
-      // YouTube button → server route (no client Google URL)
       const ytWizardBtn = document.getElementById('youtubeConnectBtn');
-      if (ytWizardBtn) {
-        ytWizardBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          const returnTo = encodeURIComponent('/onboarding-wizard.html');
-          window.location.href = `/auth/youtube?return_to=${returnTo}`;
-        });
-      }
+if (ytWizardBtn) {
+  ytWizardBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (yConnected) {
+      // already connected → jump to Step 3 visuals
+      selectedPlatform = 'youtube';
+      document.getElementById('step1').classList.remove('active');
+      document.getElementById('step1').classList.add('completed');
+      document.getElementById('step1').innerHTML='✓';
+      document.getElementById('line1').classList.add('completed');
+      document.getElementById('step2').classList.remove('upcoming');
+      document.getElementById('step2').classList.add('completed');
+      document.getElementById('step2').innerHTML='✓';
+      document.getElementById('line2').classList.add('completed');
+      document.getElementById('content1').classList.remove('active');
+      document.getElementById('content2').classList.remove('active');
+      currentStep = 3;
+      document.getElementById('content3').classList.add('active');
+      document.getElementById('step3').classList.remove('upcoming');
+      document.getElementById('step3').classList.add('active');
+      markYouTubeSelected();
+      updateNavigationState();
+      return;
+    }
+    const returnTo = encodeURIComponent('/onboarding-wizard.html');
+    window.location.href = `/auth/youtube?return_to=${returnTo}`;
+  });
+}
 
       // Kick enter key
       const kickInput = document.getElementById('kickUsername');
@@ -668,14 +730,30 @@ if (youtubeCode) {
       });
     }
 
-    // 2) (Optional) YouTube tile consistency — if you want it to trigger server route directly
-    if (youtubeTile && !youtubeTile.dataset.wired) {
-      youtubeTile.dataset.wired = '1';
-      youtubeTile.style.cursor = 'pointer';
-      youtubeTile.addEventListener('click', function () {
-        window.location.href = '/auth/youtube?return_to=' + encodeURIComponent('/onboarding-wizard.html');
-      });
+    // 2) YouTube tile: if already connected, just select; otherwise start OAuth
+if (youtubeTile && !youtubeTile.dataset.wired) {
+  youtubeTile.dataset.wired = '1';
+  youtubeTile.style.cursor = 'pointer';
+  youtubeTile.addEventListener('click', async function () {
+    try {
+      // If we already have a connection, don't re-auth; just toggle/select
+      if (window.yConnected) {
+        if (!youtubeTile.classList.contains('selected')) youtubeTile.classList.add('selected');
+        if (Array.isArray(window.selectedPublishPlatforms) && !window.selectedPublishPlatforms.includes('youtube')) {
+          window.selectedPublishPlatforms.push('youtube');
+        }
+        if (typeof window.updateNavigationState === 'function') window.updateNavigationState();
+        return;
+      }
+
+      // Not connected yet → start OAuth once
+      window.location.href = '/auth/youtube?return_to=' + encodeURIComponent('/onboarding-wizard.html');
+    } catch {
+      // fallback to OAuth if anything odd happens
+      window.location.href = '/auth/youtube?return_to=' + encodeURIComponent('/onboarding-wizard.html');
     }
+  });
+}
 
     // 3) Handle return from TikTok: land on /onboarding-wizard.html#tiktok
     if (location.hash === '#tiktok') {
