@@ -1,22 +1,171 @@
-# netlify.toml (minimal, known-good)
-
+# ------------------------------
+# Build & environment
+# ------------------------------
 [build]
-  publish = "."
-  command = "npm install"
+  publish = "."              # Serve static files from repo root
+  command = "npm install"    # Your previous build command; adjust if needed
 
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_VERSION  = "8"
+
+# ------------------------------
+# Netlify Functions config
+# ------------------------------
 [functions]
-  directory = "functions"
+  directory    = "functions"   # your functions live in ./functions/*.js
   node_bundler = "esbuild"
 
-# ——— OAuth redirects (very specific, with force) ———
+# ------------------------------
+# Security headers
+# ------------------------------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # Update connect-src if you add new backends or sockets
+    Content-Security-Policy = "connect-src 'self' https://dykxhmdozgccawkbxejd.supabase.co https://api.openai.com https://api.replicate.com https://autostreampro-backend-production.up.railway.app wss:;"
+
+# ------------------------------
+# Scheduled Functions (cron)
+# These paths must match real functions in /functions (without .js)
+# ------------------------------
+# Every 5 minutes
+[[scheduled]]
+  path     = "/.netlify/functions/processQueue"
+  schedule = "*/5 * * * *"
+
+[[scheduled]]
+  path     = "/.netlify/functions/processQueueTiktok"
+  schedule = "*/5 * * * *"
+
+[[scheduled]]
+  path     = "/.netlify/functions/processQueueInstagram"
+  schedule = "*/5 * * * *"
+
+# Every 2 minutes (while testing; relax later)
+[[scheduled]]
+  path     = "/.netlify/functions/monitor-kick-streams"
+  schedule = "*/2 * * * *"
+
+# Every 7 minutes
+[[scheduled]]
+  path     = "/.netlify/functions/refresh-all-hls"
+  schedule = "*/7 * * * *"
+
+# Optional additional cron jobs you listed (uncomment only if the functions exist)
+# [[scheduled]]
+#   path     = "/.netlify/functions/autoProcessQueue"
+#   schedule = "*/3 * * * *"
+# [[scheduled]]
+#   path     = "/.netlify/functions/autoUploadClips"
+#   schedule = "*/5 * * * *"
+# [[scheduled]]
+#   path     = "/.netlify/functions/cleanupAllStorage"
+#   schedule = "*/30 * * * *"
+# [[scheduled]]
+#   path     = "/.netlify/functions/autoFixMissingViral"
+#   schedule = "*/15 * * * *"
+# [[scheduled]]
+#   path     = "/.netlify/functions/seo-performance-tracker"
+#   schedule = "0 3 * * *"
+
+# ------------------------------
+# Redirects (order matters: specific before catch-alls)
+# ------------------------------
+
+# --- YouTube OAuth (specific) ---
 [[redirects]]
-  from = "/auth/youtube"
-  to   = "/.netlify/functions/youtube-oauth"
+  from   = "/auth/youtube"
+  to     = "/.netlify/functions/youtube-oauth"
   status = 200
   force  = true
 
 [[redirects]]
-  from = "/auth/youtube/callback"
-  to   = "/.netlify/functions/youtube-callback"
+  from   = "/auth/youtube/callback"
+  to     = "/.netlify/functions/youtube-callback"
   status = 200
   force  = true
+
+# --- TikTok OAuth ---
+[[redirects]]
+  from   = "/auth/tiktok"
+  to     = "/.netlify/functions/tiktok-auth"
+  status = 200
+  force  = true
+
+[[redirects]]
+  from   = "/auth/tiktok.html"
+  to     = "/.netlify/functions/tiktok-auth"
+  status = 200
+  force  = true
+
+[[redirects]]
+  from   = "/auth/tiktok/callback"
+  to     = "/.netlify/functions/tiktok-auth"
+  status = 200
+  force  = true
+
+# --- Instagram/Twitter/Twitch callbacks ---
+[[redirects]]
+  from   = "/auth/instagram/callback"
+  to     = "/.netlify/functions/instagram-auth"
+  status = 200
+  force  = true
+
+[[redirects]]
+  from   = "/auth/twitter/callback"
+  to     = "/.netlify/functions/twitter-auth"
+  status = 200
+  force  = true
+
+[[redirects]]
+  from   = "/auth/twitch/callback"
+  to     = "/.netlify/functions/twitch-auth"
+  status = 200
+  force  = true
+
+# --- Stripe ---
+[[redirects]]
+  from   = "/stripe/webhook"
+  to     = "/.netlify/functions/stripe-webhook"
+  status = 200
+
+[[redirects]]
+  from   = "/api/stripe/*"
+  to     = "/.netlify/functions/:splat"
+  status = 200
+
+# --- API catch-all (Netlify functions) ---
+[[redirects]]
+  from   = "/api/*"
+  to     = "/.netlify/functions/:splat"
+  status = 200
+
+# --- Auth catch-all (AFTER specific OAuth routes above) ---
+[[redirects]]
+  from   = "/auth/*"
+  to     = "/.netlify/functions/:splat"
+  status = 200
+
+# --- Dashboard & Onboarding pages ---
+[[redirects]]
+  from   = "/dashboard/*"
+  to     = "/dashboard.html"
+  status = 200
+
+# Serve your wizard directly
+[[redirects]]
+  from   = "/onboarding/*"
+  to     = "/onboarding-wizard.html"
+  status = 200
+  force  = true
+
+# Example: set-ingest-source (covered by /api/*, keep only if you really need a dedicated rule)
+# [[redirects]]
+#   from   = "/api/set-ingest-source"
+#   to     = "/.netlify/functions/set-ingest-source"
+#   status = 200
