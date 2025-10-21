@@ -1,2 +1,0 @@
-/auth/youtube            /.netlify/functions/youtube-oauth    200!
-/auth/youtube/callback   /.netlify/functions/youtube-callback 200!
