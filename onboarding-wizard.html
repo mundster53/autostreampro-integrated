@@ -447,8 +447,52 @@
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         const state = urlParams.get('state');
-      
 
+        // --- YouTube: finalize after callback (?youtube_code=...) ---
+const youtubeCode = urlParams.get('youtube_code');
+if (youtubeCode) {
+  try {
+    // If you've deployed functions/youtube-exchange.js, you can persist the tokens now:
+    /*
+    const r = await signedFetch('/.netlify/functions/youtube-exchange', {
+      method: 'POST',
+      body: JSON.stringify({ code: youtubeCode })
+    });
+    if (!r.ok) {
+      console.error('youtube-exchange failed', await r.text());
+      alert('YouTube connection failed. Please try again.');
+    }
+    */
+
+    // Advance the wizard to Step 3 (same visuals you use for Twitch)
+    selectedPlatform = 'youtube';
+    document.getElementById('step1').classList.remove('active');
+    document.getElementById('step1').classList.add('completed');
+    document.getElementById('step1').innerHTML='✓';
+    document.getElementById('line1').classList.add('completed');
+    document.getElementById('step2').classList.remove('upcoming');
+    document.getElementById('step2').classList.add('completed');
+    document.getElementById('step2').innerHTML='✓';
+    document.getElementById('line2').classList.add('completed');
+    document.getElementById('content1').classList.remove('active');
+    document.getElementById('content2').classList.remove('active');
+    currentStep = 3;
+    document.getElementById('content3').classList.add('active');
+    document.getElementById('step3').classList.remove('upcoming');
+    document.getElementById('step3').classList.add('active');
+    updateNavigationState();
+  } catch (e) {
+    console.error(e);
+    alert('YouTube connection error. Please try again.');
+  } finally {
+    // Clean URL (?youtube_code=...) but stay on wizard
+    urlParams.delete('youtube_code');
+    const clean = new URL(window.location.href);
+    clean.search = urlParams.toString();
+    history.replaceState({}, document.title, clean.toString());
+  }
+}
+      
       });
 
       // --- YouTube: finalize after callback (?youtube_code=...) ---
