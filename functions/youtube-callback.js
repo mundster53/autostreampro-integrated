@@ -9,11 +9,22 @@ exports.handler = async (event) => {
   const code = qs.code || "";
   const error = qs.error || "";
 
+  // parse return target from state; default to /onboarding.html
+  let returnTo = "/onboarding.html";
+  try {
+    if (qs.state) {
+      const parsed = JSON.parse(qs.state);
+      if (parsed && typeof parsed.r === "string" && parsed.r.startsWith("/")) {
+        returnTo = parsed.r;
+       }
+    }
+   } catch {}
+
   // If Google sent an error, surface it in the UI for now.
   if (error) {
     return {
       statusCode: 302,
-      headers: { Location: `/onboarding-wizard.html?youtube_error=${encodeURIComponent(error)}` },
+      headers: { Location: `${returnTo}?youtube_error=${encodeURIComponent(error)}` },
       body: ""
     };
   }
@@ -25,7 +36,7 @@ exports.handler = async (event) => {
   // Round-trip to your UI. Later, the UI will POST this code/nonce to your backend with JWT.
   return {
     statusCode: 302,
-    headers: { Location: `/onboarding-wizard.html?youtube_code=${encodeURIComponent(code)}` },
+    headers: { Location: `${returnTo}?youtube_code=${encodeURIComponent(code)}` },
     body: ""
   };
 };
