@@ -11,6 +11,9 @@ const {
   OAUTH_REDIRECT_YT, // e.g. https://autostreampro.com/auth/youtube/callback
 } = process.env;
 
+// ✅ Fallback so redirect_uri always matches the authorize step
+    const REDIRECT_URI = OAUTH_REDIRECT_YT || 'https://autostreampro.com/auth/youtube/callback';
+
 function resJSON(status, body) {
   return {
     statusCode: status,
@@ -58,11 +61,21 @@ exports.handler = async (event) => {
       code,
       client_id: GOOGLE_CLIENT_ID,
       client_secret: GOOGLE_CLIENT_SECRET,
-      redirect_uri: OAUTH_REDIRECT_YT,
+      redirect_uri: REDIRECT_URI,
       grant_type: "authorization_code",
     }),
   });
-  if (!tokenRes.ok) return resJSON(502, { error: "Token exchange failed", details: await tokenRes.text() });
+
+  if (!tokenRes.ok) {
+    const details = await tokenRes.text().catch(() => "");
+    return resJSON(502, {
+        error: "Token exchange failed",
+        hint: "Check GOOGLE_CLIENT_ID/SECRET and that redirect_uri matches the one configured in Google console.",
+        redirect_uri_used: REDIRECT_URI,
+        details
+        });
+    }
+
 
   const tokens = await tokenRes.json(); // { access_token, refresh_token, expires_in, token_type, scope, id_token? }
   const now = Date.now();
