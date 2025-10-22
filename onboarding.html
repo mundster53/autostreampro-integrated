@@ -309,7 +309,7 @@
                     <div class="platform-icon youtube-icon">Y</div>
                     <div class="platform-name">YouTube</div>
                     <div id="youtubeStatus" style="margin-top:8px;color:#065f46;"></div>
-                    <button id="youtubeConnectBtn" class="nav-btn btn-next" style="background:#ff0000;margin-top:10px">Connect YouTube</button>
+                    <button id="youtubeConnectBtn" class="connect-btn" style="margin-top:10px">Connect YouTube</button>
                     <button id="youtubeDisconnectBtn" class="nav-btn" style="display:none;background:#fee2e2;color:#991b1b;margin-top:10px">Disconnect YouTube</button>
                     </div>
 
@@ -1217,7 +1217,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const c = byId('youtubeConnectBtn');
     const d = byId('youtubeDisconnectBtn');
     if (s) { s.textContent = '✅ Connected'; s.style.color = '#166534'; } // same green tone you use in success UI
-    if (c) { c.textContent = '✓ Connected'; c.style.background = '#10b981'; c.disabled = true; }
+    if (c) { c.textContent = '✓ Connected'; c.disabled = true; }
     if (d) d.style.display = 'inline-block';
   }
 
@@ -1226,7 +1226,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const c = byId('youtubeConnectBtn');
     const d = byId('youtubeDisconnectBtn');
     if (s) { s.textContent = ''; s.style.color = ''; }
-    if (c) { c.textContent = 'Connect YouTube'; c.style.background = '#ff0000'; c.disabled = false; }
+    if (c) { c.textContent = 'Connect YouTube'; c.disabled = false; }
     if (d) d.style.display = 'none';
   }
 
