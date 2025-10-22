@@ -1216,7 +1216,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const s = byId('youtubeStatus');
     const c = byId('youtubeConnectBtn');
     const d = byId('youtubeDisconnectBtn');
-    if (s) s.textContent = '✅ Connected';
+    if (s) { s.textContent = '✅ Connected'; s.style.color = '#166534'; } // same green tone you use in success UI
     if (c) { c.textContent = '✓ Connected'; c.style.background = '#10b981'; c.disabled = true; }
     if (d) d.style.display = 'inline-block';
   }
@@ -1225,7 +1225,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const s = byId('youtubeStatus');
     const c = byId('youtubeConnectBtn');
     const d = byId('youtubeDisconnectBtn');
-    if (s) s.textContent = '';
+    if (s) { s.textContent = ''; s.style.color = ''; }
     if (c) { c.textContent = 'Connect YouTube'; c.style.background = '#ff0000'; c.disabled = false; }
     if (d) d.style.display = 'none';
   }
@@ -1237,6 +1237,7 @@ window.addEventListener('DOMContentLoaded', () => {
     btn.dataset.aspWired = '1';
     btn.addEventListener('click', function (e) {
       e.preventDefault();
+      btn.disabled = true;
       location.href = '/auth/youtube?return_to=' + enc('/onboarding.html');
     });
   })();
@@ -1279,18 +1280,23 @@ window.addEventListener('DOMContentLoaded', () => {
    });
  })();
 
-  // Finalize: if returned with ?youtube_code=..., exchange and flip UI
+  
+ // Finalize: if returned with ?youtube_code=..., exchange and flip UI
   (async function finalizeIfNeeded(){
     const url = new URL(location.href);
     const code = url.searchParams.get('youtube_code');
     if (!code) return;
 
+    const statusEl = document.getElementById('youtubeStatus');
     try {
       const sb = await getSb();
+      // MUST send the Supabase JWT to the server function
       const { data: { session } } = await sb.auth.getSession();
-      if (!session?.access_token) { location.href = '/login.html'; return; }
+      if (!session?.access_token) throw new Error('Not signed in');
 
-      const res = await fetch('/.netlify/functions/youtube-exchange', {
+      statusEl && (statusEl.textContent = 'Connecting to YouTube…');
+
+      const r = await fetch('/.netlify/functions/youtube-exchange', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1298,20 +1304,26 @@ window.addEventListener('DOMContentLoaded', () => {
         },
         body: JSON.stringify({ code })
       });
-
-      if (!res.ok) {
-        console.error('[YT] exchange failed:', await res.text());
-        alert('YouTube connection failed. Please try again.');
-        setDisconnectedUI();
+      if (!r.ok) {
+        const txt = await r.text().catch(()=>'');
+        console.error('youtube-exchange failed', txt);
+        statusEl && (statusEl.textContent = '❌ YouTube connection failed');
+        statusEl && (statusEl.style.color = '#991b1b'); // red, matches your .error-message
         return;
       }
-
-      setConnectedUI();
-    } catch (err) {
-      console.error('[YT] finalize error:', err);
-      alert('YouTube connection error. Please try again.');
+      // Success → flip UI and let DB be the source of truth
+      setConnectedUI(); // green badge on the button + shows Disconnect
+      if (typeof window.checkConnections === 'function') {
+        try { await window.checkConnections(); } catch {}
+      }
+      // Optional toast
+      if (typeof window.showSuccess === 'function') window.showSuccess('YouTube connected successfully!');
+    } catch (e) {
+      console.error(e);
+      statusEl && (statusEl.textContent = '❌ YouTube connection failed');
+      statusEl && (statusEl.style.color = '#991b1b'); // red
     } finally {
-      // clean query param but stay on page
+      // Clean the URL (?youtube_code=...) and stay on page
       url.searchParams.delete('youtube_code');
       history.replaceState({}, document.title, url.toString());
     }
