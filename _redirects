@@ -1,1 +1,22 @@
-# intentionally empty
+# Serve clean paths without .html (internal rewrites, no redirects)
+# These DO NOT 308/301 — they just serve the file, so no loops.
+# Auth pages
+/login            /login.html            200
+/signup           /signup.html           200
+/reset-password   /reset-password.html   200
+/onboarding       /onboarding.html       200
+/onboarding-wizard /onboarding-wizard.html 200
+
+# App pages
+/dashboard        /dashboard.html        200
+/clips-dashboard  /clips-dashboard.html  200
+/privacy-policy   /privacy-policy.html   200
+/terms-of-use     /terms-of-use.html     200
+/data-deletion    /data-deletion.html    200
+/thank-you        /thank-you.html        200
+/waitlist         /waitlist.html         200
+/demo-features    /demo-features.html    200
+
+# Legacy Netlify function calls → new Cloudflare Pages Functions
+# Use internal rewrites (200) so existing clients keep working, no CORS change.
+/.netlify/functions/:splat   /api/:splat   200

@@ -1,5 +1,4 @@
-cat > _worker.js <<'JS'
-// _worker.js — stable, no-deps, cookie-based guard for /dashboard(.html)
+// _worker.js — stable, no-deps, serves assets + guards /dashboard(.html)
 
 function getProjectRef(url) {
   try { return new URL(url).hostname.split('.')[0] } catch { return '' }
@@ -21,7 +20,7 @@ export default {
     const url = new URL(req.url)
     const path = url.pathname.replace(/\/+$/, '') || '/'
 
-    // Debug: confirm what edge sees
+    // Debug: confirm edge sees cookies / env
     if (path === '/__whoami') {
       const cookies = getCookies(req)
       const ref = getProjectRef(env.SUPABASE_URL || '')
@@ -33,16 +32,15 @@ export default {
       }, null, 2), { headers: { 'content-type': 'application/json' } })
     }
 
-    // Don’t intercept API or OAuth callbacks
+    // Let API and OAuth callbacks bypass the guard
     if (path.startsWith('/api/') || path.startsWith('/auth/')) {
       return env.ASSETS.fetch(req)
     }
 
-    // Guard dashboards
+    // Protect dashboards (signed-out -> /login)
     const protectedPaths = new Set(['/dashboard', '/dashboard.html', '/clips-dashboard', '/clips-dashboard.html'])
     const needsAuth = protectedPaths.has(path)
 
-    // Read cookie once
     const cookies = getCookies(req)
     const ref = getProjectRef(env.SUPABASE_URL || '')
     const cookieName = ref ? `sb-${ref}-auth-token` : null
@@ -52,7 +50,7 @@ export default {
       return Response.redirect(new URL('/login', url), 302)
     }
 
-    // Serve static
+    // Serve static asset
     return env.ASSETS.fetch(req)
   }
 }
