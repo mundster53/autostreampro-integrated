@@ -4,7 +4,7 @@
 export async function onRequest({ request, env }) {
   // Prefer YOUTUBE_CLIENT_ID (what we put in wrangler.toml), fall back to GOOGLE_CLIENT_ID if present
   const CLIENT_ID = env.YOUTUBE_CLIENT_ID || env.GOOGLE_CLIENT_ID;
-  const REDIRECT  = env.OAUTH_REDIRECT_YT         // usually https://autostreampro.com/auth/youtube/callback
+  const REDIRECT  = env.OAUTH_REDIRECT_YT         // usually https://www.autostreampro.com/auth/youtube/callback
                    || new URL('/auth/youtube/callback', request.url).toString();
   const SCOPE     = 'https://www.googleapis.com/auth/youtube.upload';
   const BASE_URL  = 'https://accounts.google.com/o/oauth2/v2/auth';

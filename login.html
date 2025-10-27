@@ -577,7 +577,7 @@
     
     try {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: 'https://autostreampro.com/reset-password'  // ← Fixed URL
+            redirectTo: '/reset-password'  // ← Fixed URL
         });
         
         if (error) {

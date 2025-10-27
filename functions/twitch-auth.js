@@ -31,7 +31,7 @@ exports.handler = async (event) => {
                 client_secret: process.env.TWITCH_CLIENT_SECRET,
                 code: code,
                 grant_type: 'authorization_code',
-                redirect_uri: 'https://autostreampro.com/onboarding.html'
+                redirect_uri: 'https://www.autostreampro.com/onboarding.html'
             })
         });
 

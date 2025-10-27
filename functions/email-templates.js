@@ -34,7 +34,7 @@ const templates = {
               
               <p>Your 14-day free trial has started. No credit card required!</p>
               
-              <a href="https://autostreampro.com/dashboard" class="button">Go to Dashboard</a>
+              <a href="https://www.autostreampro.com/dashboard" class="button">Go to Dashboard</a>
               
               <p>Need help? Reply to this email or check our docs.</p>
             </div>
@@ -80,7 +80,7 @@ const templates = {
                 </ul>
               </div>
               
-              <a href="https://autostreampro.com/pricing" class="button">Upgrade Now</a>
+              <a href="https://www.autostreampro.com/pricing" class="button">Upgrade Now</a>
               
               <p>Don't lose your clips and settings! Upgrade to keep everything running smoothly.</p>
             </div>

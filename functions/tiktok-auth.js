@@ -8,7 +8,7 @@
 // Env vars expected (Netlify):
 //   TIKTOK_CLIENT_KEY        (a.k.a. client_key)
 //   TIKTOK_CLIENT_SECRET
-//   TIKTOK_REDIRECT_URI      (MUST EXACTLY equal your Login Kit value, e.g. https://autostreampro.com/auth/tiktok.html)
+//   TIKTOK_REDIRECT_URI      (MUST EXACTLY equal your Login Kit value, e.g. https://www.autostreampro.com/auth/tiktok.html)
 //   TIKTOK_API_BASE          (optional, defaults to https://open.tiktokapis.com)
 //   TIKTOK_SCOPES_BASE       (optional; default below is OK) => "user.info.basic video.upload video.publish"
 //   TIKTOK_SCOPES_DIRECT     (optional; extra scopes if TikTok granted Direct Post product)
@@ -52,7 +52,7 @@ async function handleStart(qs) {
   if (!user) return json(400, { error: 'missing_user' });
 
   const clientKey   = process.env.TIKTOK_CLIENT_KEY;
-  const redirectUri = process.env.TIKTOK_REDIRECT_URI; // MUST MATCH Login Kit exactly (you said: https://autostreampro.com/auth/tiktok.html)
+  const redirectUri = process.env.TIKTOK_REDIRECT_URI; // MUST MATCH Login Kit exactly (you said: https://www.autostreampro.com/auth/tiktok.html)
   const baseScopes  = (process.env.TIKTOK_SCOPES_BASE || 'user.info.basic video.upload video.publish').trim();
   const directScopes= (process.env.TIKTOK_SCOPES_DIRECT || '').trim();
   const scopes      = (baseScopes + (direct && directScopes ? ' ' + directScopes : '')).trim();
@@ -177,7 +177,7 @@ function normalizeReturn(u) {
 }
 function withError(u, code) {
   const base = normalizeReturn(u) || '/onboarding-wizard.html#tiktok';
-  const url = new URL(base, 'https://autostreampro.com');
+  const url = new URL(base, 'https://www.autostreampro.com');
   url.searchParams.set('err', code);
   return url.pathname + url.search + url.hash;
 }

@@ -118,7 +118,7 @@ exports.handler = async (event, context) => {
           client_secret: process.env.GOOGLE_CLIENT_SECRET,
           code: code,
           grant_type: 'authorization_code',
-          redirect_uri: 'https://autostreampro.com/auth/youtube.html'
+          redirect_uri: 'https://www.autostreampro.com/auth/youtube.html'
         })
       });
 

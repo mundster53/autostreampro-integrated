@@ -89,7 +89,7 @@ exports.handler = async (event, context) => {
                     finalStreamUrl = profile?.kick_channel_url || 'https://kick.com';
                     break;
                 default:
-                    finalStreamUrl = 'https://autostreampro.com';
+                    finalStreamUrl = 'https://www.autostreampro.com';
             }
         }
 
@@ -133,7 +133,7 @@ exports.handler = async (event, context) => {
                     timestamp: new Date(),
                     footer: {
                         text: "Set a reminder! • AutoStreamPro",
-                        icon_url: "https://autostreampro.com/favicon.ico"
+                        icon_url: "https://www.autostreampro.com/favicon.ico"
                     },
                     author: profile?.display_name ? {
                         name: profile.display_name,
@@ -167,7 +167,7 @@ exports.handler = async (event, context) => {
                     timestamp: new Date(),
                     footer: {
                         text: "Drop by and say hi! • AutoStreamPro",
-                        icon_url: "https://autostreampro.com/favicon.ico"
+                        icon_url: "https://www.autostreampro.com/favicon.ico"
                     },
                     author: profile?.display_name ? {
                         name: `${profile.display_name} is streaming!`,

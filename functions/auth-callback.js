@@ -1,7 +1,7 @@
 exports.handler = async (event, context) => {
     // Set CORS headers
     const headers = {
-        'Access-Control-Allow-Origin': 'https://autostreampro.com',
+        'Access-Control-Allow-Origin': 'https://www.autostreampro.com',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Content-Type': 'application/json'

@@ -1,5 +1,5 @@
 // _worker.js — permanent API router for Cloudflare Pages
-const ORIGINS = ['https://www.autostreampro.com', 'https://autostreampro.com'];
+const ORIGINS = ['https://www.autostreampro.com', 'https://www.autostreampro.com'];
 const allow = (o) => (ORIGINS.includes(o) ? o : ORIGINS[0]);
 const cors = (o) => ({
   'Access-Control-Allow-Origin': allow(o),

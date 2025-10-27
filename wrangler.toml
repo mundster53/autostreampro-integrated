@@ -18,7 +18,7 @@ pages_build_output_dir = "."
  SUPABASE_URL         = "https://dykxhmdozgccawkbxejd.supabase.co"
  RAILWAY_PROJECT_ID   = "976540d4-74e2-4791-a105-e6018468169b"
  DETECTOR_URL         = "viral-detection-production.up.railway.app"
- SITE_URL             = "https://autostreampro.com"
+ SITE_URL             = "https://www.autostreampro.com"
 
  # Stripe publishable (public)
  STRIPE_PUBLISHABLE_KEY = "pk_live_51RHPwIP3pCt2RBbZ7nj3xdNX2zew7I2bg6sJFJvtmrtEjxNeNBTkZWd6rnbZFJVKjTNh0eqaUNgyP54lKEexF7Hc00FHzxmOls"

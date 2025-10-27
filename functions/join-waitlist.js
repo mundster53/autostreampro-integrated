@@ -81,7 +81,7 @@ exports.handler = async (event, context) => {
     }
 
     // Send confirmation email
-    await fetch('https://autostreampro.com/.netlify/functions/send-email', {
+    await fetch('https://www.autostreampro.com/.netlify/functions/send-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

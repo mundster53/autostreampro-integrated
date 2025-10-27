@@ -99,7 +99,7 @@ exports.handler = async (event, context) => {
             .eq('id', person.id);
           
           // Send invitation email
-          await fetch('https://autostreampro.com/.netlify/functions/send-email', {
+          await fetch('https://www.autostreampro.com/.netlify/functions/send-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -109,7 +109,7 @@ exports.handler = async (event, context) => {
                 <h2>Your spot is ready!</h2>
                 <p>Great news! A spot has opened up and you're invited to join AutoStreamPro.</p>
                 <p><strong>Your invitation code:</strong> ${person.invite_code}</p>
-                <p><a href="https://autostreampro.com/signup.html?invite=${person.invite_code}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">Claim Your Spot</a></p>
+                <p><a href="https://www.autostreampro.com/signup.html?invite=${person.invite_code}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">Claim Your Spot</a></p>
                 <p>This invitation expires in 48 hours. Don't miss out!</p>
               `
             })

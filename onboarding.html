@@ -488,7 +488,7 @@ const twitchClientId = 'mzjsqcwxj9mexsa8vaimtzanbe7pll';  // Your REAL Twitch Cl
         
         // Connect Twitch
         document.getElementById('twitchBtn').addEventListener('click', () => {
-            const redirectUri = 'https://autostreampro.com/onboarding.html';
+            const redirectUri = 'https://www.autostreampro.com/onboarding.html';
             const scope = 'user:read:email+clips:edit+channel:read:stream_key';
             const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=twitch&force_verify=true`;
             window.location.href = authUrl;
@@ -538,7 +538,7 @@ document.getElementById('tiktokBtn').addEventListener('click', () => {
     const state = Math.random().toString(36).substring(7);
     sessionStorage.setItem('tiktok_oauth_state', state);
     
-    const redirectUri = 'https://autostreampro.com/auth/tiktok.html';  // Points to your existing file
+    const redirectUri = 'https://www.autostreampro.com/auth/tiktok.html';  // Points to your existing file
     const authUrl = 'https://www.tiktok.com/v2/auth/authorize/' +
         '?client_key=' + 'awjxvzdv42wi6hjn' +
         '&scope=user.info.basic,video.upload' +

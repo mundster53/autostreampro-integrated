@@ -16,7 +16,7 @@ const TOPN = {
   elite:   +(process.env.TOPN_ELITE   ?? 20),
 };
 
-const BASE_URL = process.env.PUBLIC_BASE_URL || process.env.SITE_URL || 'https://autostreampro.com';
+const BASE_URL = process.env.PUBLIC_BASE_URL || process.env.SITE_URL || 'https://www.autostreampro.com';
 
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {

@@ -3,7 +3,7 @@ console.log("🚀 HIT youtube-oauth.js");
 
 // netlify/functions/youtube-oauth.js
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const REDIRECT = process.env.OAUTH_REDIRECT_YT || 'https://autostreampro.com/auth/youtube/callback';
+const REDIRECT = process.env.OAUTH_REDIRECT_YT || 'https://www.autostreampro.com/auth/youtube/callback';
 const SCOPE = 'https://www.googleapis.com/auth/youtube.upload';
 const BASE_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 
