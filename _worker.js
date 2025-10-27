@@ -1,95 +1,100 @@
-// _worker.js — permanent API router for Cloudflare Pages
-const ORIGINS = ['https://www.autostreampro.com', 'https://www.autostreampro.com'];
-const allow = (o) => (ORIGINS.includes(o) ? o : ORIGINS[0]);
-const cors = (o) => ({
-  'Access-Control-Allow-Origin': allow(o),
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Cache-Control': 'no-store',
-  'X-ASP-Version': 'worker:stable-v1'
-});
-const json = (o, code, body) =>
-  new Response(JSON.stringify(body), { status: code, headers: { ...cors(o), 'Content-Type': 'application/json' } });
+// _worker.js
+import { createServerClient } from '@supabase/ssr'
+
+// Hosts you allow for CORS/preflight responses.
+// Now that apex 301 → www, you can keep just the www origin.
+const ORIGINS = ['https://www.autostreampro.com']
 
 export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
-    const origin = request.headers.get('Origin') || '';
-    const path = url.pathname;
+  async fetch(req, env, ctx) {
+    const url = new URL(req.url)
+    const path = url.pathname.replace(/\/+$/, '') || '/'
 
-    // Health (this is the one your curl is hitting)
-    if (path === '/api/ping' && request.method === 'GET') {
-      return json(origin, 200, { ok: true, who: 'cf-pages-worker', path, ts: new Date().toISOString() });
+    // Handle CORS preflight for static responses (API funcs handle their own)
+    if (req.method === 'OPTIONS') {
+      const origin = req.headers.get('Origin') || ''
+      const allow = ORIGINS.includes(origin) ? origin : ORIGINS[0]
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': allow,
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Cache-Control': 'no-store',
+        },
+      })
     }
 
-    // CORS preflight (already working for you)
-    if (path === '/api/youtube-exchange' && request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: cors(origin) });
+    // Never intercept API or auth callback routes
+    if (path.startsWith('/api/') || path.startsWith('/auth/')) {
+      return env.ASSETS.fetch(req)
     }
 
-    // YouTube token exchange
-    if (path === '/api/youtube-exchange' && request.method === 'POST') {
-      try {
-        // 1) Supabase JWT from client
-        const auth = request.headers.get('Authorization') || '';
-        const userJwt = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-        if (!userJwt) return json(origin, 401, { error: 'Unauthorized' });
+    // Supabase server client wired to request cookies
+    const setCookies = []
+    const supabase = createServerClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
+      cookies: {
+        getAll() {
+          const raw = req.headers.get('Cookie') ?? ''
+          return raw
+            .split(';')
+            .map(v => v.trim())
+            .filter(Boolean)
+            .map(kv => {
+              const i = kv.indexOf('=')
+              return { name: decodeURIComponent(kv.slice(0, i)), value: decodeURIComponent(kv.slice(i + 1)) }
+            })
+        },
+        setAll(cookies) {
+          for (const { name, value, options } of cookies) {
+            const parts = [`${name}=${value}`]
+            if (options?.path) parts.push(`Path=${options.path}`)
+            if (options?.domain) parts.push(`Domain=${options.domain}`)
+            if (options?.maxAge) parts.push(`Max-Age=${options.maxAge}`)
+            if (options?.expires) parts.push(`Expires=${new Date(options.expires).toUTCString()}`)
+            if (options?.sameSite) parts.push(`SameSite=${options.sameSite}`)
+            if (options?.secure) parts.push('Secure')
+            if (options?.httpOnly) parts.push('HttpOnly')
+            setCookies.push(parts.join('; '))
+          }
+        },
+      },
+    })
 
-        // 2) Body with Google code
-        let body = {}; try { body = await request.json(); } catch {}
-        const code = body?.code;
-        if (!code) return json(origin, 400, { error: 'Missing code' });
-
-        // 3) Google token exchange
-        const form = new URLSearchParams({
-          code,
-          client_id: env.GOOGLE_CLIENT_ID,
-          client_secret: env.GOOGLE_CLIENT_SECRET,
-          redirect_uri: env.OAUTH_REDIRECT_YT,
-          grant_type: 'authorization_code'
-        });
-        const g = await fetch('https://oauth2.googleapis.com/token', {
-          method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: form
-        });
-        const token = await g.json();
-        if (!g.ok) return json(origin, 400, { error: 'Token exchange failed', details: token });
-
-        // 4) Resolve Supabase user
-        const u = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, { headers: { Authorization: `Bearer ${userJwt}` } });
-        if (!u.ok) return json(origin, 401, { error: 'Invalid Supabase session' });
-        const user = await u.json();
-        const userId = user?.id;
-        if (!userId) return json(origin, 401, { error: 'No user id' });
-
-        // 5) Upsert tokens
-        const up = await fetch(`${env.SUPABASE_URL}/rest/v1/oauth_tokens`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': env.SUPABASE_SERVICE_KEY,
-            'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-            'Prefer': 'resolution=merge-duplicates'
-          },
-          body: JSON.stringify([{
-            user_id: userId,
-            provider: 'youtube',
-            access_token: token.access_token,
-            refresh_token: token.refresh_token ?? null,
-            scope: token.scope ?? null,
-            token_type: token.token_type ?? 'Bearer',
-            expires_in: token.expires_in ?? null,
-            obtained_at: new Date().toISOString()
-          }])
-        });
-        if (!up.ok) return json(origin, 500, { error: 'Failed to store tokens', details: await up.text() });
-
-        return json(origin, 200, { ok: true });
-      } catch (e) {
-        return json(origin, 500, { error: 'Server error', details: String(e) });
-      }
+    // One authoritative read of the session
+    let session = null
+    try {
+      const { data } = await supabase.auth.getSession()
+      session = data?.session ?? null
+    } catch {
+      // If Supabase is unreachable, fail open and serve asset (avoids loops)
     }
 
-    // Static app fallback
-    return env.ASSETS.fetch(request);
-  }
-};
+    // Auth routing rules at the edge
+    const isLogin = path === '/login' || path === '/login.html'
+    const isDash  = path === '/dashboard' || path === '/dashboard.html'
+    const needsAuth = isDash // add more protected paths as needed
+
+    if (!session && needsAuth) {
+      return redirectWithCookies(setCookies, new URL('/login', url).toString())
+    }
+    if (session && isLogin) {
+      return redirectWithCookies(setCookies, new URL('/dashboard.html', url).toString())
+    }
+
+    // Serve the static asset and forward any Set-Cookie headers
+    const res = await env.ASSETS.fetch(req)
+    if (setCookies.length) {
+      const h = new Headers(res.headers)
+      setCookies.forEach(v => h.append('Set-Cookie', v))
+      return new Response(res.body, { status: res.status, headers: h })
+    }
+    return res
+  },
+}
+
+function redirectWithCookies(setCookies, location) {
+  const h = new Headers({ Location: location })
+  setCookies.forEach(v => h.append('Set-Cookie', v))
+  return new Response(null, { status: 302, headers: h })
+}
