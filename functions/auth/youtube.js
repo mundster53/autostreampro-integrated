@@ -1,17 +1,22 @@
-// Native Cloudflare Pages Function for /auth/youtube
-// Mirrors your Netlify youtube-oauth.js behavior.
-export async function onRequest(context) {
-  const { request, env } = context;
-  const url = new URL(request.url);
-  const returnTo = url.searchParams.get('return_to') || '/onboarding.html';
+// Cloudflare Pages Function: /auth/youtube
+// Builds the Google OAuth URL using env variables from CF Pages.
 
-  const CLIENT_ID = env.GOOGLE_CLIENT_ID;
-  const REDIRECT  = env.OAUTH_REDIRECT_YT || 'https://autostreampro.com/auth/youtube/callback';
+export async function onRequest({ request, env }) {
+  // Prefer YOUTUBE_CLIENT_ID (what we put in wrangler.toml), fall back to GOOGLE_CLIENT_ID if present
+  const CLIENT_ID = env.YOUTUBE_CLIENT_ID || env.GOOGLE_CLIENT_ID;
+  const REDIRECT  = env.OAUTH_REDIRECT_YT         // usually https://autostreampro.com/auth/youtube/callback
+                   || new URL('/auth/youtube/callback', request.url).toString();
   const SCOPE     = 'https://www.googleapis.com/auth/youtube.upload';
   const BASE_URL  = 'https://accounts.google.com/o/oauth2/v2/auth';
 
-  // Build ?state with where to return after callback
+  // Honor return_to from query (defaults to /onboarding.html)
+  const url = new URL(request.url);
+  const returnTo = url.searchParams.get('return_to') || '/onboarding.html';
   const state = JSON.stringify({ r: returnTo });
+
+  if (!CLIENT_ID) {
+     return new Response('Missing YOUTUBE_CLIENT_ID/GOOGLE_CLIENT_ID', { status: 500 });
+   }
 
   const authURL = new URL(BASE_URL);
   authURL.searchParams.set('client_id', CLIENT_ID);
@@ -25,5 +30,5 @@ export async function onRequest(context) {
   return new Response(null, {
     status: 302,
     headers: { Location: authURL.toString() }
- });
+  });
 }

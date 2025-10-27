@@ -1,0 +1,11 @@
+# Ignore Netlify’s local build artifacts and big sourcemaps
+.netlify/
+.netlify/functions-serve/
+**/*.map
+
+# Don’t publish dev junk
+node_modules/
+*.log
+.DS_Store
+
+# Keep Cloudflare Functions (do NOT ignore /functions)

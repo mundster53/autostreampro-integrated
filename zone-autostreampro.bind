@@ -1,0 +1,10 @@
+autostreampro.com. 300 IN A 75.2.60.5
+autostreampro.com. 300 IN TXT "google-site-verification=wfB5WgowiF6ze37Yug3tx3unE3YkqVWsSUj7AvL_IQA"" "tiktok-developers-site-verification=PgDg1gIOeUMuyParabti1dfgaXJ6IICJ""
+_8fec0dac27d654c6410cd5854f47e496.autostreampro.com. 500 IN CNAME _9eaf919484672e70068a0984ca3a8210.xlfgrmvvlj.acm-validations.aws.
+resend._domainkey.autostreampro.com. 300 IN TXT "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDEP9lholl0dINEehFChmLKIXAz3pxkb7QpFN5XWvX8I96JSLlXiVLpYhdPL+ArbKxMJu4UWSWNBTx37nqxFgU1ooWmE1ytTGoXW/QbS9qunUgobkopw34U+llORc25frvomOAYSbTCNEWaGRmDYRquArgk9XpBJLtAqnfhLbfqZQIDAQAB""
+app.autostreampro.com. 300 IN A autostreampro-env.eba-cks93iz2.us-east-2.elasticbeanstalk.com.
+netlify-challenge.autostreampro.com. 300 IN TXT "3bc8721d54be54808448545a59ef6273""
+new.autostreampro.com. 300 IN CNAME fabulous-dusk-248d45.netlify.app
+send.autostreampro.com. 300 IN MX 10 feedback-smtp.us-east-1.amazonses.com
+send.autostreampro.com. 300 IN TXT "v=spf1 include:amazonses.com ~all""
+www.autostreampro.com. 300 IN CNAME autostreampro-pages.pages.dev

@@ -1,7 +1,8 @@
 // Native Cloudflare Pages Function for /auth/youtube/callback
-export async function onRequest(context) {
-  try {
-    const { request } = context;
+
+export async function onRequest({ request }) {
+   try {
+      // …rest unchanged…
     const url   = new URL(request.url);
     const code  = url.searchParams.get('code') || '';
     const error = url.searchParams.get('error') || '';

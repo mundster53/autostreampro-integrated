@@ -493,7 +493,7 @@ const youtubeCode = urlParams.get('youtube_code');
 if (youtubeCode) {
   try {
     // Exchange code on server (requires functions/youtube-exchange.js deployed)
-    const r = await signedFetch('/.netlify/functions/youtube-exchange', {
+    const r = await signedFetch('/api/youtube-exchange', {
       method: 'POST',
       body: JSON.stringify({ code: youtubeCode })
     });

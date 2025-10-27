@@ -1,3 +1,42 @@
+name = "autostreampro-pages"
+
 compatibility_date = "2025-10-01"
 
 pages_build_output_dir = "."
+
+ # ---------- App variables (non-secrets) ----------
+ [vars]
+ # OAuth “IDs” (safe; keep *secrets* out of this file)
+ TIKTOK_CLIENT_KEY    = "awjxvzdv42wi6hjn"
+ # Alias so either name works in code:
+ TIKTOK_CLIENT_ID     = "awjxvzdv42wi6hjn"
+ TWITCH_CLIENT_ID     = "mzjsqcwxj9mexsa8vaimtzanbe7pll"
+ YOUTUBE_CLIENT_ID    = "17381198225-gn5qnqdlhuehbhlva9ro046r5qbssfrn.apps.googleusercontent.com"
+ INSTAGRAM_CLIENT_ID  = "1369402897442291"
+ 
+ # Public service URLs / IDs (non-secret)
+ SUPABASE_URL         = "https://dykxhmdozgccawkbxejd.supabase.co"
+ RAILWAY_PROJECT_ID   = "976540d4-74e2-4791-a105-e6018468169b"
+ DETECTOR_URL         = "viral-detection-production.up.railway.app"
+ SITE_URL             = "https://autostreampro.com"
+
+ # Stripe publishable (public)
+ STRIPE_PUBLISHABLE_KEY = "pk_live_51RHPwIP3pCt2RBbZ7nj3xdNX2zew7I2bg6sJFJvtmrtEjxNeNBTkZWd6rnbZFJVKjTNh0eqaUNgyP54lKEexF7Hc00FHzxmOls"
+
+ # Non-sensitive config
+ IG_DAILY_CAP         = "15"
+ TOPN_ELITE           = "20"
+ TOPN_PRO             = "14"
+ TOPN_STARTER         = "8"
+ YOUTUBE_DAILY_CAP    = "10"
+ ADMIN_EMAIL_1        = "mundt53@gmail.com"
+ ADMIN_EMAIL_2        = "duncanmundt1@gmail.com"
+ ADMIN_EMAIL_3        = "mundstermom@gmail.com"
+ ADMIN_EMAIL_4        = "christianmundt95@gmail.com"
+ ADMIN_EMAIL_5        = "jordanmundt1@gmail.com"
+ ADMIN_EMAIL_6        = "julia.elaine.lee@gmail.com"
+
+ # Server-only but non-secret (only your Functions read these)
+ # Keep keys/secrets OUT of wrangler.toml
+ MY_AWS_REGION        = "us-east-2"
+ MY_S3_BUCKET_NAME    = "autostreampro-clips"

@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- WWW guard: keep OAuth flow on www -->
+  <script>
+    (function (h) {
+      if (h === 'autostreampro.com') {
+        location.replace('https://www.autostreampro.com' + location.pathname + location.search + location.hash);
+      }
+    })(location.hostname);
+  </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AutoStreamPro - Setup</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -649,46 +657,6 @@ async function savePlatformConnection(platform, data) {
             const code = urlParams.get('code');
             const state = urlParams.get('state');
 
-            // ADD THIS ENTIRE BLOCK - Check for YouTube success first
-    if (urlParams.get('youtube') === 'success' || urlParams.get('youtube_connected') === 'true') {
-        console.log('YouTube connection successful, refreshing connections...');
-        showSuccess('YouTube connected successfully!');
-        
-        // Clean URL
-        window.history.replaceState({}, document.title, '/onboarding.html');
-        
-        // Force refresh connections from database
-        setTimeout(async () => {
-            await checkConnections();
-        }, 500);
-        
-        return;
-    }
-
-        // ADD THIS NEW CHECK FOR YOUTUBE SUCCESS
-    if (urlParams.get('youtube_connected') === 'true') {
-        const ytCard = document.querySelector('[data-platform="youtube"]');
-        if (ytCard) {
-            ytCard.classList.add('connected');
-            const ytBtn = document.getElementById('youtubeBtn');
-            ytBtn.innerHTML = '<span class="connected-status">✓ Connected</span>';
-            ytBtn.disabled = true;
-            
-            const ytDisconnectBtn = document.getElementById('youtubeDisconnectBtn');
-            if (ytDisconnectBtn) {
-                ytDisconnectBtn.style.display = 'block';
-            }
-        }
-        
-        showSuccess('YouTube connected successfully!');
-        // Clean URL
-        window.history.replaceState({}, document.title, '/onboarding.html');
-        
-        // Refresh connections from database
-        await checkConnections();
-        return;
-    }
-
 // ADD THIS FOR TIKTOK
     if (urlParams.get('tiktok') === 'connected') {
         await savePlatformConnection('tiktok', {
@@ -1282,21 +1250,23 @@ window.addEventListener('DOMContentLoaded', () => {
 
   
  // Finalize: if returned with ?youtube_code=..., exchange and flip UI
-  (async function finalizeIfNeeded(){
+  (async function finalizeIfNeeded () {
     const url = new URL(location.href);
     const code = url.searchParams.get('youtube_code');
+    console.log('YouTube code:', code);
     if (!code) return;
 
     const statusEl = document.getElementById('youtubeStatus');
     try {
       const sb = await getSb();
-      // MUST send the Supabase JWT to the server function
       const { data: { session } } = await sb.auth.getSession();
       if (!session?.access_token) throw new Error('Not signed in');
 
-      statusEl && (statusEl.textContent = 'Connecting to YouTube…');
+      if (statusEl) {
+        statusEl.textContent = 'Connecting to YouTube…';
+      }
 
-      const r = await fetch('/.netlify/functions/youtube-exchange', {
+      const r = await fetch('https://www.autostreampro.com/api/youtube-exchange', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1304,28 +1274,37 @@ window.addEventListener('DOMContentLoaded', () => {
         },
         body: JSON.stringify({ code })
       });
+
       if (!r.ok) {
-        const txt = await r.text().catch(()=>'');
+        const txt = await r.text().catch(() => '');
         console.error('youtube-exchange failed', txt);
-        statusEl && (statusEl.textContent = '❌ YouTube connection failed');
-        statusEl && (statusEl.style.color = '#991b1b'); // red, matches your .error-message
+        if (statusEl) {
+          statusEl.textContent = '❌ YouTube connection failed';
+          statusEl.style.color = '#991b1b';
+        }
         return;
       }
+
       // Success → flip UI and let DB be the source of truth
-      setConnectedUI(); // green badge on the button + shows Disconnect
+      setConnectedUI();
       if (typeof window.checkConnections === 'function') {
         try { await window.checkConnections(); } catch {}
       }
-      // Optional toast
-      if (typeof window.showSuccess === 'function') window.showSuccess('YouTube connected successfully!');
+      if (typeof window.showSuccess === 'function') {
+        window.showSuccess('YouTube connected successfully!');
+      }
     } catch (e) {
       console.error(e);
-      statusEl && (statusEl.textContent = '❌ YouTube connection failed');
-      statusEl && (statusEl.style.color = '#991b1b'); // red
+      if (statusEl) {
+        statusEl.textContent = '❌ YouTube connection failed';
+        statusEl.style.color = '#991b1b';
+      }
     } finally {
-      // Clean the URL (?youtube_code=...) and stay on page
-      url.searchParams.delete('youtube_code');
-      history.replaceState({}, document.title, url.toString());
+      // Keep the code in the URL only if yt_debug is set (for debugging)
+      if (!localStorage.getItem('yt_debug')) {
+  url.searchParams.delete('youtube_code');
+  history.replaceState({}, document.title, url.toString());
+}
     }
   })();
 
@@ -1349,6 +1328,133 @@ window.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+<script>
+/* ===== DEBUG: Keep youtube_code in URL & log it (JS-only) ===== */
+(function () {
+  // Avoid double-injecting
+  if (document.getElementById('aspDebugBtn')) return;
+
+  const KEY = 'asp_debug_keep_code';
+  const isOn = () => localStorage.getItem(KEY) === '1';
+  const setOn = (v) => localStorage.setItem(KEY, v ? '1' : '0');
+
+  // Make a floating button
+  const btn = document.createElement('button');
+  btn.id = 'aspDebugBtn';
+  btn.style.position = 'fixed';
+  btn.style.right = '12px';
+  btn.style.bottom = '12px';
+  btn.style.zIndex = '9999';
+  btn.style.padding = '10px 12px';
+  btn.style.borderRadius = '10px';
+  btn.style.border = '1px solid #e5e7eb';
+  btn.style.background = '#fff';
+  btn.style.color = '#111';
+  btn.style.font = '600 12px/1 system-ui, -apple-system, "Segoe UI", Roboto';
+  btn.style.boxShadow = '0 4px 10px rgba(0,0,0,.08)';
+  btn.style.cursor = 'pointer';
+  const paint = () => { btn.textContent = `🔧 Debug: Keep code (${isOn() ? 'on' : 'off'})`; };
+  paint();
+
+  btn.addEventListener('click', () => {
+    setOn(!isOn());
+    paint();
+    alert('Debug is now ' + (isOn() ? 'ON' : 'OFF'));
+  });
+
+  // Add to page
+  window.addEventListener('DOMContentLoaded', () => {
+    document.body.appendChild(btn);
+  });
+
+  // Expose a getter other scripts can call
+  window.__ASP_DEBUG_KEEP_CODE__ = () => isOn();
+})();
+</script>
+
+
+<script id="asp-onboarding-fix">
+(function () {
+  // --- Guard: requires Supabase script already loaded on the page ---
+  if (!window.supabase || !window.supabase.auth) {
+    console.warn('[ASP] Supabase client missing; skipping OAuth exchange fix.');
+    return;
+  }
+
+  // Utility: parse & clean URL param(s) safely (no top-level await anywhere)
+  function pullAndClean(paramNames) {
+    try {
+      var url = new URL(window.location.href);
+      var found = null;
+      for (var i = 0; i < paramNames.length; i++) {
+        var k = paramNames[i];
+        var v = url.searchParams.get(k);
+        if (v && !found) found = v;
+        if (v) url.searchParams.delete(k);
+      }
+      // Support optional ?provider=
+      url.searchParams.delete('provider');
+      window.history.replaceState({}, '', url.toString());
+      return found;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // ---- YOUTUBE ONLY: exchange ?youtube_code= or ?code= (keeps all other providers untouched) ----
+  var ytCode = (function() {
+    // If your Google callback sets youtube_code, we prefer that; else fall back to generic code
+    var url = new URL(window.location.href);
+    var provider = url.searchParams.get('provider');
+    if (provider && provider !== 'youtube') return null; // don't hijack other providers' code
+    return url.searchParams.get('youtube_code') || url.searchParams.get('code');
+  })();
+
+  if (ytCode) {
+    // Clean URL *now* so the code never lingers in the address bar.
+    pullAndClean(['youtube_code', 'code']);
+
+    // Get Supabase session -> send Authorization: Bearer <jwt> -> POST to your CF Pages Function
+    window.supabase.auth.getSession()
+      .then(function (res) {
+        var session = res && res.data ? res.data.session : null;
+        var jwt = session && session.access_token ? session.access_token : null;
+        if (!jwt) {
+          console.error('[ASP] No Supabase session; cannot exchange YouTube code.');
+          return;
+        }
+        return fetch('/api/youtube-exchange', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + jwt
+          },
+          body: JSON.stringify({ code: ytCode })
+        });
+      })
+      .then(function (resp) {
+        if (!resp) return;
+        // Best-effort parse; don’t throw if body is empty
+        return resp.json().catch(function(){ return null; }).then(function (json) {
+          if (!resp.ok) {
+            console.error('[ASP] YouTube exchange failed:', resp.status, json || '(no body)');
+          } else {
+            console.log('[ASP] YouTube connected:', json || '(ok)');
+            // Optional: flip a status badge if your DOM has one
+            var s = document.getElementById('yt-status');
+            if (s) { s.textContent = 'Connected'; s.className = 'badge ok'; }
+          }
+        });
+      })
+      .catch(function (e) {
+        console.error('[ASP] Exchange error:', e);
+      });
+  }
+
+  // NOTE: This script intentionally does NOT modify Twitch/Kick/TikTok/X/IG logic already in your file.
+  // It only fixes the YouTube exchange + common parse errors (top-level await, stray code).
+})();
+</script>
 
 </body>
 </html>

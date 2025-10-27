@@ -1,0 +1,11 @@
+# Ignore Netlify local artifacts and sourcemaps
+.netlify/
+.netlify/**
+
+# Sourcemaps anywhere
+**/*.map
+
+# Dev junk
+node_modules/
+*.log
+.DS_Store

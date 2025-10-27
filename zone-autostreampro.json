@@ -1,0 +1,135 @@
+{
+    "ResourceRecordSets": [
+        {
+            "Name": "autostreampro.com.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "75.2.60.5"
+                }
+            ]
+        },
+        {
+            "Name": "autostreampro.com.",
+            "Type": "NS",
+            "TTL": 172800,
+            "ResourceRecords": [
+                {
+                    "Value": "ns-1008.awsdns-62.net."
+                },
+                {
+                    "Value": "ns-1876.awsdns-42.co.uk."
+                },
+                {
+                    "Value": "ns-1361.awsdns-42.org."
+                },
+                {
+                    "Value": "ns-60.awsdns-07.com."
+                }
+            ]
+        },
+        {
+            "Name": "autostreampro.com.",
+            "Type": "SOA",
+            "TTL": 900,
+            "ResourceRecords": [
+                {
+                    "Value": "ns-1008.awsdns-62.net. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400"
+                }
+            ]
+        },
+        {
+            "Name": "autostreampro.com.",
+            "Type": "TXT",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "\"google-site-verification=wfB5WgowiF6ze37Yug3tx3unE3YkqVWsSUj7AvL_IQA\""
+                },
+                {
+                    "Value": "\"tiktok-developers-site-verification=PgDg1gIOeUMuyParabti1dfgaXJ6IICJ\""
+                }
+            ]
+        },
+        {
+            "Name": "_8fec0dac27d654c6410cd5854f47e496.autostreampro.com.",
+            "Type": "CNAME",
+            "TTL": 500,
+            "ResourceRecords": [
+                {
+                    "Value": "_9eaf919484672e70068a0984ca3a8210.xlfgrmvvlj.acm-validations.aws."
+                }
+            ]
+        },
+        {
+            "Name": "resend._domainkey.autostreampro.com.",
+            "Type": "TXT",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "\"p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDEP9lholl0dINEehFChmLKIXAz3pxkb7QpFN5XWvX8I96JSLlXiVLpYhdPL+ArbKxMJu4UWSWNBTx37nqxFgU1ooWmE1ytTGoXW/QbS9qunUgobkopw34U+llORc25frvomOAYSbTCNEWaGRmDYRquArgk9XpBJLtAqnfhLbfqZQIDAQAB\""
+                }
+            ]
+        },
+        {
+            "Name": "app.autostreampro.com.",
+            "Type": "A",
+            "AliasTarget": {
+                "HostedZoneId": "Z14LCN19Q5QHIC",
+                "DNSName": "autostreampro-env.eba-cks93iz2.us-east-2.elasticbeanstalk.com.",
+                "EvaluateTargetHealth": true
+            }
+        },
+        {
+            "Name": "netlify-challenge.autostreampro.com.",
+            "Type": "TXT",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "\"3bc8721d54be54808448545a59ef6273\""
+                }
+            ]
+        },
+        {
+            "Name": "new.autostreampro.com.",
+            "Type": "CNAME",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "fabulous-dusk-248d45.netlify.app"
+                }
+            ]
+        },
+        {
+            "Name": "send.autostreampro.com.",
+            "Type": "MX",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "10 feedback-smtp.us-east-1.amazonses.com"
+                }
+            ]
+        },
+        {
+            "Name": "send.autostreampro.com.",
+            "Type": "TXT",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "\"v=spf1 include:amazonses.com ~all\""
+                }
+            ]
+        },
+        {
+            "Name": "www.autostreampro.com.",
+            "Type": "CNAME",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "autostreampro-pages.pages.dev"
+                }
+            ]
+        }
+    ]
+}
