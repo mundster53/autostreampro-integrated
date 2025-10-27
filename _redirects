@@ -1,4 +1,4 @@
-# Pretty URLs → serve the .html file (NO redirects, 200 rewrites)
+# Pretty URLs → serve the .html file (REWRITE, not redirect)
 # Auth
 /login               /login.html               200
 /signup              /signup.html              200
@@ -16,5 +16,6 @@
 /waitlist            /waitlist.html            200
 /demo-features       /demo-features.html       200
 
-# Legacy Netlify function paths → CF Pages Functions (internal rewrite)
-/.netlify/functions/:splat   /api/:splat        200
+# Legacy Netlify paths → Pages Functions (rewrite)
+# (keeps old URLs from breaking)
+# /.netlify/functions/:splat   /api/:splat        200
