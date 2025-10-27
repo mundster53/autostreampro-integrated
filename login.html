@@ -140,7 +140,11 @@
             font-size: 2rem;
             font-weight: 700;
             background: linear-gradient(135deg, #1e40af, #3b82f6);
+            /* gradient text fix: include both standard and vendor-prefixed */
+            background-clip: text;
             -webkit-background-clip: text;
+            color: transparent;                 /* standard way */
+            -webkit-text-fill-color: transparent; /* keeps Safari happy */
             -webkit-text-fill-color: transparent;
             margin-bottom: 0.5rem;
         }
