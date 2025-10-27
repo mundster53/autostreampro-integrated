@@ -1,5 +1,1 @@
-
-/dashboard            /dashboard.html             200
-/dashboard/*          /dashboard.html             200
-/*    /index.html   200
-
+# Keep this empty for now to avoid loops
