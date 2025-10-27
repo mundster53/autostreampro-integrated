@@ -50,8 +50,7 @@ export default {
       return Response.redirect(new URL('/login', url), 302)
     }
 
-    // Serve static asset
+    // Serve static asset (HTML/CSS/JS from your repo)
     return env.ASSETS.fetch(req)
   }
 }
-JS
