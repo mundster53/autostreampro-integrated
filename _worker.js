@@ -27,8 +27,11 @@ export default {
       const cookieName = ref ? `sb-${ref}-auth-token` : null
       const authed = cookieName ? Boolean(cookies[cookieName]) : false
       return new Response(JSON.stringify({
-        ok: true, authed, path, ref,
-        hasUrl: !!env.SUPABASE_URL, hasAnon: !!env.SUPABASE_ANON_KEY
+        ok: true,
+        version: "guard-v1",
+        authed, path, ref,
+        hasUrl: !!env.SUPABASE_URL,
+        hasAnon: !!env.SUPABASE_ANON_KEY
       }, null, 2), { headers: { 'content-type': 'application/json' } })
     }
 
