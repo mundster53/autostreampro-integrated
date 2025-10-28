@@ -22,5 +22,3 @@
 # (keeps old URLs from breaking)
 # /.netlify/functions/:splat   /api/:splat        200
 
-/login               /signup                   308
-/login.html          /signup                   308
