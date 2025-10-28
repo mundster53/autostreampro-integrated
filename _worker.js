@@ -20,6 +20,19 @@ export default {
     const url = new URL(req.url)
     const path = url.pathname.replace(/\/+$/, '') || '/'
 
+// CORS preflight for any /api/* endpoint
+    if (req.method === 'OPTIONS' && url.pathname.startsWith('/api/')) {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': 'https://www.autostreampro.com',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          'Cache-Control': 'no-store',
+        },
+      })
+    }
+
     // Debug: confirm edge sees cookies / env
     if (path === '/__whoami') {
       const cookies = getCookies(req)
