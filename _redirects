@@ -1,10 +1,12 @@
 # Pretty URLs → serve the .html file (REWRITE, not redirect)
 # Auth
-/login               /login/index.html         200
-/signup              /signup.html              200
+
 /reset-password      /reset-password.html      200
 /onboarding          /onboarding.html          200
 /onboarding-wizard   /onboarding-wizard.html   200
+/signup              /signup.html              200
+/dashboard           /dashboard.html           200
+/clips-dashboard     /clips-dashboard.html     200
 
 # App
 /dashboard           /dashboard.html           200
@@ -19,3 +21,6 @@
 # Legacy Netlify paths → Pages Functions (rewrite)
 # (keeps old URLs from breaking)
 # /.netlify/functions/:splat   /api/:splat        200
+
+/login               /signup                   308
+/login.html          /signup                   308

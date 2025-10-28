@@ -63,7 +63,7 @@ export default {
     const authed = cookieName ? Boolean(cookies[cookieName]) : false
 
     if (needsAuth && !authed) {
-      return Response.redirect(new URL('/login', url), 302)
+      return Response.redirect(new URL('/signup', url), 302)
     }
 
 // Hard-stop any external clean-URL redirect on login
