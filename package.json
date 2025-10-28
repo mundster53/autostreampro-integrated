@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "netlify dev",
     "build": "echo 'Building AutoStreamPro...'",
-    "deploy": "netlify deploy --prod",
+    "deploy": "wrangler pages deploy . --project-name autostreampro-pages",
     "test": "echo 'Running tests...'"
   },
   "keywords": [
@@ -51,7 +51,7 @@
     "jest": "^29.7.0",
     "netlify-cli": "^17.0.0",
     "nodemon": "^3.0.0",
-    "wrangler": "^4.45.0"
+    "wrangler": "^4.45.1"
   },
   "engines": {
     "node": ">=18.0.0"
