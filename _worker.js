@@ -72,6 +72,23 @@ export default {
     return env.ASSETS.fetch(new Request(u, req))
 }
 
+// Map extensionless routes to .html without redirect (rewrite)
+const htmlRoutes = new Set([
+  '/', '/signup', '/reset-password',
+  '/onboarding', '/onboarding-wizard',
+  '/dashboard', '/clips-dashboard',
+  '/privacy-policy', '/terms-of-use',
+  '/data-deletion', '/thank-you', '/waitlist',
+  '/demo-features'
+]);
+
+if (htmlRoutes.has(path)) {
+  const url2 = new URL(req.url);
+  url2.pathname = (path === '/') ? '/index.html' : `${path}.html`;
+  req = new Request(url2, req); // rewrite, not a 30x
+}
+
+
     // Serve static asset (HTML/CSS/JS from your repo)
     return env.ASSETS.fetch(req)
   }
