@@ -1,95 +1,79 @@
-// _worker.js — stable, no-deps, serves assets + guards /dashboard(.html)
-
-function getProjectRef(url) {
-  try { return new URL(url).hostname.split('.')[0] } catch { return '' }
-}
-function getCookies(req) {
-  const raw = req.headers.get('Cookie') || ''
-  const out = {}
-  for (const part of raw.split(';')) {
-    const p = part.trim()
-    if (!p) continue
-    const i = p.indexOf('=')
-    if (i > 0) out[decodeURIComponent(p.slice(0, i))] = decodeURIComponent(p.slice(i + 1))
-  }
-  return out
-}
-
+// _worker.js — DROP-IN for Cloudflare Pages + Functions
 export default {
-  async fetch(req, env) {
-    const url = new URL(req.url)
-    const path = url.pathname.replace(/\/+$/, '') || '/'
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    const path = url.pathname;
+    const method = request.method;
 
-// CORS preflight for any /api/* endpoint
-    if (req.method === 'OPTIONS' && url.pathname.startsWith('/api/')) {
-      return new Response(null, {
-        status: 204,
-        headers: {
-          'Access-Control-Allow-Origin': 'https://www.autostreampro.com',
-          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Cache-Control': 'no-store',
-        },
-      })
+    // 0) Canonical host + HTTPS (edit if you want apex)
+    const CANON = 'www.autostreampro.com';
+    const xfProto = request.headers.get('x-forwarded-proto');
+    if (url.host !== CANON || xfProto !== 'https') {
+      url.protocol = 'https:';
+      url.host = CANON;
+      return Response.redirect(url.toString(), 308);
     }
 
-    // Debug: confirm edge sees cookies / env
+    // 1) Healthcheck — never cache
     if (path === '/__whoami') {
-      const cookies = getCookies(req)
-      const ref = getProjectRef(env.SUPABASE_URL || '')
-      const cookieName = ref ? `sb-${ref}-auth-token` : null
-      const authed = cookieName ? Boolean(cookies[cookieName]) : false
-      return new Response(JSON.stringify({
-        ok: true,
-        version: "guard-v1",
-        authed, path, ref,
-        hasUrl: !!env.SUPABASE_URL,
-        hasAnon: !!env.SUPABASE_ANON_KEY
-      }, null, 2), { headers: { 'content-type': 'application/json' } })
+      return new Response(JSON.stringify({ ok: true, version: 'guard-v1' }), {
+        headers: {
+          'content-type': 'application/json; charset=utf-8',
+          'cache-control': 'no-store'
+        }
+      });
     }
 
-    // Let API and OAuth callbacks bypass the guard
+    // Helper: basic Supabase auth cookie presence
+    const cookie = request.headers.get('cookie') || '';
+    const hasSupabaseAuth =
+      /sb-access-token|supabase-auth-token|supabaseSession/i.test(cookie);
+
+    // 2) Auth guard for dashboard routes (GET/HEAD only)
+    if (path === '/dashboard' || path.startsWith('/dashboard/')) {
+      if (!hasSupabaseAuth) {
+        const to = '/signup';
+        return new Response(null, {
+          status: 302,
+          headers: { 'location': to, 'cache-control': 'no-store' }
+        });
+      }
+    }
+
+    // 3) Bypass to Pages Functions for APIs/Auth (and force no-store)
     if (path.startsWith('/api/') || path.startsWith('/auth/')) {
-      return env.ASSETS.fetch(req)
+      const resp = await env.ASSETS.fetch(request);
+      const h = new Headers(resp.headers);
+      h.set('cache-control', 'no-store');
+      return new Response(resp.body, { status: resp.status, headers: h });
     }
 
-    // Protect dashboards (signed-out -> /login)
-    const protectedPaths = new Set(['/dashboard', '/dashboard.html', '/clips-dashboard', '/clips-dashboard.html'])
-    const needsAuth = protectedPaths.has(path)
-
-    const cookies = getCookies(req)
-    const ref = getProjectRef(env.SUPABASE_URL || '')
-    const cookieName = ref ? `sb-${ref}-auth-token` : null
-    const authed = cookieName ? Boolean(cookies[cookieName]) : false
-
-    if (needsAuth && !authed) {
-      return Response.redirect(new URL('/signup', url), 302)
+    // 4) Pretty URL rewrites (only for safe methods)
+    if ((method === 'GET' || method === 'HEAD')) {
+      if (path === '/signup') {
+        url.pathname = '/signup.html';
+        return fetchWithCache(env, new Request(url.toString(), request));
+      }
+      if (path === '/dashboard') {
+        url.pathname = '/dashboard.html';
+        return fetchWithCache(env, new Request(url.toString(), request));
+      }
     }
 
-// Hard-stop any external clean-URL redirect on login
-    if (path === '/login' || path === '/login.html') {
-    const u = new URL(url); u.pathname = '/login.html'
-    return env.ASSETS.fetch(new Request(u, req))
-}
-
-// Map extensionless routes to .html without redirect (rewrite)
-const htmlRoutes = new Set([
-  '/', '/signup', '/reset-password',
-  '/onboarding', '/onboarding-wizard',
-  '/dashboard', '/clips-dashboard',
-  '/privacy-policy', '/terms-of-use',
-  '/data-deletion', '/thank-you', '/waitlist',
-  '/demo-features'
-]);
-
-if (htmlRoutes.has(path)) {
-  const url2 = new URL(req.url);
-  url2.pathname = (path === '/') ? '/index.html' : `${path}.html`;
-  req = new Request(url2, req); // rewrite, not a 30x
-}
-
-
-    // Serve static asset (HTML/CSS/JS from your repo)
-    return env.ASSETS.fetch(req)
+    // 5) Everything else — serve from Pages and set smart cache headers
+    return fetchWithCache(env, request);
   }
+};
+
+async function fetchWithCache(env, request) {
+  const resp = await env.ASSETS.fetch(request);
+  const h = new Headers(resp.headers);
+  const ct = h.get('content-type') || '';
+
+  if (ct.includes('text/html')) {
+    h.set('cache-control', 'public, max-age=60');
+  } else {
+    h.set('cache-control', 'public, max-age=31536000, immutable');
+  }
+  return new Response(resp.body, { status: resp.status, headers: h });
 }

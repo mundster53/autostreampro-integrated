@@ -1,5 +1,4 @@
 {
   "version": 1,
-  "include": ["/*"],
-  "exclude": []
+  "include": ["/api/youtube-exchange"]
 }
