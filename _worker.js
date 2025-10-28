@@ -53,6 +53,12 @@ export default {
       return Response.redirect(new URL('/login', url), 302)
     }
 
+// Hard-stop any external clean-URL redirect on login
+    if (path === '/login' || path === '/login.html') {
+    const u = new URL(url); u.pathname = '/login.html'
+    return env.ASSETS.fetch(new Request(u, req))
+}
+
     // Serve static asset (HTML/CSS/JS from your repo)
     return env.ASSETS.fetch(req)
   }

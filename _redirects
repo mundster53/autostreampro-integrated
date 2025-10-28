@@ -1,5 +1,6 @@
 # Pretty URLs → serve the .html file (REWRITE, not redirect)
 # Auth
+/login.html         /login.html                200
 /login               /login.html               200
 /signup              /signup.html              200
 /reset-password      /reset-password.html      200
