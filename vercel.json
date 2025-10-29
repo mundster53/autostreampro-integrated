@@ -1,0 +1,8 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/signup",    "destination": "/signup.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/api/(.*)",  "destination": "https://<YOUR-RAILWAY-HOST>.up.railway.app/api/$1" }
+  ]
+}
