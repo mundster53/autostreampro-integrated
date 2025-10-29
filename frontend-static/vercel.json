@@ -4,6 +4,6 @@
     { "source": "/signup",    "destination": "/signup.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/__health",  "destination": "/health.html" },
-    { "source": "/api/(.*)",  "destination": "https://<YOUR-RAILWAY-HOST>.up.railway.app/api/$1" }
+    { "source": "/api/(.*)",  "destination": "https://autostreampro-backend-production.up.railway.app/$1" }
   ]
 }
