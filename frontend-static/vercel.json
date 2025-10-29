@@ -5,15 +5,5 @@
     { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/__health",  "destination": "/health.html" },
     { "source": "/api/(.*)",  "destination": "https://<YOUR-RAILWAY-HOST>.up.railway.app/api/$1" }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)\\.(css|js|png|jpg|jpeg|gif|svg|webp|ico|woff|woff2)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
-    },
-    {
-      "source": "/__health",
-      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
-    }
   ]
 }
