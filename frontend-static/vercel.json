@@ -2,6 +2,18 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/api/metrics",
+      "destination": "https://autostreampro-backend-production.up.railway.app/api/metrics"
+    },
+    {
+      "source": "/api/metrics-gauge",
+      "destination": "https://autostreampro-backend-production.up.railway.app/api/metrics-gauge"
+    },
+    {
+      "source": "/api/metrics-counter",
+      "destination": "https://autostreampro-backend-production.up.railway.app/api/metrics-counter"
+    },
+    {
       "source": "/signup",
       "destination": "/signup.html"
     },
@@ -20,20 +32,19 @@
     {
       "source": "/api/(.*)",
       "destination": "https://autostreampro-backend-production.up.railway.app/api/$1"
+    },
+    {
+      "source": "/api/metrics",
+      "destination": "https://autostreampro-backend-production.up.railway.app/api/metrics"
+    },
+    {
+      "source": "/api/metrics-gauge",
+      "destination": "https://autostreampro-backend-production.up.railway.app/api/metrics-gauge"
+    },
+    {
+      "source": "/api/metrics-counter",
+      "destination": "https://autostreampro-backend-production.up.railway.app/api/metrics-counter"
     }
-
-    ,{
-  "source": "/api/metrics",
-  "destination": "https://autostreampro-backend-production.up.railway.app/api/metrics"
-},
-{
-  "source": "/api/metrics-gauge",
-  "destination": "https://autostreampro-backend-production.up.railway.app/api/metrics-gauge"
-},
-{
-  "source": "/api/metrics-counter",
-  "destination": "https://autostreampro-backend-production.up.railway.app/api/metrics-counter"
-}
   ],
   "redirects": [
     {
