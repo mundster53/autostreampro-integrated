@@ -1,9 +1,51 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/signup",    "destination": "/signup.html" },
-    { "source": "/dashboard", "destination": "/dashboard.html" },
-    { "source": "/__health",  "destination": "/health.html" },
-    { "source": "/api/(.*)",  "destination": "https://autostreampro-backend-production.up.railway.app/$1" }
+    {
+      "source": "/signup",
+      "destination": "/signup.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard.html"
+    },
+    {
+      "source": "/__health",
+      "destination": "/health.html"
+    },
+    {
+      "source": "/api/health",
+      "destination": "https://autostreampro-backend-production.up.railway.app/health"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "https://autostreampro-backend-production.up.railway.app/api/$1"
+    }
+
+    ,{
+  "source": "/api/metrics",
+  "destination": "https://autostreampro-backend-production.up.railway.app/api/metrics"
+},
+{
+  "source": "/api/metrics-gauge",
+  "destination": "https://autostreampro-backend-production.up.railway.app/api/metrics-gauge"
+},
+{
+  "source": "/api/metrics-counter",
+  "destination": "https://autostreampro-backend-production.up.railway.app/api/metrics-counter"
+}
+  ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "autostreampro.com"
+        }
+      ],
+      "destination": "https://www.autostreampro.com/$1",
+      "permanent": true
+    }
   ]
 }
