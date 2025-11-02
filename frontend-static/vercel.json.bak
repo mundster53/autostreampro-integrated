@@ -14,22 +14,6 @@
       "destination": "https://autostreampro-backend-production.up.railway.app/api/metrics-counter"
     },
     {
-      "source": "/api/:path*",
-      "destination": "https://autostreampro-backend-production.up.railway.app/api/:path*"
-    },
-    {
-      "source": "/api/metrics",
-      "destination": "https://autostreampro-backend-production.up.railway.app/api/metrics"
-    },
-    {
-      "source": "/api/metrics-gauge",
-      "destination": "https://autostreampro-backend-production.up.railway.app/api/metrics-gauge"
-    },
-    {
-      "source": "/api/metrics-counter",
-      "destination": "https://autostreampro-backend-production.up.railway.app/api/metrics-counter"
-    },
-    {
       "source": "/signup",
       "destination": "/signup.html"
     },

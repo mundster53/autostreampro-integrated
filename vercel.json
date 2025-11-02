@@ -1,8 +1,13 @@
 {
+  "outputDirectory": ".",
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/signup",    "destination": "/signup.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" },
-    { "source": "/api/(.*)",  "destination": "https://<YOUR-RAILWAY-HOST>.up.railway.app/api/$1" }
+    { "source": "/signup", "destination": "/signup.html" },
+    { "source": "/login", "destination": "/login/index.html" },
+    { "source": "/onboarding", "destination": "/onboarding.html" },
+    { "source": "/onboarding-wizard", "destination": "/onboarding-wizard.html" },
+    { "source": "/api/(.*)", "destination": "https://autostreampro-backend-production.up.railway.app/api/$1" },
+    { "source": "/.netlify/functions/(.*)", "destination": "https://autostreampro-backend-production.up.railway.app/api/$1" }
   ]
 }
