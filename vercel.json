@@ -7,6 +7,7 @@
     { "source": "/login", "destination": "/login/index.html" },
     { "source": "/onboarding", "destination": "/onboarding.html" },
     { "source": "/onboarding-wizard", "destination": "/onboarding-wizard.html" },
+    {"source": "/login", "destination": "/login.html"},
     { "source": "/api/(.*)", "destination": "https://autostreampro-backend-production.up.railway.app/api/$1" },
     { "source": "/.netlify/functions/(.*)", "destination": "https://autostreampro-backend-production.up.railway.app/api/$1" }
   ]
