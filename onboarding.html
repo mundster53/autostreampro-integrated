@@ -1203,11 +1203,20 @@ window.addEventListener('DOMContentLoaded', () => {
     const btn = byId('youtubeConnectBtn');
     if (!btn || btn.dataset.aspWired === '1') return;
     btn.dataset.aspWired = '1';
-    btn.addEventListener('click', function (e) {
-      e.preventDefault();
-      btn.disabled = true;
-      location.href = 'https://autostreampro-backend-production.up.railway.app/auth/youtube?return_to=' + enc('/onboarding.html');
-    });
+   btn.addEventListener('click', async function (e) {
+  e.preventDefault();
+  btn.disabled = true;
+  
+  const sb = await getSb();
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) { 
+    alert('Please log in first'); 
+    btn.disabled = false;
+    return; 
+  }
+  
+  location.href = 'https://autostreampro-backend-production.up.railway.app/auth/youtube?userId=' + user.id + '&return_to=' + enc(window.location.href);
+});
   })();
 
   // DISCONNECT button – revoke and flip UI
