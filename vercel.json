@@ -6,12 +6,17 @@
   "trailingSlash": false,
   "rewrites": [
     
-     {
-
+    {
+      "source": "/auth/youtube/callback",
+      "destination": "https://autostreampro-backend-production.up.railway.app/auth/youtube/callback"
+    }, 
+    
+    {
       "source": "/auth/youtube",
       "destination": "https://autostreampro-backend-production.up.railway.app/auth/youtube"
     },
-    
+
+
     {
       "source": "/api/:path*",
       "destination": "https://autostreampro-backend-production.up.railway.app/api/:path*"
