@@ -1,13 +1,25 @@
 {
+  "installCommand": "echo 'Skipping install'",
   "buildCommand": "echo 'No build needed'",
   "outputDirectory": ".",
   "framework": null,
   "cleanUrls": true,
-  "trailingSlash": false,
   "rewrites": [
     {
       "source": "/api/:path*",
       "destination": "https://autostreampro-backend-production.up.railway.app/api/:path*"
+    },
+    {
+      "source": "/signup",
+      "destination": "/signup.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard.html"
+    },
+    {
+      "source": "/__health",
+      "destination": "/health.html"
     },
     {
       "source": "/api/health",
