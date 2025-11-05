@@ -1205,9 +1205,9 @@ window.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
 
-      // Build a safe return URL (current page)
-      const returnTo = new URL(window.location.href);
-      returnTo.searchParams.set('yt_connected', '1'); // optional marker
+      // Always return to canonical www host and clean path (no .html) to avoid loops
+      const returnTo = new URL('https://www.autostreampro.com/onboarding');
+      returnTo.searchParams.set('yt_connected', '1'); // optional UI flag
 
     // Use first-party API subdomain (bypasses Vercel protection)
       const start = new URL('https://api.autostreampro.com/api/auth/youtube');
