@@ -1209,12 +1209,12 @@ window.addEventListener('DOMContentLoaded', () => {
       const returnTo = new URL(window.location.href);
       returnTo.searchParams.set('yt_connected', '1'); // optional marker
 
-      // Use the Vercel → Railway proxy at /api/
-      const start = new URL('/api/auth/youtube', window.location.origin);
+    // Use first-party API subdomain (bypasses Vercel protection)
+      const start = new URL('https://api.autostreampro.com/api/auth/youtube');
       start.searchParams.set('userId', (typeof user !== 'undefined' && user && user.id) ? user.id : '');
       start.searchParams.set('return_to', returnTo.toString());
-
       window.location.href = start.toString();
+
     });
   }
 }
