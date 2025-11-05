@@ -1199,25 +1199,25 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // CONNECT button (use the actual ID present in your HTML: youtubeConnectBtn)
-  (function wireConnect(){
-    const btn = byId('youtubeConnectBtn');
-    if (!btn || btn.dataset.aspWired === '1') return;
-    btn.dataset.aspWired = '1';
-   btn.addEventListener('click', async function (e) {
-  e.preventDefault();
-  btn.disabled = true;
-  
-  const sb = await getSb();
-  const { data: { user } } = await sb.auth.getUser();
-  if (!user) { 
-    alert('Please log in first'); 
-    btn.disabled = false;
-    return; 
+{
+  const btn = byId('youtubeConnectBtn');
+  if (btn) {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      // Build a safe return URL (current page)
+      const returnTo = new URL(window.location.href);
+      returnTo.searchParams.set('yt_connected', '1'); // optional marker
+
+      // Use the Vercel → Railway proxy at /api/
+      const start = new URL('/api/auth/youtube', window.location.origin);
+      start.searchParams.set('userId', (typeof user !== 'undefined' && user && user.id) ? user.id : '');
+      start.searchParams.set('return_to', returnTo.toString());
+
+      window.location.href = start.toString();
+    });
   }
-  
-  location.href = 'https://autostreampro-backend-production.up.railway.app/api/auth/youtube?userId=' + user.id + '&return_to=' + encodeURIComponent('https://www.autostreampro.com/onboarding.html');
-});
-  })();
+}
 
   // DISCONNECT button – revoke and flip UI
  (function wireDisconnect(){
@@ -1464,6 +1464,27 @@ window.addEventListener('DOMContentLoaded', () => {
   // It only fixes the YouTube exchange + common parse errors (top-level await, stray code).
 })();
 </script>
+
+<script>
+  function getAspUserId() {
+    try { return localStorage.getItem('asp_user_id') || ''; } catch (_) { return ''; }
+  }
+
+  function buildYouTubeOauthUrl() {
+    const userId = getAspUserId();
+    const returnToUrl = new URL(window.location.href);
+    returnToUrl.searchParams.set('yt_connected', '1');
+
+    
+    if (!el) return;
+    if (el.tagName === 'A') el.setAttribute('href', '#');
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = buildYouTubeOauthUrl();
+    });
+  };
+</script>
+
 
 </body>
 </html>
