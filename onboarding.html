@@ -461,14 +461,38 @@
 const twitchClientId = 'mzjsqcwxj9mexsa8vaimtzanbe7pll';  // Your REAL Twitch Client ID
         
         // Get current user
-        async function getCurrentUser() {
-            const { data: { user }, error } = await supabase.auth.getUser();
-            if (!user) {
-                window.location.href = '/login.html';
+async function getCurrentUser() {
+    try {
+        // Wait a bit for session to stabilize
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (!user) {
+            // Check if we just came from login (prevent immediate redirect)
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromLogin = urlParams.get('from_login') || sessionStorage.getItem('just_logged_in');
+            
+            if (fromLogin) {
+                // Give it one more chance
+                sessionStorage.removeItem('just_logged_in');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                const { data: { user: retryUser } } = await supabase.auth.getUser();
+                if (retryUser) return retryUser;
+            }
+            
+                // Only redirect if definitely not authenticated
+                console.log('No user found, redirecting to login');
+                window.location.href = 'https://www.autostreampro.com/login';
+                return null;
+        }
+        
+                return user;
+            }   catch (error) {
+                console.error('getCurrentUser error:', error);
                 return null;
             }
-            return user;
-        }
+      }
         
         // Show success message
         function showSuccess(message) {
