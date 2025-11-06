@@ -932,8 +932,8 @@ alert('Channel URLs: ' + JSON.stringify(channelData));  // ADD THIS
         
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
-            await checkConnections();
             await handleOAuthReturn();
+            await checkConnections();
         });
 
         // Kick connection
@@ -1492,27 +1492,22 @@ if (btn) {
   // It only fixes the YouTube exchange + common parse errors (top-level await, stray code).
 })();
 </script>
-
 <script>
   function getAspUserId() {
     try { return localStorage.getItem('asp_user_id') || ''; } catch (_) { return ''; }
   }
-
+  
   function buildYouTubeOauthUrl() {
     const userId = getAspUserId();
     const returnToUrl = new URL(window.location.href);
     returnToUrl.searchParams.set('yt_connected', '1');
-
     
-    if (!el) return;
-    if (el.tagName === 'A') el.setAttribute('href', '#');
-    el.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.location.href = buildYouTubeOauthUrl();
-    });
-  };
+    const start = new URL('https://www.autostreampro.com/api/auth/youtube');
+    start.searchParams.set('userId', userId);
+    start.searchParams.set('return_to', returnToUrl.toString());
+    
+    return start.toString();
+  }
 </script>
-
-
 </body>
-</html>// Force rebuild
+</html>
