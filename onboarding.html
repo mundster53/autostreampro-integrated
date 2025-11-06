@@ -1225,22 +1225,26 @@ window.addEventListener('DOMContentLoaded', () => {
   // CONNECT button (use the actual ID present in your HTML: youtubeConnectBtn)
 {
   const btn = byId('youtubeConnectBtn');
-  if (btn) {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
+if (btn) {
+  btn.addEventListener('click', async (e) => {
+    e.preventDefault();
 
-      // Always return to canonical www host and clean path (no .html) to avoid loops
-      const returnTo = new URL('https://www.autostreampro.com/onboarding');
-      returnTo.searchParams.set('yt_connected', '1'); // optional UI flag
+    // Get the current user first
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      alert('Please log in first');
+      return;
+    }
 
-    // Use first-party API subdomain (bypasses Vercel protection)
-      const start = new URL('https://api.autostreampro.com/api/auth/youtube');
-      start.searchParams.set('userId', (typeof user !== 'undefined' && user && user.id) ? user.id : '');
-      start.searchParams.set('return_to', returnTo.toString());
-      window.location.href = start.toString();
+    const returnTo = new URL('https://www.autostreampro.com/onboarding');
+    returnTo.searchParams.set('yt_connected', '1');
 
-    });
-  }
+    const start = new URL('https://api.autostreampro.com/api/auth/youtube');
+    start.searchParams.set('userId', user.id);
+    start.searchParams.set('return_to', returnTo.toString());
+    window.location.href = start.toString();
+  });
+}
 }
 
   // DISCONNECT button – revoke and flip UI
