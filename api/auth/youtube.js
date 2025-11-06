@@ -1,10 +1,17 @@
 // Vercel serverless function for YouTube OAuth
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
+
 export default async function handler(req, res) {
   // Handle CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
+  
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -12,37 +19,37 @@ export default async function handler(req, res) {
   // GET: Redirect to Google OAuth
   if (req.method === 'GET') {
     const { userId, return_to } = req.query;
-
+    
     if (!userId) {
       return res.status(400).json({ error: 'userId required' });
     }
 
     const redirectUri = 'https://www.autostreampro.com/auth/youtube.html';
-    const scope = [
-      'https://www.googleapis.com/auth/youtube.readonly',
-      'https://www.googleapis.com/auth/youtube.upload'
-    ].join(' ');
-
+    const state = JSON.stringify({ userId, return_to });
+    
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     authUrl.searchParams.set('client_id', process.env.GOOGLE_CLIENT_ID);
     authUrl.searchParams.set('redirect_uri', redirectUri);
     authUrl.searchParams.set('response_type', 'code');
-    authUrl.searchParams.set('scope', scope);
+    authUrl.searchParams.set('scope', 'https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly');
     authUrl.searchParams.set('access_type', 'offline');
     authUrl.searchParams.set('prompt', 'consent');
-    authUrl.searchParams.set('state', JSON.stringify({ userId, return_to }));
+    authUrl.searchParams.set('state', state);
 
-    // Redirect to Google
-    return res.redirect(authUrl.toString());
+    return res.redirect(307, authUrl.toString());
   }
 
-  // POST: Exchange code for tokens
+  // POST: Exchange code for tokens and save to database
   if (req.method === 'POST') {
     try {
-      const { code } = req.body;
-
+      const { code, userId } = req.body;
+      
       if (!code) {
         return res.status(400).json({ error: 'Authorization code required' });
+      }
+      
+      if (!userId) {
+        return res.status(400).json({ error: 'userId required' });
       }
 
       // Exchange code for tokens
@@ -68,16 +75,20 @@ export default async function handler(req, res) {
       }
 
       // Get channel info
-      let channelInfo = {};
+      let channelInfo = {
+        channel_id: 'youtube_channel',
+        channel_title: 'YouTube Channel'
+      };
+      
       if (tokenData.access_token) {
         try {
           const channelResponse = await fetch(
             'https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true',
             {
-              headers: { 'Authorization': 'Bearer ' + tokenData.access_token }
+              headers: { 'Authorization': `Bearer ${tokenData.access_token}` }
             }
           );
-
+          
           if (channelResponse.ok) {
             const channelData = await channelResponse.json();
             if (channelData.items && channelData.items.length > 0) {
@@ -91,6 +102,34 @@ export default async function handler(req, res) {
         } catch (error) {
           console.error('Failed to get YouTube channel info:', error);
         }
+      }
+
+      // Save to database
+      const expiresAt = new Date(Date.now() + (tokenData.expires_in * 1000)).toISOString();
+      
+      const { error: dbError } = await supabase
+        .from('streaming_connections')
+        .upsert({
+          user_id: userId,
+          platform: 'youtube',
+          platform_user_id: channelInfo.channel_id,
+          platform_username: channelInfo.channel_title,
+          access_token: tokenData.access_token,
+          refresh_token: tokenData.refresh_token,
+          token_expires_at: expiresAt,
+          is_active: true,
+          connected_at: new Date().toISOString(),
+          last_refreshed: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,platform'
+        });
+
+      if (dbError) {
+        console.error('Database error:', dbError);
+        return res.status(500).json({ 
+          error: 'Failed to save connection',
+          details: dbError.message 
+        });
       }
 
       return res.status(200).json({
