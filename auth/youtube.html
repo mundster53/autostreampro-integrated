@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connecting YouTube...</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -55,11 +54,6 @@
     </div>
 
     <script>
-        const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-                console.log("Callback started");
-
         async function handleCallback() {
             const statusEl = document.getElementById('status');
             
@@ -77,8 +71,8 @@
                     throw new Error('No authorization code received');
                 }
 
-                statusEl.textContent = 'Exchanging authorization code...';
                 console.log("Got code:", code);
+                statusEl.textContent = 'Exchanging authorization code...';
 
                 let userId, returnTo;
                 try {
@@ -88,20 +82,18 @@
                 } catch (e) {
                     console.error('Failed to parse state:', e);
                 }
-                console.log("Got session:", session);
 
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) {
-                    throw new Error('Not logged in');
+                if (!userId) {
+                    throw new Error('Missing userId in state');
                 }
 
+                // Call the API with userId and code - no session needed
                 const response = await fetch('https://www.autostreampro.com/api/auth/youtube', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session.access_token}`
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ code })
+                    body: JSON.stringify({ code, userId })
                 });
 
                 const data = await response.json();
@@ -110,33 +102,10 @@
                     throw new Error(data.error || 'Token exchange failed');
                 }
 
-                statusEl.textContent = 'Saving connection...';
-
-                const { error: dbError } = await supabase
-                    .from('streaming_connections')
-                    .upsert({
-                        user_id: session.user.id,
-                        platform: 'youtube',
-                        platform_user_id: data.channel_id || 'youtube_user',
-                        platform_username: data.channel_title || 'YouTube Channel',
-                        access_token: data.access_token,
-                        refresh_token: data.refresh_token,
-                        token_expires_at: new Date(Date.now() + (data.expires_in * 1000)).toISOString(),
-                        is_active: true,
-                        connected_at: new Date().toISOString(),
-                        last_refreshed: new Date().toISOString()
-                    }, {
-                        onConflict: 'user_id,platform'
-                    });
-
-                if (dbError) {
-                    console.error('Database error:', dbError);
-                    throw new Error('Failed to save connection');
-                }
-
                 statusEl.className = 'success';
                 statusEl.textContent = '✓ YouTube connected successfully!';
 
+                // Redirect back to onboarding
                 setTimeout(() => {
                     window.location.href = returnTo || 'https://www.autostreampro.com/onboarding?yt_connected=1';
                 }, 1500);
@@ -146,6 +115,7 @@
                 statusEl.className = 'error';
                 statusEl.textContent = 'Error: ' + error.message;
                 
+                // Still redirect back after showing error
                 setTimeout(() => {
                     window.location.href = 'https://www.autostreampro.com/onboarding';
                 }, 3000);
