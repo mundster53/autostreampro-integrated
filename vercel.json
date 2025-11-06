@@ -1,9 +1,6 @@
 {
   "outputDirectory": ".",
   "cleanUrls": true,
-  "redirects": [
-    { "source": "/dashboard", "destination": "/dashboard.html", "permanent": false }
-  ],
   "rewrites": [
     {
       "source": "/api/clips/:path*",
