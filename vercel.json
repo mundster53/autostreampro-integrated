@@ -6,8 +6,16 @@
   ],
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://api.autostreampro.com/api/:path*"
+      "source": "/api/clips/:path*",
+      "destination": "https://api.autostreampro.com/api/clips/:path*"
+    },
+    {
+      "source": "/api/process/:path*",
+      "destination": "https://api.autostreampro.com/api/process/:path*"
+    },
+    {
+      "source": "/api/ai/:path*",
+      "destination": "https://api.autostreampro.com/api/ai/:path*"
     }
   ],
   "headers": [
