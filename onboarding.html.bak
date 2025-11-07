@@ -932,6 +932,15 @@ alert('Channel URLs: ' + JSON.stringify(channelData));  // ADD THIS
         
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await handleOAuthReturn();
+            await checkConnections();
+        });
+        document.addEventListener('DOMContentLoaded', async () => {
+            await handleOAuthReturn();
+            await checkConnections();
+        });
+        document.addEventListener('DOMContentLoaded', async () => {
             await handleOAuthReturn();
             await checkConnections();
         });
@@ -1487,8 +1496,32 @@ if (btn) {
         console.error('[ASP] Exchange error:', e);
       });
   }
+
+  // NOTE: This script intentionally does NOT modify Twitch/Kick/TikTok/X/IG logic already in your file.
+  // It only fixes the YouTube exchange + common parse errors (top-level await, stray code).
 })();
 </script>
+
+<script>
+  function getAspUserId() {
+    try { return localStorage.getItem('asp_user_id') || ''; } catch (_) { return ''; }
+  }
+
+  function buildYouTubeOauthUrl() {
+    const userId = getAspUserId();
+    const returnToUrl = new URL(window.location.href);
+    returnToUrl.searchParams.set('yt_connected', '1');
+
+    
+    if (!el) return;
+    if (el.tagName === 'A') el.setAttribute('href', '#');
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = buildYouTubeOauthUrl();
+    });
+  };
+</script>
+
+
 </body>
-</html> 
-}
+</html>// Force rebuild
