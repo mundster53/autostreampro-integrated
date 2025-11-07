@@ -932,15 +932,6 @@ alert('Channel URLs: ' + JSON.stringify(channelData));  // ADD THIS
         
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
-        document.addEventListener('DOMContentLoaded', async () => {
-            await handleOAuthReturn();
-            await checkConnections();
-        });
-        document.addEventListener('DOMContentLoaded', async () => {
-            await handleOAuthReturn();
-            await checkConnections();
-        });
-        document.addEventListener('DOMContentLoaded', async () => {
             await handleOAuthReturn();
             await checkConnections();
         });
@@ -1500,7 +1491,23 @@ if (btn) {
   // NOTE: This script intentionally does NOT modify Twitch/Kick/TikTok/X/IG logic already in your file.
   // It only fixes the YouTube exchange + common parse errors (top-level await, stray code).
 })();
-
+</script>
+<script>
+  function getAspUserId() {
+    try { return localStorage.getItem('asp_user_id') || ''; } catch (_) { return ''; }
+  }
+  
+  function buildYouTubeOauthUrl() {
+    const userId = getAspUserId();
+    const returnToUrl = new URL(window.location.href);
+    returnToUrl.searchParams.set('yt_connected', '1');
+    
+    const start = new URL('https://www.autostreampro.com/api/auth/youtube');
+    start.searchParams.set('userId', userId);
+    start.searchParams.set('return_to', returnToUrl.toString());
+    
+    return start.toString();
+  }
 </script>
 </body>
 </html>
