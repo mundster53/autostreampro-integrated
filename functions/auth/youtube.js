@@ -1,22 +1,19 @@
-// Cloudflare Pages Function: /auth/youtube
-// Builds the Google OAuth URL using env variables from CF Pages.
+// Vercel Serverless Function: /api/auth/youtube
+// Builds the Google OAuth URL and redirects user to Google
 
-export async function onRequest({ request, env }) {
-  // Prefer YOUTUBE_CLIENT_ID (what we put in wrangler.toml), fall back to GOOGLE_CLIENT_ID if present
-  const CLIENT_ID = env.YOUTUBE_CLIENT_ID || env.GOOGLE_CLIENT_ID;
-  const REDIRECT  = env.OAUTH_REDIRECT_YT         // usually https://www.autostreampro.com/auth/youtube.html
-                   || new URL('/auth/youtube.html', request.url).toString();
-  const SCOPE     = 'https://www.googleapis.com/auth/youtube.upload';
-  const BASE_URL  = 'https://accounts.google.com/o/oauth2/v2/auth';
+export default async function handler(req, res) {
+  const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+  const REDIRECT = process.env.OAUTH_REDIRECT_YT || 'https://www.autostreampro.com/auth/youtube.html';
+  const SCOPE = 'https://www.googleapis.com/auth/youtube.upload';
+  const BASE_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 
   // Honor return_to from query (defaults to /onboarding.html)
-  const url = new URL(request.url);
-  const returnTo = url.searchParams.get('return_to') || '/onboarding.html';
+  const returnTo = req.query.return_to || '/onboarding.html';
   const state = JSON.stringify({ r: returnTo });
 
   if (!CLIENT_ID) {
-     return new Response('Missing YOUTUBE_CLIENT_ID/GOOGLE_CLIENT_ID', { status: 500 });
-   }
+    return res.status(500).json({ error: 'Missing GOOGLE_CLIENT_ID' });
+  }
 
   const authURL = new URL(BASE_URL);
   authURL.searchParams.set('client_id', CLIENT_ID);
@@ -27,8 +24,6 @@ export async function onRequest({ request, env }) {
   authURL.searchParams.set('scope', SCOPE);
   authURL.searchParams.set('state', state);
 
-  return new Response(null, {
-    status: 302,
-    headers: { Location: authURL.toString() }
-  });
+  // Redirect to Google OAuth
+  res.redirect(302, authURL.toString());
 }
