@@ -76,8 +76,8 @@ module.exports = async function handler(req, res) {
 
       // Get channel info
       let channelInfo = {
-        channel_id: 'youtube_channel',
-        channel_title: 'YouTube Channel'
+        channel_id: null,
+        platform_username: 'YouTube Channel'
       };
       
       if (tokenData.access_token) {
@@ -95,7 +95,7 @@ module.exports = async function handler(req, res) {
               const channel = channelData.items[0];
               channelInfo = {
                 channel_id: channel.id,
-                channel_title: channel.snippet.title
+                platform_username: channel.snippet.title
               };
             }
           }
@@ -104,8 +104,9 @@ module.exports = async function handler(req, res) {
         }
       }
 
-      // Save to database
+      // Save to database using CORRECT column names
       const expiresAt = new Date(Date.now() + (tokenData.expires_in * 1000)).toISOString();
+      const now = new Date().toISOString();
       
       const { error: dbError } = await supabase
         .from('streaming_connections')
@@ -113,13 +114,13 @@ module.exports = async function handler(req, res) {
           user_id: userId,
           platform: 'youtube',
           platform_user_id: channelInfo.channel_id,
-          platform_username: channelInfo.channel_title,
+          platform_username: channelInfo.platform_username,
           access_token: tokenData.access_token,
           refresh_token: tokenData.refresh_token,
-          token_expires_at: expiresAt,
+          expires_at: expiresAt,
           is_active: true,
-          connected_at: new Date().toISOString(),
-          last_refreshed: new Date().toISOString()
+          created_at: now,
+          updated_at: now
         }, {
           onConflict: 'user_id,platform'
         });
@@ -134,10 +135,8 @@ module.exports = async function handler(req, res) {
 
       return res.status(200).json({
         success: true,
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token,
-        expires_in: tokenData.expires_in,
-        ...channelInfo
+        channel_id: channelInfo.channel_id,
+        channel_title: channelInfo.platform_username
       });
 
     } catch (error) {
