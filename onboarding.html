@@ -1208,7 +1208,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const s = byId('youtubeStatus');
     const c = byId('youtubeConnectBtn');
     const d = byId('youtubeDisconnectBtn');
-    if (s) { s.textContent = '✅ Connected'; s.style.color = '#166534'; } // same green tone you use in success UI
+    // Status div removed - checkConnections() handles the button
     if (c) { c.textContent = '✓ Connected'; c.disabled = true; }
     if (d) d.style.display = 'inline-block';
   }
