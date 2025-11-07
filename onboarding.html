@@ -318,7 +318,7 @@
                     <div class="platform-name">YouTube</div>
                     <div id="youtubeStatus" style="margin-top:8px;color:#065f46;"></div>
                     <button id="youtubeConnectBtn" type="button" class="connect-btn" style="margin-top:10px">Connect YouTube</button>
-                    <button id="youtubeDisconnectBtn" class="nav-btn" style="display:none;background:#fee2e2;color:#991b1b;margin-top:10px">Disconnect YouTube</button>
+                    <button id="youtubeDisconnectBtn" class="disconnect-btn" style="display:none;margin-top:10px">Disconnect YouTube</button>
                     </div>
 
                 
@@ -1261,7 +1261,7 @@ if (btn) {
        const sb = await getSb();
        const { data: { user } } = await sb.auth.getUser();
        if (!user) { alert('Please log in first'); return; }
-       const res = await fetch('/.netlify/functions/disconnect-youtube', {
+       const res = await fetch('/api/disconnect/youtube', {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
          body: JSON.stringify({ userId: user.id })
