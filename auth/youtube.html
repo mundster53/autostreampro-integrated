@@ -1,129 +1,145 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connecting YouTube...</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            max-width: 400px;
-        }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .error {
-            color: #dc2626;
-            margin-top: 20px;
-        }
-        .success {
-            color: #059669;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🎬 Connecting YouTube</h1>
-        <div class="spinner"></div>
-        <p id="status">Please wait...</p>
-    </div>
-
-    <script>
-        async function handleCallback() {
-            const statusEl = document.getElementById('status');
-            
-            try {
-                const urlParams = new URLSearchParams(window.location.search);
-                const code = urlParams.get('code');
-                const state = urlParams.get('state');
-                const error = urlParams.get('error');
-
-                if (error) {
-                    throw new Error('Authorization failed: ' + error);
-                }
-
-                if (!code) {
-                    throw new Error('No authorization code received');
-                }
-
-                console.log("Got code:", code);
-                statusEl.textContent = 'Exchanging authorization code...';
-
-                let userId, returnTo;
-                try {
-                    const stateData = JSON.parse(state);
-                    userId = stateData.userId;
-                    returnTo = stateData.return_to;
-                } catch (e) {
-                    console.error('Failed to parse state:', e);
-                }
-
-                if (!userId) {
-                    throw new Error('Missing userId in state');
-                }
-
-                // Call the API with userId and code - no session needed
-                const response = await fetch('https://www.autostreampro.com/api/auth/youtube', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ code, userId })
-                });
-
-                const data = await response.json();
-                console.log("API Response:", data);
-
-                if (!response.ok || !data.success) {
-                    throw new Error(data.error || 'Token exchange failed');
-                }
-
-                statusEl.className = 'success';
-                statusEl.textContent = '✓ YouTube connected successfully!';
-
-                // Redirect back to onboarding
-                setTimeout(() => {
-                    window.location.href = returnTo || 'https://www.autostreampro.com/onboarding?yt_connected=1';
-                }, 1500);
-
-            } catch (error) {
-                console.error('Callback error:', error);
-                statusEl.className = 'error';
-                statusEl.textContent = 'Error: ' + error.message;
-                
-                // Still redirect back after showing error
-                setTimeout(() => {
-                    window.location.href = 'https://www.autostreampro.com/onboarding';
-                }, 3000);
-            }
-        }
-
-        handleCallback();
-    </script>
-</body>
-</html>
+[{
+	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
+	"owner": "typescript",
+	"code": "1109",
+	"severity": 8,
+	"message": "Expression expected.",
+	"source": "ts",
+	"startLineNumber": 1,
+	"startColumn": 1,
+	"endLineNumber": 1,
+	"endColumn": 2,
+	"origin": "extHost1"
+},{
+	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
+	"owner": "typescript",
+	"code": "1005",
+	"severity": 8,
+	"message": "';' expected.",
+	"source": "ts",
+	"startLineNumber": 1,
+	"startColumn": 11,
+	"endLineNumber": 1,
+	"endColumn": 15,
+	"origin": "extHost1"
+},{
+	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
+	"owner": "typescript",
+	"code": "17008",
+	"severity": 8,
+	"message": "JSX element 'html' has no corresponding closing tag.",
+	"source": "ts",
+	"startLineNumber": 2,
+	"startColumn": 2,
+	"endLineNumber": 2,
+	"endColumn": 6,
+	"origin": "extHost1"
+},{
+	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
+	"owner": "typescript",
+	"code": "17008",
+	"severity": 8,
+	"message": "JSX element 'head' has no corresponding closing tag.",
+	"source": "ts",
+	"startLineNumber": 3,
+	"startColumn": 2,
+	"endLineNumber": 3,
+	"endColumn": 6,
+	"origin": "extHost1"
+},{
+	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
+	"owner": "typescript",
+	"code": "17008",
+	"severity": 8,
+	"message": "JSX element 'meta' has no corresponding closing tag.",
+	"source": "ts",
+	"startLineNumber": 4,
+	"startColumn": 6,
+	"endLineNumber": 4,
+	"endColumn": 10,
+	"origin": "extHost1"
+},{
+	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
+	"owner": "typescript",
+	"code": "1005",
+	"severity": 8,
+	"message": "'}' expected.",
+	"source": "ts",
+	"startLineNumber": 9,
+	"startColumn": 24,
+	"endLineNumber": 9,
+	"endColumn": 25,
+	"origin": "extHost1"
+},{
+	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
+	"owner": "typescript",
+	"code": "1381",
+	"severity": 8,
+	"message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+	"source": "ts",
+	"startLineNumber": 17,
+	"startColumn": 9,
+	"endLineNumber": 17,
+	"endColumn": 10,
+	"origin": "extHost1"
+},{
+	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
+	"owner": "typescript",
+	"code": "1005",
+	"severity": 8,
+	"message": "'}' expected.",
+	"source": "ts",
+	"startLineNumber": 19,
+	"startColumn": 23,
+	"endLineNumber": 19,
+	"endColumn": 24,
+	"origin": "extHost1"
+},{
+	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
+	"owner": "typescript",
+	"code": "1381",
+	"severity": 8,
+	"message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+	"source": "ts",
+	"startLineNumber": 25,
+	"startColumn": 9,
+	"endLineNumber": 25,
+	"endColumn": 10,
+	"origin": "extHost1"
+},{
+	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
+	"owner": "typescript",
+	"code": "1005",
+	"severity": 8,
+	"message": "'}' expected.",
+	"source": "ts",
+	"startLineNumber": 27,
+	"startColumn": 19,
+	"endLineNumber": 27,
+	"endColumn": 20,
+	"origin": "extHost1"
+},{
+	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
+	"owner": "typescript",
+	"code": "1381",
+	"severity": 8,
+	"message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
+	"source": "ts",
+	"startLineNumber": 34,
+	"startColumn": 9,
+	"endLineNumber": 34,
+	"endColumn": 10,
+	"origin": "extHost1"
+},{
+	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
+	"owner": "typescript",
+	"code": "1351",
+	"severity": 8,
+	"message": "An identifier or keyword cannot immediately follow a numeric literal.",
+	"source": "ts",
+	"startLineNumber": 36,
+	"startColumn": 37,
+	"endLineNumber": 36,
+	"endColumn": 40,
+	"origin": "extHost1"
+}]
