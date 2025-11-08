@@ -1,145 +1,74 @@
-[{
-	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
-	"owner": "typescript",
-	"code": "1109",
-	"severity": 8,
-	"message": "Expression expected.",
-	"source": "ts",
-	"startLineNumber": 1,
-	"startColumn": 1,
-	"endLineNumber": 1,
-	"endColumn": 2,
-	"origin": "extHost1"
-},{
-	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
-	"owner": "typescript",
-	"code": "1005",
-	"severity": 8,
-	"message": "';' expected.",
-	"source": "ts",
-	"startLineNumber": 1,
-	"startColumn": 11,
-	"endLineNumber": 1,
-	"endColumn": 15,
-	"origin": "extHost1"
-},{
-	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
-	"owner": "typescript",
-	"code": "17008",
-	"severity": 8,
-	"message": "JSX element 'html' has no corresponding closing tag.",
-	"source": "ts",
-	"startLineNumber": 2,
-	"startColumn": 2,
-	"endLineNumber": 2,
-	"endColumn": 6,
-	"origin": "extHost1"
-},{
-	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
-	"owner": "typescript",
-	"code": "17008",
-	"severity": 8,
-	"message": "JSX element 'head' has no corresponding closing tag.",
-	"source": "ts",
-	"startLineNumber": 3,
-	"startColumn": 2,
-	"endLineNumber": 3,
-	"endColumn": 6,
-	"origin": "extHost1"
-},{
-	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
-	"owner": "typescript",
-	"code": "17008",
-	"severity": 8,
-	"message": "JSX element 'meta' has no corresponding closing tag.",
-	"source": "ts",
-	"startLineNumber": 4,
-	"startColumn": 6,
-	"endLineNumber": 4,
-	"endColumn": 10,
-	"origin": "extHost1"
-},{
-	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
-	"owner": "typescript",
-	"code": "1005",
-	"severity": 8,
-	"message": "'}' expected.",
-	"source": "ts",
-	"startLineNumber": 9,
-	"startColumn": 24,
-	"endLineNumber": 9,
-	"endColumn": 25,
-	"origin": "extHost1"
-},{
-	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
-	"owner": "typescript",
-	"code": "1381",
-	"severity": 8,
-	"message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
-	"source": "ts",
-	"startLineNumber": 17,
-	"startColumn": 9,
-	"endLineNumber": 17,
-	"endColumn": 10,
-	"origin": "extHost1"
-},{
-	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
-	"owner": "typescript",
-	"code": "1005",
-	"severity": 8,
-	"message": "'}' expected.",
-	"source": "ts",
-	"startLineNumber": 19,
-	"startColumn": 23,
-	"endLineNumber": 19,
-	"endColumn": 24,
-	"origin": "extHost1"
-},{
-	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
-	"owner": "typescript",
-	"code": "1381",
-	"severity": 8,
-	"message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
-	"source": "ts",
-	"startLineNumber": 25,
-	"startColumn": 9,
-	"endLineNumber": 25,
-	"endColumn": 10,
-	"origin": "extHost1"
-},{
-	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
-	"owner": "typescript",
-	"code": "1005",
-	"severity": 8,
-	"message": "'}' expected.",
-	"source": "ts",
-	"startLineNumber": 27,
-	"startColumn": 19,
-	"endLineNumber": 27,
-	"endColumn": 20,
-	"origin": "extHost1"
-},{
-	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
-	"owner": "typescript",
-	"code": "1381",
-	"severity": 8,
-	"message": "Unexpected token. Did you mean `{'}'}` or `&rbrace;`?",
-	"source": "ts",
-	"startLineNumber": 34,
-	"startColumn": 9,
-	"endLineNumber": 34,
-	"endColumn": 10,
-	"origin": "extHost1"
-},{
-	"resource": "/Users/bretmundt/Desktop/autostreampro-integrated/functions/auth/youtube.js",
-	"owner": "typescript",
-	"code": "1351",
-	"severity": 8,
-	"message": "An identifier or keyword cannot immediately follow a numeric literal.",
-	"source": "ts",
-	"startLineNumber": 36,
-	"startColumn": 37,
-	"endLineNumber": 36,
-	"endColumn": 40,
-	"origin": "extHost1"
-}]
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Authentication</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+        <h2>Connecting YouTube...</h2>
+        <p id="status">Please wait while we complete the connection.</p>
+    </div>
+
+    <script>
+        const supabase = window.supabase.createClient(
+            'https://dykxhmdozgccawkbxejd.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg'
+        );
+
+        async function handleCallback() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const code = urlParams.get('code');
+                const stateStr = urlParams.get('state');
+                
+                if (!code) {
+                    throw new Error('No authorization code received');
+                }
+
+                const state = stateStr ? JSON.parse(stateStr) : {};
+                const userId = state.userId;
+                const returnTo = state.return_to || 'https://www.autostreampro.com/onboarding?yt_connected=1';
+
+                if (!userId) {
+                    throw new Error('No user ID in state');
+                }
+
+                // Get Supabase session for auth
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                // Exchange code for tokens via your API
+                const response = await fetch('/api/youtube-exchange', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session?.access_token || ''}`
+                    },
+                    body: JSON.stringify({ code, userId })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    document.getElementById('status').textContent = '✓ YouTube connected successfully! Redirecting...';
+                    setTimeout(() => {
+                        window.location.href = returnTo;
+                    }, 1000);
+                } else {
+                    throw new Error(result.error || 'Failed to save connection');
+                }
+
+            } catch (error) {
+                console.error('YouTube callback error:', error);
+                document.getElementById('status').innerHTML = 
+                    `<span style="color: red;">❌ Connection failed: ${error.message}</span><br>` +
+                    `<a href="/onboarding">Return to onboarding</a>`;
+            }
+        }
+
+        handleCallback();
+    </script>
+</body>
+</html>

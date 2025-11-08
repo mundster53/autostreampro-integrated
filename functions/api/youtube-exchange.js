@@ -1,100 +1,110 @@
-// functions/api/youtube-exchange.js
-export const onRequestOptions = async () => {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': 'https://www.autostreampro.com',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-    }
-  });
-};
+// api/youtube-exchange.js - Vercel serverless function
+const { createClient } = require('@supabase/supabase-js');
 
-export const onRequestPost = async ({ request, env }) => {
-  const cors = {
-    'Access-Control-Allow-Origin': 'https://www.autostreampro.com',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-  };
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
+
+module.exports = async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   try {
-    // 1) Require Supabase JWT from browser
-    const auth = request.headers.get('Authorization') || '';
-    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-    if (!token) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...cors, 'Content-Type': 'application/json' } });
+    const { code, userId } = req.body;
+    
+    if (!code || !userId) {
+      return res.status(400).json({ error: 'Missing code or userId' });
     }
 
-    // 2) Read body
-    const { code } = await request.json();
-    if (!code) {
-      return new Response(JSON.stringify({ error: 'Missing code' }), { status: 400, headers: { ...cors, 'Content-Type': 'application/json' } });
-    }
-
-    // 3) Exchange with Google
-    const body = new URLSearchParams({
-      code,
-      client_id: env.GOOGLE_CLIENT_ID,
-      client_secret: env.GOOGLE_CLIENT_SECRET,
-      redirect_uri: env.OAUTH_REDIRECT_YT,
-      grant_type: 'authorization_code'
-    });
-
-    const resp = await fetch('https://oauth2.googleapis.com/token', {
+    // Exchange code for tokens
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body
+      body: new URLSearchParams({
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        code: code,
+        grant_type: 'authorization_code',
+        redirect_uri: 'https://www.autostreampro.com/auth/youtube.html'
+      })
     });
 
-    const data = await resp.json();
-    if (!resp.ok) {
-      return new Response(JSON.stringify({ error: 'Token exchange failed', details: data }), { status: 400, headers: { ...cors, 'Content-Type': 'application/json' } });
+    const tokenData = await tokenResponse.json();
+
+    if (!tokenResponse.ok) {
+      console.error('Token exchange failed:', tokenData);
+      return res.status(400).json({ error: tokenData.error_description || 'Token exchange failed' });
     }
 
-    // 4) Identify the user from Supabase JWT (validate via service role)
-    // Minimal Supabase verify call; adjust table/columns to your schema.
-    const userResp = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!userResp.ok) {
-      return new Response(JSON.stringify({ error: 'Invalid Supabase session' }), { status: 401, headers: { ...cors, 'Content-Type': 'application/json' } });
-    }
-    const user = await userResp.json();
-    const userId = user?.id;
-    if (!userId) {
-      return new Response(JSON.stringify({ error: 'No user id' }), { status: 401, headers: { ...cors, 'Content-Type': 'application/json' } });
+    // Get channel info
+    let channelInfo = { channel_id: null, platform_username: 'YouTube Channel' };
+    
+    if (tokenData.access_token) {
+      try {
+        const channelResponse = await fetch(
+          'https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true',
+          { headers: { 'Authorization': `Bearer ${tokenData.access_token}` } }
+        );
+        
+        if (channelResponse.ok) {
+          const channelData = await channelResponse.json();
+          if (channelData.items && channelData.items.length > 0) {
+            const channel = channelData.items[0];
+            channelInfo = {
+              channel_id: channel.id,
+              platform_username: channel.snippet.title
+            };
+          }
+        }
+      } catch (error) {
+        console.error('Failed to get channel info:', error);
+      }
     }
 
-    // 5) Persist tokens (service key on server only)
-    const upsert = await fetch(`${env.SUPABASE_URL}/rest/v1/oauth_tokens`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': env.SUPABASE_SERVICE_KEY,
-        'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-        'Prefer': 'resolution=merge-duplicates'
-      },
-      body: JSON.stringify([{
+    // Save to database
+    const expiresAt = new Date(Date.now() + (tokenData.expires_in * 1000)).toISOString();
+    const now = new Date().toISOString();
+    
+    const { error: dbError } = await supabase
+      .from('streaming_connections')
+      .upsert({
         user_id: userId,
-        provider: 'youtube',
-        access_token: data.access_token,
-        refresh_token: data.refresh_token || null,
-        scope: data.scope || null,
-        token_type: data.token_type || 'Bearer',
-        expires_in: data.expires_in || null,
-        obtained_at: new Date().toISOString()
-      }])
-    });
+        platform: 'youtube',
+        platform_user_id: channelInfo.channel_id,
+        platform_username: channelInfo.platform_username,
+        access_token: tokenData.access_token,
+        refresh_token: tokenData.refresh_token,
+        expires_at: expiresAt,
+        is_active: true,
+        created_at: now,
+        updated_at: now
+      }, {
+        onConflict: 'user_id,platform'
+      });
 
-    if (!upsert.ok) {
-      const err = await upsert.text();
-      return new Response(JSON.stringify({ error: 'Failed to store tokens', details: err }), { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } });
+    if (dbError) {
+      console.error('Database error:', dbError);
+      return res.status(500).json({ error: 'Failed to save connection' });
     }
 
-    // 6) Done
-    return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { ...cors, 'Content-Type': 'application/json' } });
+    return res.status(200).json({
+      success: true,
+      channel_id: channelInfo.channel_id,
+      channel_title: channelInfo.platform_username
+    });
 
-  } catch (e) {
-    return new Response(JSON.stringify({ error: 'Server error', details: String(e) }), { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } });
+  } catch (error) {
+    console.error('Exchange error:', error);
+    return res.status(500).json({ error: error.message });
   }
 };
