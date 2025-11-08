@@ -530,7 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { alert('Please log in first'); return; }
 
-      const res = await fetch('/.netlify/functions/disconnect-twitch', {
+      const res = await fetch('/api/disconnect-twitch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user.id })
@@ -585,7 +585,7 @@ document.getElementById('kickBtn').addEventListener('click', async () => {
             return;
         }
         
-        const response = await fetch('/.netlify/functions/add-kick-channel', {
+        const response = await fetch('/api/add-kick-channel', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -627,7 +627,7 @@ async function savePlatformConnection(platform, data) {
             return;
         }
         
-        const response = await fetch('/.netlify/functions/save-connection', {
+        const response = await fetch('/api/save-connection', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -698,7 +698,7 @@ async function savePlatformConnection(platform, data) {
             
             if (state === 'twitch') {
                 try {
-                    const response = await fetch('/.netlify/functions/twitch-auth', {
+                    const response = await fetch('/api/twitch-auth', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ code })
@@ -720,7 +720,7 @@ async function savePlatformConnection(platform, data) {
 
             if (state === 'tiktok') {
                 try {
-                    const response = await fetch('/.netlify/functions/tiktok-auth', {
+                    const response = await fetch('/api/tiktok-auth', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ code })
@@ -889,7 +889,7 @@ alert('Channel URLs: ' + JSON.stringify(channelData));  // ADD THIS
         try {
             console.log('Setting up SEO optimization...');
             
-            const seoResponse = await fetch('/.netlify/functions/initialize-seo-profile', {
+            const seoResponse = await fetch('/api/initialize-seo-profile', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -952,7 +952,7 @@ async function connectKick() {
         
         console.log('Connecting Kick for user:', user.id);
         
-        const response = await fetch('/.netlify/functions/add-kick-channel', {
+        const response = await fetch('/api/add-kick-channel', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -992,7 +992,7 @@ async function disconnectTikTok() {
 }
     const userId = user.id ; 
 
-    const response = await fetch('/.netlify/functions/disconnect-tiktok', {
+    const response = await fetch('/api/disconnect-tiktok', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -1072,7 +1072,7 @@ async function disconnectPlatform(platform) {
     }
     const userId = user.id;
 
-    const response = await fetch(`/.netlify/functions/disconnect-${platform}`, {
+    const response = await fetch(`/api/disconnect-${platform}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
