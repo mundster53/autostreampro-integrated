@@ -29,7 +29,7 @@ module.exports = async function handler(req, res) {
     
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     authUrl.searchParams.set('client_id', process.env.GOOGLE_CLIENT_ID);
-    authUrl.searchParams.set('redirect_uri', 'https://www.autostreampro.com/auth/youtube');
+    authUrl.searchParams.set('redirect_uri', redirectUri);
     authUrl.searchParams.set('response_type', 'code');
     authUrl.searchParams.set('scope', 'https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly');
     authUrl.searchParams.set('access_type', 'offline');
@@ -61,7 +61,7 @@ module.exports = async function handler(req, res) {
           client_secret: process.env.GOOGLE_CLIENT_SECRET,
           code: code,
           grant_type: 'authorization_code',
-          redirect_uri: 'https://www.autostreampro.com/auth/youtube'
+          redirect_uri: 'https://www.autostreampro.com/auth/youtube.html'
         })
       });
 
