@@ -1491,6 +1491,7 @@ async function signOut() {
 }
 
 // Stream monitoring activation
+// Stream monitoring activation
 async function activateStreaming() {
     try {
         const btn = document.getElementById('goingLiveBtn');
@@ -1505,27 +1506,59 @@ async function activateStreaming() {
             return;
         }
         
-        const response = await fetch('https://autostreampro-backend-production.up.railway.app/api/activate-monitoring', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${session.access_token}`,
-                'Content-Type': 'application/json'
-            }
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            showToast('User not found', 'error');
+            btn.disabled = false;
+            btn.textContent = '🔴 Start Stream Monitoring';
+            return;
+        }
+        
+        // Get user's connected platforms
+        const { data: connections } = await supabase
+            .from('streaming_connections')
+            .select('platform, platform_username, channel')
+            .eq('user_id', user.id)
+            .eq('is_active', true);
+        
+        if (!connections || connections.length === 0) {
+            showToast('Please connect a platform first', 'error');
+            btn.disabled = false;
+            btn.textContent = '🔴 Start Stream Monitoring';
+            return;
+        }
+        
+        // Activate monitoring for each connected platform
+        const activationPromises = connections.map(conn => {
+            const channelId = conn.platform === 'kick' 
+                ? conn.platform_username 
+                : conn.channel;
+            
+            return fetch('https://autostreampro-backend-production.up.railway.app/api/activate-monitoring', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${session.access_token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: user.id,
+                    platform: conn.platform,
+                    channelId: channelId
+                })
+            });
         });
         
-        const result = await response.json();
+        const responses = await Promise.all(activationPromises);
+        const results = await Promise.all(responses.map(r => r.json()));
         
-        if (result.status === 'activated') {
+        // Check if any succeeded
+        const success = results.some(r => r.status === 'activated' || r.success);
+        
+        if (success) {
             btn.textContent = '✅ Monitoring Active';
             btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-            // Show center modal instead of toast
-            document.getElementById('modalClipsRemaining').textContent = result.clipsRemaining || 10;
-            document.getElementById('monitoringModal').style.display = 'flex';
-
-            // Auto-close after 5 seconds
-            setTimeout(() => {
-            closeMonitoringModal();
-            }, 5000);
+            showToast('Stream monitoring activated!', 'success');
             
             // Reset button after 4 hours
             setTimeout(() => {
@@ -1533,10 +1566,15 @@ async function activateStreaming() {
                 btn.textContent = '🔴 Start Stream Monitoring';
                 btn.style.background = '';
             }, 14400000);
-
-        } else if (result.status === 'limit_reached') {
-            showToast(`Daily limit reached (${result.clipsToday} clips)`, 'warning');
-            btn.textContent = '⚠️ Daily Limit Reached';
+        } else {
+            const limitReached = results.some(r => r.status === 'limit_reached');
+            if (limitReached) {
+                showToast('Daily limit reached', 'warning');
+                btn.textContent = '⚠️ Daily Limit Reached';
+            } else {
+                showToast('Failed to activate monitoring', 'error');
+                btn.textContent = '🔴 Start Stream Monitoring';
+            }
             btn.disabled = false;
         }
     } catch (error) {
