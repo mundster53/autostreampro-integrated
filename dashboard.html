@@ -1048,8 +1048,9 @@
                         <button class="action-btn" onclick="window.location.href='/analytics.html'">
                             📊 View Analytics
                         </button>
-                        <button id="goingLiveBtn" class="action-btn" onclick="activateStreaming()">
-                            🔴 Start Stream Monitoring
+                        <button id="goingLiveBtn" class="action-btn" onclick="toggleMonitoring()">
+                            <span id="monitoringStatus">🔴 Start Monitoring</span>
+                            <span id="monitoringDetails" style="display:none; font-size:12px; opacity:0.8;"></span>
                         </button>
                         <button class="action-btn secondary" onclick="manageContent()">
                             📝 Manage Content
@@ -1095,6 +1096,68 @@ async function loadUserThreshold() {
         document.getElementById('thresholdValue').textContent = threshold + '%';
     }
 }
+
+// Load monitoring status
+async function loadMonitoringStatus() {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        const { data: connections } = await supabase
+            .from('streaming_connections')
+            .select('platform, monitor, status, last_checked_at')
+            .eq('user_id', user.id)
+            .eq('is_active', true);
+        
+        if (!connections || connections.length === 0) {
+            updateMonitoringButton(false, null);
+            return;
+        }
+        
+        const activeMonitoring = connections.find(c => c.monitor === true);
+        
+        if (activeMonitoring) {
+            updateMonitoringButton(true, activeMonitoring);
+        } else {
+            updateMonitoringButton(false, null);
+        }
+        
+    } catch (error) {
+        console.error('Failed to load monitoring status:', error);
+    }
+}
+
+function updateMonitoringButton(isActive, connectionData) {
+    const btn = document.getElementById('goingLiveBtn');
+    const statusSpan = document.getElementById('monitoringStatus');
+    const detailsSpan = document.getElementById('monitoringDetails');
+    
+    if (isActive && connectionData) {
+        btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        statusSpan.textContent = '✅ Monitoring Active';
+        
+        if (connectionData.last_checked_at) {
+            const lastCheck = new Date(connectionData.last_checked_at);
+            const timeAgo = getTimeAgo(lastCheck);
+            detailsSpan.textContent = `Last checked: ${timeAgo}`;
+            detailsSpan.style.display = 'block';
+        }
+    } else {
+        btn.style.background = '';
+        statusSpan.textContent = '🔴 Start Monitoring';
+        detailsSpan.style.display = 'none';
+    }
+}
+
+function getTimeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    if (seconds < 60) return `${seconds}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h ago`;
+}
+
 
 // Save threshold
 async function saveThreshold() {
@@ -1492,98 +1555,102 @@ async function signOut() {
 
 // Stream monitoring activation
 // Stream monitoring activation
-async function activateStreaming() {
+async function toggleMonitoring() {
     try {
         const btn = document.getElementById('goingLiveBtn');
+        const statusSpan = document.getElementById('monitoringStatus');
         btn.disabled = true;
-        btn.textContent = '⏳ Activating...';
+        statusSpan.textContent = '⏳ Processing...';
         
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
             showToast('Please log in first', 'error');
             btn.disabled = false;
-            btn.textContent = '🔴 Start Stream Monitoring';
+            statusSpan.textContent = '🔴 Start Monitoring';
             return;
         }
         
-        // Get current user
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             showToast('User not found', 'error');
             btn.disabled = false;
-            btn.textContent = '🔴 Start Stream Monitoring';
+            statusSpan.textContent = '🔴 Start Monitoring';
             return;
         }
         
-        // Get user's connected platforms
+        // Get current monitoring status
         const { data: connections } = await supabase
             .from('streaming_connections')
-            .select('platform, platform_username, channel')
+            .select('platform, monitor, platform_username, channel')
             .eq('user_id', user.id)
             .eq('is_active', true);
         
         if (!connections || connections.length === 0) {
             showToast('Please connect a platform first', 'error');
             btn.disabled = false;
-            btn.textContent = '🔴 Start Stream Monitoring';
+            statusSpan.textContent = '🔴 Start Monitoring';
             return;
         }
         
-        // Activate monitoring for each connected platform
-        const activationPromises = connections.map(conn => {
-            const channelId = conn.platform === 'kick' 
-                ? conn.platform_username 
-                : conn.channel;
-            
-            return fetch('https://autostreampro-backend-production.up.railway.app/api/activate-monitoring', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${session.access_token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: user.id,
-                    platform: conn.platform,
-                    channelId: channelId
-                })
-            });
-        });
+        // Check if any monitoring is currently active
+        const hasActiveMonitoring = connections.some(c => c.monitor === true);
         
-        const responses = await Promise.all(activationPromises);
-        const results = await Promise.all(responses.map(r => r.json()));
-        
-        // Check if any succeeded
-        const success = results.some(r => r.status === 'activated' || r.success);
-        
-        if (success) {
-            btn.textContent = '✅ Monitoring Active';
-            btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-            showToast('Stream monitoring activated!', 'success');
-            
-            // Reset button after 4 hours
-            setTimeout(() => {
-                btn.disabled = false;
-                btn.textContent = '🔴 Start Stream Monitoring';
-                btn.style.background = '';
-            }, 14400000);
+        if (hasActiveMonitoring) {
+            // PAUSE monitoring
+            await pauseMonitoring(user.id, connections);
+            showToast('Monitoring paused', 'success');
+            updateMonitoringButton(false, null);
         } else {
-            const limitReached = results.some(r => r.status === 'limit_reached');
-            if (limitReached) {
-                showToast('Daily limit reached', 'warning');
-                btn.textContent = '⚠️ Daily Limit Reached';
-            } else {
-                showToast('Failed to activate monitoring', 'error');
-                btn.textContent = '🔴 Start Stream Monitoring';
-            }
-            btn.disabled = false;
+            // START monitoring
+            await startMonitoring(user.id, session.access_token, connections);
+            showToast('Monitoring activated!', 'success');
+            await loadMonitoringStatus();
         }
+        
+        btn.disabled = false;
+        
     } catch (error) {
-        console.error('Failed to activate monitoring:', error);
-        showToast('Failed to activate monitoring', 'error');
+        console.error('Failed to toggle monitoring:', error);
+        showToast('Failed to update monitoring', 'error');
         const btn = document.getElementById('goingLiveBtn');
         btn.disabled = false;
-        btn.textContent = '🔴 Start Stream Monitoring';
+        await loadMonitoringStatus();
     }
+}
+
+async function startMonitoring(userId, accessToken, connections) {
+    const activationPromises = connections.map(conn => {
+        const channelId = conn.platform === 'kick' 
+            ? conn.platform_username 
+            : conn.channel;
+        
+        return fetch('https://autostreampro-backend-production.up.railway.app/api/activate-monitoring', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: userId,
+                platform: conn.platform,
+                channelId: channelId
+            })
+        });
+    });
+    
+    await Promise.all(activationPromises);
+}
+
+async function pauseMonitoring(userId, connections) {
+    const updatePromises = connections.map(conn => {
+        return supabase
+            .from('streaming_connections')
+            .update({ monitor: false, updated_at: new Date().toISOString() })
+            .eq('user_id', userId)
+            .eq('platform', conn.platform);
+    });
+    
+    await Promise.all(updatePromises);
 }
 
 function viewAnalytics() {
@@ -1610,6 +1677,7 @@ function refreshDashboard() {
     loadUserStats();
     loadPlatformConnections();
     loadClips();
+    loadMonitoringStatus();
 }
 
 // Initialize dashboard on page load
@@ -1617,6 +1685,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Dashboard loaded');
     loadDashboard();
     checkDiscordConnection();
+    loadMonitoringStatus();
     
     // Refresh data every 30 seconds
     // Clear any existing interval first
