@@ -86,6 +86,9 @@ module.exports = async function handler(req, res) {
         refresh_token: tokenData.refresh_token,
         expires_at: expiresAt,
         is_active: true,
+        monitor: true,
+        status: 'offline',
+        next_check_at: now,
         created_at: now,
         updated_at: now
       }, {
