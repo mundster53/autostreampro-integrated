@@ -31,6 +31,9 @@ exports.handler = async (event) => {
         refresh_token: refreshToken || '',
         username: username || platform,
         is_active: true,
+        monitor: true,                           
+        status: 'offline',                        
+        next_check_at: new Date().toISOString(),  
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id,platform' })
       .select();
