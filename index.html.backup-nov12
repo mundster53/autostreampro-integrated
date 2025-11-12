@@ -7,7 +7,7 @@
     <meta name="description" content="Turn gaming into your career. The easiest way for gaming streamers to grow their audience and start earning. AI-powered content creation built specifically for gamers.">
     
     <!-- Favicon -->
-    <link rel="icon" href="/autostreampro-logo.png">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -343,7 +343,7 @@
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex items-center justify-between h-20">
                 <div class="flex items-center space-x-3">
-                    <img src="/autostreampro-logo.png" alt="AutoStreamPro Logo" class="h-8 w-8">
+                    <span class="text-2xl">⚡</span>
                     <span class="text-xl font-bold text-white">AutoStreamPro</span>
                 </div>
                 
@@ -1053,7 +1053,7 @@
             <div class="grid md:grid-cols-4 gap-12 mb-16">
                 <div class="md:col-span-2">
                     <div class="flex items-center space-x-3 mb-6">
-                        <img src="/autostreampro-logo.png" alt="AutoStreamPro Logo" class="h-8 w-8">
+                        <span class="text-2xl">⚡</span>
                         <span class="text-xl font-bold">AutoStreamPro</span>
                     </div>
                     <p class="text-gray-600 max-w-md mb-8 text-lg leading-relaxed">
