@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoStreamPro - Turn Gaming Into Your Career</title>
+    <meta name="description" content="Turn gaming into your career. The easiest way for gaming streamers to grow their audience and start earning. AI-powered content creation built specifically for gamers.">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="/autostreampro-logo.png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Hero Background with Premium Graphics */
+        .hero-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.3) 0%, transparent 40%),
+                radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.25) 0%, transparent 40%),
+                radial-gradient(circle at 40% 80%, rgba(59, 130, 246, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 90% 70%, rgba(16, 185, 129, 0.15) 0%, transparent 40%);
+            animation: float 20s ease-in-out infinite;
+        }
+        
+        .hero-bg::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+        
+        /* Professional Navigation */
+        .nav-glass {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-link {
+            color: white;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        
+        .nav-link:hover {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Premium Cards */
+        .feature-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Pricing Cards */
+        .pricing-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px 32px;
+            border: 2px solid rgba(229, 231, 235, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .pricing-card:hover {
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+            transform: translateY(-4px);
+        }
+        
+        .pricing-card.featured {
+            border-color: #3b82f6;
+            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.25);
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        }
+        
+        /* Premium Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            font-size: 16px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        /* Text Gradient */
+        .text-gradient {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .counter {
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-30px) rotate(1deg); }
+            66% { transform: translateY(-20px) rotate(-1deg); }
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.6); }
+        }
+        
+        .section-padding {
+            padding: 120px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .section-padding {
+                padding: 80px 0;
+            }
+        }
+        
+        /* Background Shapes */
+        .bg-shape {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+            filter: blur(40px);
+            animation: float 15s ease-in-out infinite;
+        }
+        
+        .bg-shape-1 {
+            width: 300px;
+            height: 300px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        
+        .bg-shape-2 {
+            width: 200px;
+            height: 200px;
+            top: 60%;
+            right: 15%;
+            animation-delay: 5s;
+        }
+        
+        .bg-shape-3 {
+            width: 400px;
+            height: 400px;
+            top: 30%;
+            left: 60%;
+            animation-delay: 10s;
+        }
+
+        /* FAQ Styles */
+        .faq-item {
+            background: rgba(248, 250, 252, 0.8);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item h3 {
+            color: #1e293b;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .faq-item p {
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .pricing-table {
+            background: white;
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .pricing-table th,
+        .pricing-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+        }
+
+        .pricing-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .pricing-table .popular {
+            background: #3b82f6;
+            color: white;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body class="antialiased bg-white">
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center space-x-3">
+                    <img src="/autostreampro-logo.png" alt="AutoStreamPro Logo" class="h-8 w-8">
+                    <span class="text-xl font-bold text-white">AutoStreamPro</span>
+                </div>
+                
+                <div class="hidden lg:flex items-center space-x-2">
+                    <a href="#how-it-works" class="nav-link">How it Works</a>
+                    <a href="#features" class="nav-link">Features</a>
+                    <a href="#pricing" class="nav-link">Pricing</a>
+                    <a href="#faq" class="nav-link">FAQ</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="https://www.autostreampro.com/login" class="nav-link">Sign In</a>
+                    <a class='btn-primary' href='signup.html'>
+                        Start Free Trial
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-bg text-white relative min-h-screen flex items-center">
+        <!-- Background Shapes -->
+        <div class="bg-shape bg-shape-1"></div>
+        <div class="bg-shape bg-shape-2"></div>
+        <div class="bg-shape bg-shape-3"></div>
+        
+        <div class="max-w-7xl mx-auto px-6 py-32 relative z-10">
+            <div class="text-center max-w-5xl mx-auto">
+                
+                <!-- Status Badge -->
+                <div class="inline-flex items-center px-6 py-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-medium mb-8">
+                    <div class="w-2 h-2 bg-green-400 rounded-full mr-3 animate-pulse"></div>
+                    Built Specifically for Gaming Streamers
+                </div>
+                
+                <!-- Main Headline -->
+                <h1 class="text-6xl md:text-8xl lg:text-9xl font-black leading-tight mb-8 text-white">
+                    Turn Gaming Into Your
+                    <span class="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400">
+                        Career
+                    </span>
+                </h1>
+                
+                <!-- Subheadline -->
+                <p class="text-xl md:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed mb-12 font-medium">
+                    The easiest way for gaming streamers to grow their audience and start earning real money. AI handles the content creation and marketing so you can focus on what you love—gaming.
+                </p>
+                
+                <!-- CTA Buttons -->
+                <div class="flex flex-col sm:flex-row gap-6 justify-center mb-20">
+                    <a class='btn-primary text-lg' href='signup.html'>
+                        Start Free Trial
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                        </svg>
+                    </a>
+                    <button onclick="scrollToFeatures()" class="btn-secondary text-lg">
+                        See How It Works
+                    </button>
+                </div>
+                
+                <!-- Social Proof Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
+                    <div class="text-center">
+                        <div class="text-4xl md:text-5xl font-bold text-white counter mb-2" data-target="20">0</div>
+                        <div class="text-white/80 text-sm uppercase tracking-wide">Hours Saved Per Week</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl md:text-5xl font-bold text-white mb-2">ALL</div>
+                        <div class="text-white/80 text-sm uppercase tracking-wide">Streamable Games Supported</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl md:text-5xl font-bold text-white counter mb-2" data-target="95">0</div>
+                        <div class="text-white/80 text-sm uppercase tracking-wide">AI Accuracy Rate</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl md:text-5xl font-bold text-white counter mb-2" data-target="5">0</div>
+                        <div class="text-white/80 text-sm uppercase tracking-wide">Platforms Supported</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="section-padding bg-white relative">
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            
+            <!-- Section Header -->
+            <div class="text-center mb-20 fade-in">
+                <h2 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+                    How it <span class="text-gradient">works</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                    From your first stream to making it your career. AutoStreamPro handles the marketing while you focus on gaming.
+                </p>
+            </div>
+
+            <!-- How It Works Steps -->
+            <div class="grid lg:grid-cols-4 gap-8 mb-16">
+                
+                <!-- Step 1: Stream -->
+                <div class="text-center fade-in">
+                    <div class="relative mb-8">
+                        <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div class="absolute -top-3 -right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-blue-500">
+                            <span class="text-blue-600 font-bold text-sm">1</span>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Stream Your Games</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Play your favorite games on Twitch, YouTube, or any platform. Our AI monitors your stream in real-time for epic moments.
+                    </p>
+                </div>
+                
+                <!-- Step 2: AI Detection -->
+                <div class="text-center fade-in" style="animation-delay: 0.2s;">
+                    <div class="relative mb-8">
+                        <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                            </svg>
+                        </div>
+                        <div class="absolute -top-3 -right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-purple-500">
+                            <span class="text-purple-600 font-bold text-sm">2</span>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">AI Finds Epic Moments</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Advanced AI detects kills, clutches, funny fails, and viral moments. It creates perfect clips with engaging titles automatically.
+                    </p>
+                </div>
+                
+                <!-- Step 3: Auto Post -->
+                <div class="text-center fade-in" style="animation-delay: 0.4s;">
+                    <div class="relative mb-8">
+                        <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
+                            </svg>
+                        </div>
+                        <div class="absolute -top-3 -right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-green-500">
+                            <span class="text-green-600 font-bold text-sm">3</span>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Auto-Share Everywhere</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Clips automatically post to Twitter, Instagram, TikTok, and YouTube Shorts with optimized timing for maximum reach.
+                    </p>
+                </div>
+                
+                <!-- Step 4: Grow & Earn -->
+                <div class="text-center fade-in" style="animation-delay: 0.6s;">
+                    <div class="relative mb-8">
+                        <div class="w-20 h-20 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                        </div>
+                        <div class="absolute -top-3 -right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-yellow-500">
+                            <span class="text-yellow-600 font-bold text-sm">4</span>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Grow & Earn Money</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Watch your followers and revenue grow as viral clips bring new viewers to your streams and unlock sponsorship opportunities.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Process Flow Visualization -->
+            <div class="bg-gray-50 rounded-3xl p-12 fade-in">
+                <div class="text-center mb-12">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">The Complete Automation Process</h3>
+                    <p class="text-gray-600 max-w-2xl mx-auto">See how AutoStreamPro turns every gaming session into content that grows your audience and income</p>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Input -->
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m-9 4h10a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Your Gaming</h4>
+                        <p class="text-sm text-gray-600">Stream any game on any platform</p>
+                    </div>
+                    
+                    <!-- Processing -->
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">AI Magic</h4>
+                        <p class="text-sm text-gray-600">Clip detection, editing & optimization</p>
+                    </div>
+                    
+                    <!-- Output -->
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Growth & Revenue</h4>
+                        <p class="text-sm text-gray-600">More followers, views & income</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="section-padding bg-gray-50 relative">
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            
+            <!-- Section Header -->
+            <div class="text-center mb-20 fade-in">
+                <h2 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+                    Everything gaming streamers need to <span class="text-gradient">succeed</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                    From your first stream to making it your full-time job. Our AI tools handle the business side so you can focus on gaming and building your community.
+                </p>
+            </div>
+
+            <!-- Features Grid -->
+            <div class="grid lg:grid-cols-3 gap-10">
+                
+                <!-- AI Content Engine -->
+                <div class="feature-card fade-in">
+                    <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-8 shadow-lg">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Gaming Content AI</h3>
+                    <p class="text-gray-600 mb-8 text-lg leading-relaxed">
+                        Never run out of stream ideas again. Get viral titles, engaging thumbnails, and trending gaming content suggestions—perfect for any game you play.
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span class="text-gray-700 font-medium">Game-specific title ideas</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span class="text-gray-700 font-medium">Trending gaming topics</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span class="text-gray-700 font-medium">Stream description templates</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Growth Automation -->
+                <div class="feature-card fade-in">
+                    <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-8 shadow-lg">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Simple Growth Tools</h3>
+                    <p class="text-gray-600 mb-8 text-lg leading-relaxed">
+                        Grow your audience the easy way. Schedule posts, engage with viewers, and expand to new platforms—all automated so you can focus on streaming.
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span class="text-gray-700 font-medium">Auto-schedule your content</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span class="text-gray-700 font-medium">Build your community</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span class="text-gray-700 font-medium">Track your growth</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Revenue Intelligence -->
+                <div class="feature-card fade-in">
+                    <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-8 shadow-lg">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Start Earning Money</h3>
+                    <p class="text-gray-600 mb-8 text-lg leading-relaxed">
+                        Turn your streams into income. Discover monetization opportunities, optimize your earnings, and learn what works—even as a complete beginner.
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            <span class="text-gray-700 font-medium">Find monetization opportunities</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            <span class="text-gray-700 font-medium">Track your earnings</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            <span class="text-gray-700 font-medium">Learn what works</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="section-padding bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            
+            <!-- Section Header -->
+            <div class="text-center mb-20 fade-in">
+                <h2 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+                    Pricing that <span class="text-gradient">scales</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    Start free, upgrade when you're ready. No hidden fees, cancel anytime.
+                </p>
+            </div>
+            
+            <!-- Pricing Grid -->
+            <div class="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                
+                <!-- Starter Plan -->
+                <div class="pricing-card fade-in">
+                    <div class="mb-8">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Starter</h3>
+                        <div class="flex items-baseline">
+                            <span class="text-5xl font-bold text-gray-900">$20</span>
+                            <span class="text-gray-500 ml-2">/month</span>
+                        </div>
+                        <p class="text-gray-600 mt-2">Perfect for new gamers</p>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-10">
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">AI clip selection</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">Multi-platform automation</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">Basic analytics</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">Email support</span>
+                        </li>
+                    </ul>
+                    
+                    <a class='btn-primary w-full text-center' href='signup.html?plan=starter'>
+                        Start Free Trial
+                    </a>
+                </div>
+
+                <!-- Pro Plan (Featured) -->
+                <div class="pricing-card featured fade-in" style="animation-delay: 0.2s;">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <span class="bg-blue-500 text-white px-6 py-2 rounded-full text-sm font-semibold shadow-lg">Most Popular</span>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Pro</h3>
+                        <div class="flex items-baseline">
+                            <span class="text-5xl font-bold text-gray-900">$50</span>
+                            <span class="text-gray-500 ml-2">/month</span>
+                        </div>
+                        <p class="text-gray-600 mt-2">For growing streamers</p>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-10">
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">Everything in Starter</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">Multi-platform automation</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">Advanced analytics</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">Priority support</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">Custom templates</span>
+                        </li>
+                    </ul>
+                    
+                    <a class='btn-primary w-full text-center' href='signup.html?plan=pro'>
+                        Start Free Trial
+                    </a>
+                </div>
+
+                <!-- Enterprise Plan -->
+                <div class="pricing-card fade-in" style="animation-delay: 0.4s;">
+                    <div class="mb-8">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Enterprise</h3>
+                        <div class="flex items-baseline">
+                            <span class="text-5xl font-bold text-gray-900">$75</span>
+                            <span class="text-gray-500 ml-2">/month</span>
+                        </div>
+                        <p class="text-gray-600 mt-2">For teams and agencies</p>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-10">
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">Everything in Pro</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">White-label options</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">API access</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">Dedicated support</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">Custom integrations</span>
+                        </li>
+                    </ul>
+                    
+                    <a class='btn-primary w-full text-center' href='signup.html?plan=enterprise'>
+                        Start Free Trial
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="section-padding bg-gray-50">
+        <div class="max-w-4xl mx-auto px-6">
+            
+            <!-- Section Header -->
+            <div class="text-center mb-16 fade-in">
+                <h2 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+                    Frequently asked <span class="text-gradient">questions</span>
+                </h2>
+                <p class="text-xl text-gray-600">
+                    Everything you need to know about AutoStreamPro for gaming streamers.
+                </p>
+            </div>
+            
+            <!-- FAQ Items -->
+            <div class="space-y-6">
+                
+                <!-- FAQ 1 -->
+                <div class="faq-item fade-in">
+                    <h3>What games does AutoStreamPro support?</h3>
+                    <p>AutoStreamPro supports ALL games that can be streamed on Twitch, YouTube, and other platforms. Whether you play AAA titles, indie games, retro games, or anything in between - our AI understands your content and generates relevant suggestions.</p>
+                </div>
+                
+                <!-- FAQ 2 -->
+                <div class="faq-item fade-in" style="animation-delay: 0.1s;">
+                    <h3>Do I need technical skills to use AutoStreamPro?</h3>
+                    <p>Not at all! AutoStreamPro is designed for beginners. Just connect your streaming accounts, and our AI handles everything automatically. No coding, no complex setup - just simple automation that works.</p>
+                </div>
+                
+                <!-- FAQ 3 -->
+                <div class="faq-item fade-in" style="animation-delay: 0.2s;">
+                    <h3>How quickly will I see results?</h3>
+                    <p>Most streamers see improved engagement within the first week. Our AI immediately starts generating better titles and descriptions, while growth automation begins working in the background. Individual results may vary based on content quality and consistency.</p>
+                </div>
+                
+                <!-- FAQ 4 -->
+                <div class="faq-item fade-in" style="animation-delay: 0.3s;">
+                    <h3>How much does AutoStreamPro cost after the free trial?</h3>
+                    <p>We offer flexible pricing to match your streaming goals:</p>
+                    
+                    <table class="pricing-table">
+                        <thead>
+                            <tr>
+                                <th>Plan</th>
+                                <th>Price</th>
+                                <th>Best For</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Starter</td>
+                                <td>$20/month</td>
+                                <td>New streamers getting started</td>
+                            </tr>
+                            <tr class="popular">
+                                <td>Pro 🏆</td>
+                                <td>$50/month</td>
+                                <td>Serious streamers building their brand</td>
+                            </tr>
+                            <tr>
+                                <td>Enterprise</td>
+                                <td>$75/month</td>
+                                <td>Professional streamers and teams</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <p style="margin-top: 16px;">All plans include a 14-day free trial. Individual results may vary. No guarantee of income or specific results.</p>
+                    
+                    <a href="#how-it-works" style="display: inline-block; background: #3b82f6; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; margin-top: 12px; font-weight: 500;">View How It Works & Pricing</a>
+                </div>
+                
+                <!-- FAQ 5 -->
+                <div class="faq-item fade-in" style="animation-delay: 0.4s;">
+                    <h3>Can I cancel anytime?</h3>
+                    <p>Yes! All plans are month-to-month with no long-term contracts. Cancel anytime from your dashboard, and you'll keep access until the end of your billing period. No cancellation fees or hidden charges.</p>
+                </div>
+                
+                <!-- FAQ 6 -->
+                <div class="faq-item fade-in" style="animation-delay: 0.5s;">
+                    <h3>What platforms does AutoStreamPro work with?</h3>
+                    <p>Currently we support Twitch, YouTube, Twitter, Instagram, and TikTok. We're constantly adding new platforms based on user feedback. All plans include multi-platform automation designed to help build consistent social media presence.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Beta Program Section -->
+    <section id="testimonials" class="section-padding bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            
+            <!-- Section Header -->
+            <div class="text-center mb-20 fade-in">
+                <h2 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+                    Join the <span class="text-gradient">beta program</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Be among the first gaming streamers to experience the future of content automation. Beta testers get exclusive benefits and help shape the product.
+                </p>
+            </div>
+            
+            <!-- Beta Benefits Grid -->
+            <div class="grid lg:grid-cols-3 gap-8">
+                
+                <!-- Early Access -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg fade-in">
+                    <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Early Access</h3>
+                    <p class="text-gray-700 leading-relaxed mb-6">
+                        Get immediate access to all AutoStreamPro features before the public launch. Be the first to automate your gaming content and build your audience.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span class="text-gray-700 font-medium">Access all features first</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span class="text-gray-700 font-medium">Beta pricing locked in</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Shape the Product -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg fade-in" style="animation-delay: 0.2s;">
+                    <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a1 1 0 01-1-1V9a1 1 0 011-1h1a2 2 0 100-4H4a1 1 0 01-1-1V4a1 1 0 011-1h3a1 1 0 001-1z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Shape the Product</h3>
+                    <p class="text-gray-700 leading-relaxed mb-6">
+                        Your feedback directly influences new features and improvements. Help us build the perfect tool for gaming streamers by telling us what you need.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            <span class="text-gray-700 font-medium">Direct line to developers</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            <span class="text-gray-700 font-medium">Request game-specific features</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Exclusive Benefits -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg fade-in" style="animation-delay: 0.4s;">
+                    <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Exclusive Benefits</h3>
+                    <p class="text-gray-700 leading-relaxed mb-6">
+                        Beta testers get special perks that won't be available after launch. Lock in your advantages as an early supporter of AutoStreamPro.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span class="text-gray-700 font-medium">Lifetime beta pricing</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span class="text-gray-700 font-medium">Beta tester badge & recognition</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Beta CTA -->
+            <div class="text-center mt-16 fade-in">
+                <h3 class="text-3xl font-bold text-gray-900 mb-6">Ready to be a beta pioneer?</h3>
+                <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+                    Limited beta spots available. Join now and help us build the ultimate gaming streamer automation platform.
+                </p>
+                <a class='btn-primary text-lg' href='signup.html'>
+                    Join Beta Program
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section-padding bg-gray-900 text-white relative overflow-hidden">
+        <!-- Background Elements -->
+        <div class="absolute inset-0">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+            <div class="absolute top-3/4 right-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style="animation-delay: 2s;"></div>
+        </div>
+        
+        <div class="max-w-4xl mx-auto px-6 text-center fade-in relative z-10">
+            <h2 class="text-5xl md:text-6xl font-bold mb-8">
+                Ready to turn gaming into income?
+            </h2>
+            <p class="text-xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
+                Join the beta and be among the first gaming streamers to automate their success. Start your free trial today—no credit card required.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                <a class='btn-primary text-lg' href='signup.html'>
+                    Start Free Trial
+                </a>
+                <button onclick="scrollToFeatures()" class="btn-secondary text-lg">
+                    See How It Works
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-white py-20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-12 mb-16">
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <img src="/autostreampro-logo.png" alt="AutoStreamPro Logo" class="h-8 w-8">
+                        <span class="text-xl font-bold">AutoStreamPro</span>
+                    </div>
+                    <p class="text-gray-600 max-w-md mb-8 text-lg leading-relaxed">
+                        The easiest way for gaming streamers to grow their audience and start earning. AI-powered tools built specifically for the gaming community.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-gray-900 mb-6 text-lg">Product</h4>
+                    <ul class="space-y-4">
+                        <li><a href="#how-it-works" class="text-gray-600 hover:text-gray-900 transition-colors">How it Works</a></li>
+                        <li><a href="#features" class="text-gray-600 hover:text-gray-900 transition-colors">Features</a></li>
+                        <li><a href="#pricing" class="text-gray-600 hover:text-gray-900 transition-colors">Pricing</a></li>
+                        <li><a href="dashboard.html" class="text-gray-600 hover:text-gray-900 transition-colors">Login</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-gray-900 mb-6 text-lg">Support</h4>
+                    <ul class="space-y-4">
+                        <li><a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">Help Center</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">Contact</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">Privacy</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-200 pt-8">
+                <p class="text-center text-gray-500">
+                    © 2024 AutoStreamPro. All rights reserved. Individual results may vary. No guarantee of income or specific results.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Navigation scroll effect
+        let hasScrolled = false;
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 20 && !hasScrolled) {
+                navbar.classList.add('nav-glass');
+                hasScrolled = true;
+            } else if (window.scrollY <= 20 && hasScrolled) {
+                navbar.classList.remove('nav-glass');
+                hasScrolled = false;
+            }
+        });
+        
+        // Smooth scroll function
+        function scrollToFeatures() {
+            document.getElementById('how-it-works').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        }
+        
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+        
+        // Counter animation
+        function animateCounter(element) {
+            const target = parseInt(element.getAttribute('data-target'));
+            let current = 0;
+            const increment = target / 50;
+            const isPercentage = target === 95;
+            
+            const updateCounter = () => {
+                if (current < target) {
+                    current += increment;
+                    element.textContent = Math.floor(current) + (isPercentage ? '%' : '');
+                    requestAnimationFrame(updateCounter);
+                } else {
+                    element.textContent = target + (isPercentage ? '%' : '');
+                }
+            };
+            
+            updateCounter();
+        }
+        
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Observe fade-in elements
+            const fadeElements = document.querySelectorAll('.fade-in');
+            fadeElements.forEach(el => observer.observe(el));
+            
+            // Observe and animate counters
+            const counters = document.querySelectorAll('.counter');
+            const counterObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateCounter(entry.target);
+                        counterObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+            
+            counters.forEach(counter => {
+                counterObserver.observe(counter);
+            });
+        });
+    </script>
+    <div style="text-align: center; margin: 40px 0; padding: 20px;">
+        <a href="/terms-of-use.html" style="color: #4CAF50; text-decoration: none; font-size: 16px;">Terms of Service * * *</a>
+
+        <a href="/privacy-policy.html" style="color: #4CAF50; text-decoration: none; font-size: 16px;">Privacy Policy</a>
+    </div>
+
+</body>
+</html>
+</body>
+</html>

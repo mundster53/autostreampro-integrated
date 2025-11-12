@@ -53,32 +53,109 @@
             color: #374151;
             margin-bottom: 1rem;
         }
+
+        .error {
+            color: #dc2626;
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body>
     <div class="loading-container">
         <div class="logo">🎵 TikTok</div>
         <div class="spinner"></div>
-        <div class="message">Connecting your TikTok account...</div>
+        <div class="message" id="message">Connecting your TikTok account...</div>
+        <div class="error" id="error" style="display: none;"></div>
     </div>
 
-    <script>
-    // Get OAuth parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    const error = urlParams.get('error');
-    const state = urlParams.get('state');
+    <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    if (error) {
-        // Redirect back with error
-        window.location.href = '/onboarding.html?error=tiktok_failed';
-    } else if (code) {
-        // Redirect back with success
-        window.location.href = '/onboarding.html?tiktok=connected&code=' + code + '&state=' + state;
-    } else {
-        // No code or error
-        window.location.href = '/onboarding.html?error=tiktok_no_code';
+    // Initialize Supabase
+    const supabaseUrl = 'https://uztrgnuminvzfgnepuyh.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV6dHJnbnVtaW52emZnbmVwdXloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjU1NjExNjIsImV4cCI6MjA0MTEzNzE2Mn0.th23CgovLogeKna_2UNVKeyEpy6wdOWuaYWjCnL0SJc';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    async function handleTikTokCallback() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const error = urlParams.get('error');
+        const state = urlParams.get('state');
+
+        if (error) {
+            showError('TikTok authorization failed');
+            setTimeout(() => {
+                window.location.href = '/dashboard.html?error=tiktok_failed';
+            }, 2000);
+            return;
+        }
+
+        if (!code) {
+            showError('No authorization code received');
+            setTimeout(() => {
+                window.location.href = '/dashboard.html?error=tiktok_no_code';
+            }, 2000);
+            return;
+        }
+
+        try {
+            // Get current user
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            
+            if (userError || !user) {
+                throw new Error('Not authenticated');
+            }
+
+            updateMessage('Exchanging authorization code...');
+
+            // Exchange code for tokens via backend
+            const response = await fetch('https://api.autostreampro.com/api/tiktok-exchange', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    code: code,
+                    userId: user.id
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.error || 'Failed to connect TikTok');
+            }
+
+            updateMessage('TikTok connected successfully! ✓');
+            
+            // Redirect to dashboard with success
+            setTimeout(() => {
+                window.location.href = '/dashboard.html?tiktok=connected';
+            }, 1500);
+
+        } catch (err) {
+            console.error('TikTok callback error:', err);
+            showError(err.message);
+            setTimeout(() => {
+                window.location.href = '/dashboard.html?error=tiktok_failed';
+            }, 2000);
+        }
     }
-</script>
+
+    function updateMessage(text) {
+        document.getElementById('message').textContent = text;
+    }
+
+    function showError(text) {
+        document.querySelector('.spinner').style.display = 'none';
+        document.getElementById('message').style.display = 'none';
+        const errorDiv = document.getElementById('error');
+        errorDiv.textContent = text;
+        errorDiv.style.display = 'block';
+    }
+
+    // Run on page load
+    handleTikTokCallback();
+    </script>
 </body>
 </html>
