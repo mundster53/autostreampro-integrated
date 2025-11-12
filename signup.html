@@ -564,48 +564,53 @@
             'julia.elaine.lee@gmail.com'
         ];
         
-        // Validate promo code
-        async function validatePromoCode(code) {
-            if (!code || !code.trim()) {
-                return { valid: false, discount: 0 };
-            }
-            
-            try {
-                const { data, error } = await supabase
-                    .from('promo_codes')
-                    .select('*')
-                    .eq('code', code.toLowerCase())
-                    .eq('is_active', true)
-                    .single();
-                
-                if (error || !data) {
-                    return { valid: false, discount: 0 };
-                }
-                
-                // Check if expired
-                if (data.expires_at && new Date(data.expires_at) < new Date()) {
-                    return { valid: false, discount: 0, message: 'Promo code has expired' };
-                }
-                
-                // Check usage limits
-                if (data.max_uses && data.current_uses >= data.max_uses) {
-                    return { valid: false, discount: 0, message: 'Promo code usage limit reached' };
-                }
-                
-                return { 
-                    valid: true, 
-                    discount: data.discount_percentage || 0,
-                    discountType: data.discount_type || 'percentage',
-                    promoId: data.id,
-                    code: data.code,
-                    currentUses: data.current_uses || 0
-                };
-                
-            } catch (error) {
-                console.error('Error validating promo code:', error);
-                return { valid: false, discount: 0 };
-            }
+        // Validate promo code via API
+async function validatePromoCode(code) {
+    if (!code || !code.trim()) {
+        return { valid: false, discount: 0 };
+    }
+    
+    try {
+        console.log('🎫 Validating promo code via API:', code);
+        
+        const response = await fetch('https://autostreampro-backend-production.up.railway.app/api/validate-promo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ code: code.trim().toUpperCase() })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.valid) {
+            console.log('✅ Valid promo code:', data.promoCode);
+            return { 
+                valid: true, 
+                discount: data.promoCode.discountValue,
+                discountType: data.promoCode.discountType,
+                code: data.promoCode.code,
+                description: data.promoCode.description,
+                displayText: data.promoCode.displayText
+            };
+        } else {
+            console.log('❌ Invalid promo code');
+            return { 
+                valid: false, 
+                discount: 0, 
+                message: data.error || 'Invalid promo code' 
+            };
         }
+        
+    } catch (error) {
+        console.error('Error validating promo code:', error);
+        return { 
+            valid: false, 
+            discount: 0, 
+            message: 'Failed to validate promo code. Please try again.' 
+        };
+    }
+}
         
         // Create free account for 100% promo codes or family members (NEW ACCOUNTS ONLY)
         async function createFreeAccount(email, password, type, promoData = null) {
@@ -852,7 +857,7 @@
                     
                     if (promoData.valid) {
                         console.log('✅ Valid promo code:', promoData.discount + '% discount');
-                        document.getElementById('promo-success').textContent = `✅ ${promoData.discount}% discount applied!`;
+                        document.getElementById('promo-success').textContent = `✅ ${promoData.displayText || promoData.discount + '% discount'} applied!`;
                         document.getElementById('promo-success').style.display = 'block';
                     } else {
                         console.log('❌ Invalid promo code');
