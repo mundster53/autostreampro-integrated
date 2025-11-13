@@ -75,25 +75,57 @@ module.exports = async function handler(req, res) {
     const expiresAt = new Date(Date.now() + (tokenData.expires_in * 1000)).toISOString();
     const now = new Date().toISOString();
     
-    const { error: dbError } = await supabase
-      .from('streaming_connections')
-      .upsert({
-        user_id: userId,
-        platform: 'youtube',
-        platform_user_id: channelInfo.channel_id,
-        platform_username: channelInfo.platform_username,
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token,
-        expires_at: expiresAt,
-        is_active: true,
-        monitor: true,
-        status: 'offline',
-        next_check_at: now,
-        created_at: now,
-        updated_at: now
-      }, {
-        onConflict: 'user_id,platform'
-      });
+    // Check if connection exists
+const { data: existingConnection } = await supabase
+  .from('streaming_connections')
+  .select('id')
+  .eq('user_id', userId)
+  .eq('platform', 'youtube')
+  .single();
+
+let dbError;
+
+if (existingConnection) {
+  // UPDATE existing connection - explicitly set ALL fields
+  const { error } = await supabase
+    .from('streaming_connections')
+    .update({
+      platform_user_id: channelInfo.channel_id,
+      platform_username: channelInfo.platform_username,
+      access_token: tokenData.access_token,
+      refresh_token: tokenData.refresh_token,
+      expires_at: expiresAt,
+      is_active: true,
+      monitor: true,
+      status: 'offline',
+      next_check_at: now,
+      updated_at: now
+    })
+    .eq('id', existingConnection.id);
+  
+  dbError = error;
+} else {
+  // INSERT new connection
+  const { error } = await supabase
+    .from('streaming_connections')
+    .insert({
+      user_id: userId,
+      platform: 'youtube',
+      platform_user_id: channelInfo.channel_id,
+      platform_username: channelInfo.platform_username,
+      access_token: tokenData.access_token,
+      refresh_token: tokenData.refresh_token,
+      expires_at: expiresAt,
+      is_active: true,
+      monitor: true,
+      status: 'offline',
+      next_check_at: now,
+      created_at: now,
+      updated_at: now
+    });
+  
+  dbError = error;
+}
 
     if (dbError) {
       console.error('Database error:', dbError);
