@@ -1,4 +1,4 @@
-// api/check-kick-stream.js - Vercel Edge Function with debugging
+// api/check-kick-stream.js - Vercel Edge Function
 export const config = {
   runtime: 'edge',
 };
@@ -6,7 +6,6 @@ export const config = {
 export default async function handler(request) {
   const { searchParams } = new URL(request.url);
   const slug = searchParams.get('slug');
-  const debug = searchParams.get('debug') === 'true';
   
   if (!slug) {
     return new Response(JSON.stringify({ error: 'Missing slug parameter' }), {
@@ -27,8 +26,7 @@ export default async function handler(request) {
     if (!response.ok) {
       return new Response(JSON.stringify({ 
         live: false, 
-        error: `HTTP ${response.status}`,
-        debug: debug ? { status: response.status } : undefined
+        error: `HTTP ${response.status}`
       }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
@@ -37,21 +35,19 @@ export default async function handler(request) {
 
     const html = await response.text();
     
-    if (debug) {
-      // Return snippet of HTML for debugging
-      return new Response(JSON.stringify({
-        htmlLength: html.length,
-        snippet: html.substring(0, 500),
-        hasPlaylistUrl: html.includes('playlist.live-video.net'),
-        hasPlaybackUrl: html.includes('playback_url')
-      }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
+    // Pattern 1: Direct playlist.live-video.net URL
+    let hlsMatch = html.match(/https:\/\/[a-z0-9]+\.playlist\.live-video\.net\/[^"'\s]+\.m3u8/);
     
-    // Extract HLS URL
-    const hlsMatch = html.match(/https:\/\/[a-z0-9]+\.playlist\.live-video\.net\/[^"'\s]+\.m3u8/);
+    // Pattern 2: Extract from playback_url JSON field
+    if (!hlsMatch) {
+      const playbackMatch = html.match(/"playback_url"\s*:\s*"([^"]+)"/);
+      if (playbackMatch && playbackMatch[1]) {
+        const url = playbackMatch[1].replace(/\\u002F/g, '/').replace(/\\\//g, '/');
+        if (url.includes('.m3u8')) {
+          hlsMatch = [url];
+        }
+      }
+    }
     
     if (hlsMatch && hlsMatch[0]) {
       return new Response(JSON.stringify({
@@ -64,10 +60,7 @@ export default async function handler(request) {
       });
     }
 
-    return new Response(JSON.stringify({ 
-      live: false,
-      htmlLength: html.length
-    }), {
+    return new Response(JSON.stringify({ live: false }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
