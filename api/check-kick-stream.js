@@ -1,4 +1,4 @@
-// api/check-kick-stream.js - Vercel Edge Function
+// api/check-kick-stream.js - Vercel Edge Function with debugging
 export const config = {
   runtime: 'edge',
 };
@@ -6,6 +6,7 @@ export const config = {
 export default async function handler(request) {
   const { searchParams } = new URL(request.url);
   const slug = searchParams.get('slug');
+  const debug = searchParams.get('debug') === 'true';
   
   if (!slug) {
     return new Response(JSON.stringify({ error: 'Missing slug parameter' }), {
@@ -26,7 +27,8 @@ export default async function handler(request) {
     if (!response.ok) {
       return new Response(JSON.stringify({ 
         live: false, 
-        error: `HTTP ${response.status}` 
+        error: `HTTP ${response.status}`,
+        debug: debug ? { status: response.status } : undefined
       }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
@@ -34,6 +36,19 @@ export default async function handler(request) {
     }
 
     const html = await response.text();
+    
+    if (debug) {
+      // Return snippet of HTML for debugging
+      return new Response(JSON.stringify({
+        htmlLength: html.length,
+        snippet: html.substring(0, 500),
+        hasPlaylistUrl: html.includes('playlist.live-video.net'),
+        hasPlaybackUrl: html.includes('playback_url')
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
     
     // Extract HLS URL
     const hlsMatch = html.match(/https:\/\/[a-z0-9]+\.playlist\.live-video\.net\/[^"'\s]+\.m3u8/);
@@ -49,7 +64,10 @@ export default async function handler(request) {
       });
     }
 
-    return new Response(JSON.stringify({ live: false }), {
+    return new Response(JSON.stringify({ 
+      live: false,
+      htmlLength: html.length
+    }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
