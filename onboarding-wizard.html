@@ -296,12 +296,17 @@ function markYouTubeSelected() {
       }
     }
 
-    function connectTwitch() {
-      const redirectUri = 'https://www.autostreampro.com/onboarding-wizard.html';
-      const scope = 'user:read:email+clips:edit+channel:read:stream_key';
-      const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=twitch&force_verify=true`;
-      window.location.href = authUrl;
-    }
+    async function connectTwitch() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) { 
+    alert('Please log in first'); 
+    window.location.href='/login.html'; 
+    return; 
+  }
+  
+  const returnTo = encodeURIComponent('https://www.autostreampro.com/onboarding-wizard.html');
+  window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/twitch?userId=${user.id}&return_to=${returnTo}`;
+}
 
     // ---------- UI helpers ----------
     function showPlatformConnection() {
@@ -488,52 +493,34 @@ function markYouTubeSelected() {
       
       });
 
-      // --- YouTube: finalize after callback (?youtube_code=...) ---
-const youtubeCode = urlParams.get('youtube_code');
-if (youtubeCode) {
-  try {
-    // Exchange code on server (requires functions/youtube-exchange.js deployed)
-    const r = await signedFetch('/api/youtube-exchange', {
-      method: 'POST',
-      body: JSON.stringify({ code: youtubeCode })
-    });
-    if (!r.ok) {
-      console.error('youtube-exchange failed', await r.text());
-      alert('YouTube connection failed. Please try again.');
-    } else {
-      // Advance the wizard to Step 3, like your Twitch flow does
-      selectedPlatform = 'youtube';
-      document.getElementById('step1').classList.remove('active');
-      document.getElementById('step1').classList.add('completed');
-      document.getElementById('step1').innerHTML='✓';
-      document.getElementById('line1').classList.add('completed');
-      document.getElementById('step2').classList.remove('upcoming');
-      document.getElementById('step2').classList.add('completed');
-      document.getElementById('step2').innerHTML='✓';
-      document.getElementById('line2').classList.add('completed');
-      document.getElementById('content1').classList.remove('active');
-      document.getElementById('content2').classList.remove('active');
-      currentStep = 3;
-      document.getElementById('content3').classList.add('active');
-      document.getElementById('step3').classList.remove('upcoming');
-      document.getElementById('step3').classList.add('active');
-      updateNavigationState();
-      // remember connection & update the Step-3 tile
-      yConnected = true;
-      window.yConnected = true;
-      markYouTubeSelected();
-    }
-  } catch (e) {
-    console.error(e);
-    alert('YouTube connection error. Please try again.');
-  } finally {
-    // Clean the URL (remove ?youtube_code=...) but keep on wizard
-    const p = new URLSearchParams(window.location.search);
-    p.delete('youtube_code');
-    const clean = new URL(window.location.href);
-    clean.search = p.toString();
-    history.replaceState({}, document.title, clean.toString());
-  }
+      // --- YouTube: handle callback (?youtube=connected) ---
+const youtubeStatus = urlParams.get('youtube');
+if (youtubeStatus === 'connected') {
+  // Advance the wizard to Step 3
+  selectedPlatform = 'youtube';
+  document.getElementById('step1').classList.remove('active');
+  document.getElementById('step1').classList.add('completed');
+  document.getElementById('step1').innerHTML='✓';
+  document.getElementById('line1').classList.add('completed');
+  document.getElementById('step2').classList.remove('upcoming');
+  document.getElementById('step2').classList.add('completed');
+  document.getElementById('step2').innerHTML='✓';
+  document.getElementById('line2').classList.add('completed');
+  document.getElementById('content1').classList.remove('active');
+  document.getElementById('content2').classList.remove('active');
+  currentStep = 3;
+  document.getElementById('content3').classList.add('active');
+  document.getElementById('step3').classList.remove('upcoming');
+  document.getElementById('step3').classList.add('active');
+  
+  // Mark YouTube as connected
+  yConnected = true;
+  window.yConnected = true;
+  markYouTubeSelected();
+  updateNavigationState();
+  
+  // Clean URL
+  window.history.replaceState({}, document.title, '/onboarding-wizard.html');
 }
 
       // Buttons
@@ -544,10 +531,19 @@ if (youtubeCode) {
 
       const ytWizardBtn = document.getElementById('youtubeConnectBtn');
 if (ytWizardBtn) {
-  ytWizardBtn.addEventListener('click', (e) => {
+  ytWizardBtn.addEventListener('click', async (e) => {
     e.preventDefault();
+    
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { 
+      alert('Please log in first'); 
+      window.location.href='/login.html'; 
+      return; 
+    }
+    
     if (yConnected) {
-      // already connected → jump to Step 3 visuals
+      // Already connected → jump to Step 3 visuals
       selectedPlatform = 'youtube';
       document.getElementById('step1').classList.remove('active');
       document.getElementById('step1').classList.add('completed');
@@ -567,8 +563,10 @@ if (ytWizardBtn) {
       updateNavigationState();
       return;
     }
-    const returnTo = encodeURIComponent('/onboarding-wizard.html');
-    window.location.href = `/auth/youtube?return_to=${returnTo}`;
+    
+    // Not connected yet → start OAuth with Railway backend
+    const returnTo = encodeURIComponent('https://www.autostreampro.com/onboarding-wizard.html');
+    window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/youtube?userId=${user.id}&return_to=${returnTo}`;
   });
 }
 
