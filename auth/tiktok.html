@@ -85,7 +85,8 @@
         if (error) {
             showError('TikTok authorization failed');
             setTimeout(() => {
-                window.location.href = '/dashboard.html?error=tiktok_failed';
+                const returnUrl = sessionStorage.getItem('tiktok_return_to') || '/dashboard.html';
+                window.location.href = returnUrl + (returnUrl.includes('?') ? '&' : '?') + 'error=tiktok_failed';
             }, 2000);
             return;
         }
@@ -130,14 +131,17 @@
             
             // Redirect to dashboard with success
             setTimeout(() => {
-                window.location.href = '/dashboard.html?tiktok=connected';
+                // Check if we have a return_to parameter from the initial OAuth request
+            const returnUrl = sessionStorage.getItem('tiktok_return_to') || '/dashboard.html';
+                window.location.href = returnUrl + (returnUrl.includes('?') ? '&' : '?') + 'tiktok=connected';
             }, 1500);
 
         } catch (err) {
             console.error('TikTok callback error:', err);
             showError(err.message);
             setTimeout(() => {
-                window.location.href = '/dashboard.html?error=tiktok_failed';
+                const returnUrl = sessionStorage.getItem('tiktok_return_to') || '/dashboard.html';
+                window.location.href = returnUrl + (returnUrl.includes('?') ? '&' : '?') + 'error=tiktok_failed';
             }, 2000);
         }
     }

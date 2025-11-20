@@ -267,7 +267,7 @@ function markYouTubeSelected() {
       if (!user) { alert('Please log in first'); window.location.href='/login.html'; return; }
 
       try {
-        const resp = await fetch('/.netlify/functions/add-kick-channel', {
+        const resp = await fetch('https://autostreampro-backend-production.up.railway.app/api/connect-kick', {
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ userId: user.id, kickUsername: username })
@@ -627,6 +627,7 @@ if (ytWizardBtn) {
         const { data: { user: oauthUser } } = await supabase.auth.getUser();
         if (oauthUser) {
           const returnTo = encodeURIComponent('/onboarding-wizard.html#tiktok');
+          sessionStorage.setItem('tiktok_return_to', '/onboarding-wizard.html#tiktok');
           window.location.href = `/auth/tiktok?user=${encodeURIComponent(oauthUser.id)}&direct=1&return_to=${returnTo}`;
           return; // stop executing after redirect
         }
@@ -668,6 +669,7 @@ if (ytWizardBtn) {
           const { data: { user } } = await supabase.auth.getUser();
           if (!user) { setStatus('Please log in first.', true); window.location.href='/login.html'; return; }
           const returnTo = encodeURIComponent('/onboarding-wizard.html#tiktok');
+          sessionStorage.setItem('tiktok_return_to', '/onboarding-wizard.html#tiktok');
           window.location.href = `/auth/tiktok?user=${encodeURIComponent(user.id)}&direct=0&return_to=${returnTo}`;
         } catch (e) {
           setStatus('Could not start TikTok connect. Please try again.', true);
