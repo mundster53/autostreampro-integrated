@@ -827,103 +827,96 @@ async function createFreeAccount(email, password, type, promoData = null) {
                 console.log('🔄 Processing signup...');
                 
                 // Check promo code first
-                const promoCode = document.getElementById('promoCode').value.trim();
-                let promoData = { valid: false, discount: 0 };
-                
-                if (promoCode) {
-                    console.log('🎫 Validating promo code:', promoCode);
-                    promoData = await validatePromoCode(promoCode);
-                    
-                    if (promoData.valid) {
-                        console.log('✅ Valid promo code:', promoData.discount + '% discount');
-                        document.getElementById('promo-success').textContent = `✅ ${promoData.displayText || promoData.discount + '% discount'} applied!`;
-                        document.getElementById('promo-success').style.display = 'block';
-                    } else {
-                        console.log('❌ Invalid promo code');
-                        showError('promo-error', promoData.message || 'Invalid promo code');
-                        btn.disabled = false;
-                        btn.textContent = 'Start Free Trial →';
-                        return;
-                    }
-                }
-                
-                // Family detection
-                const isFamily = familyEmails.includes(email.toLowerCase());
-                
-                // Create auth account first
-                console.log('🔄 Creating auth account...');
-                const { data: authData, error: authError } = await supabase.auth.signUp({
-                    email: email,
-                    password: password
-                });
-                
-                if (authError) {
-                    if (authError.message.includes('already registered') || authError.message.includes('already exists')) {
-                        showError('form-message', 'Account already exists. Please sign in instead.');
-                        return;
-                    }
-                    throw authError;
-                }
-                
-                console.log('✅ Auth account created:', authData.user.id);
-                
-                // Handle family members or 100% promo codes
-                if (isFamily || (promoData.valid && promoData.discount >= 100)) {
-                    console.log('🎉 Free account - setting up session and redirecting');
-                    
-                    const message = isFamily 
-                        ? '🎉 Welcome to the family! You have lifetime Pro access.'
-                        : `🎉 Welcome! Your ${promoData.discount}% discount gave you free access!`;
-                    
-                    showSuccess('form-message', message);
-                    
-                    // Store user info for dashboard
-                    sessionStorage.setItem('userEmail', email);
-                    sessionStorage.setItem('userId', authData.user.id);
-                    sessionStorage.setItem('isFamilyMember', isFamily.toString());
-                    sessionStorage.setItem('hasLifetimeAccess', 'true');
-                    sessionStorage.setItem('subscriptionPlan', 'pro');
-                    sessionStorage.setItem('subscriptionStatus', 'active');
-                    
-                    // Try to sign in the user immediately
-                    console.log('🔐 Signing in user...');
-                    const { error: signInError } = await supabase.auth.signInWithPassword({
-                        email: email,
-                        password: password
-                    });
-                    
-                    if (signInError) {
-                        console.warn('Sign in error:', signInError);
-                    } else {
-                        console.log('✅ User signed in successfully');
-                    }
-                    
-                    setTimeout(() => {
-                        console.log('🔄 Redirecting to dashboard...');
-                        if (isFamily) {
-                            // Family members go to admin panel
-                            window.location.href = '/admin.html';
-                        } else {
-                            // Regular free users go to dashboard
-                            window.location.href = '/dashboard.html';
-                        }
-                    }, 2000);
-                    return;
-                }
-                
-                // Regular user with Stripe
-                console.log('💳 Regular user - setting up payment...');
-                
-                // Store for Stripe
-                sessionStorage.setItem('userEmail', email);
-                sessionStorage.setItem('userId', authData.user.id);
-                sessionStorage.setItem('selectedPlan', selectedPlan);
-                sessionStorage.setItem('selectedPrice', selectedPrice);
-                
-                showSuccess('form-message', 'Account created! Setting up payment...');
-                
-                // Create Stripe checkout
-                await createStripeCheckout(authData.user, promoData);
+const promoCode = document.getElementById('promoCode').value.trim();
+let promoData = { valid: false, discount: 0 };
+
+if (promoCode) {
+    console.log('🎫 Validating promo code:', promoCode);
+    promoData = await validatePromoCode(promoCode);
+    
+    if (promoData.valid) {
+        console.log('✅ Valid promo code:', promoData.discount + '% discount');
+        document.getElementById('promo-success').textContent = `✅ ${promoData.displayText || promoData.discount + '% discount'} applied!`;
+        document.getElementById('promo-success').style.display = 'block';
+    } else {
+        console.log('❌ Invalid promo code');
+        showError('promo-error', promoData.message || 'Invalid promo code');
+        btn.disabled = false;
+        btn.textContent = 'Get Started →';
+        return;
+    }
+}
+
+// Family detection
+const isFamily = familyEmails.includes(email.toLowerCase());
+
+// Create auth account first
+console.log('🔄 Creating auth account...');
+const { data: authData, error: authError } = await supabase.auth.signUp({
+    email: email,
+    password: password
+});
+
+if (authError) {
+    if (authError.message.includes('already registered') || authError.message.includes('already exists')) {
+        showError('form-message', 'Account already exists. Please sign in instead.');
+        return;
+    }
+    throw authError;
+}
+
+console.log('✅ Auth account created:', authData.user.id);
+
+// Handle ONLY family members as free forever
+if (isFamily) {
+    console.log('🎉 Family member - free forever');
+    
+    const message = '🎉 Welcome to the family! You have lifetime Pro access.';
+    showSuccess('form-message', message);
+    
+    // Store user info for dashboard
+    sessionStorage.setItem('userEmail', email);
+    sessionStorage.setItem('userId', authData.user.id);
+    sessionStorage.setItem('isFamilyMember', 'true');
+    sessionStorage.setItem('hasLifetimeAccess', 'true');
+    sessionStorage.setItem('subscriptionPlan', 'pro');
+    sessionStorage.setItem('subscriptionStatus', 'active');
+    
+    // Sign in the user
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password
+    });
+    
+    if (signInError) {
+        console.warn('Sign in error:', signInError);
+    }
+    
+    setTimeout(() => {
+        window.location.href = '/admin.html';
+    }, 2000);
+    return;
+}
+
+// Everyone else (including FREEMONTH users) goes through Stripe
+console.log('💳 Setting up Stripe checkout...');
+
+// Store for Stripe
+sessionStorage.setItem('userEmail', email);
+sessionStorage.setItem('userId', authData.user.id);
+sessionStorage.setItem('selectedPlan', selectedPlan);
+sessionStorage.setItem('selectedPrice', selectedPrice);
+
+// Store promo code if valid
+if (promoData.valid) {
+    sessionStorage.setItem('promoCode', promoData.code);
+    sessionStorage.setItem('promoDiscount', promoData.discount);
+}
+
+showSuccess('form-message', 'Account created! Setting up payment...');
+
+// Create Stripe checkout
+await createStripeCheckout(authData.user, promoData);
                 
             } catch (error) {
                 console.error('❌ Signup failed:', error);
@@ -1056,45 +1049,49 @@ async function createFreeAccount(email, password, type, promoData = null) {
         }
         
         // Create Stripe checkout
-        async function createStripeCheckout(user, promoData = { valid: false, discount: 0 }) {
-            try {
-                console.log('💳 Creating Stripe checkout...');
-                
-                const requestBody = {
-                    plan: selectedPlan,
-                    userEmail: user.email,
-                    userId: user.id,
-                    userName: user.email.split('@')[0]
-                };
-                
-                // Add promo data if valid
-                if (promoData.valid) {
-                    requestBody.promoCode = promoData.code;
-                    requestBody.discount = promoData.discount;
-                }
-                
-                const response = await fetch('/.netlify/functions/stripe-checkout', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestBody)
-                });
-                
-                const data = await response.json();
-                
-                if (data.success && data.checkoutUrl) {
-                    console.log('✅ Redirecting to Stripe...');
-                    window.location.href = data.checkoutUrl;
-                } else {
-                    throw new Error(data.message || 'Payment setup failed');
-                }
-                
-            } catch (error) {
-                console.error('❌ Stripe checkout failed:', error);
-                showError('form-message', 'Payment setup failed. Please try again.');
-            }
+async function createStripeCheckout(user, promoData = { valid: false, discount: 0 }) {
+    try {
+        console.log('💳 Creating Stripe checkout...');
+        
+        const requestBody = {
+            plan: selectedPlan,
+            userEmail: user.email,
+            userId: user.id,
+            userName: user.email.split('@')[0],
+            trialDays: 30  // Always 30-day trial
+        };
+        
+        // Add promo data if valid
+        if (promoData.valid) {
+            requestBody.promoCode = promoData.code;
+            requestBody.promoDiscount = promoData.discount;
+            requestBody.promoId = promoData.id;
         }
+        
+        console.log('📦 Stripe request:', requestBody);
+        
+        const response = await fetch('/.netlify/functions/stripe-checkout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.checkoutUrl) {
+            console.log('✅ Redirecting to Stripe...');
+            window.location.href = data.checkoutUrl;
+        } else {
+            throw new Error(data.message || 'Payment setup failed');
+        }
+        
+    } catch (error) {
+        console.error('❌ Stripe checkout failed:', error);
+        showError('form-message', 'Payment setup failed. Please try again.');
+    }
+}
         
         // Utility functions
         function showError(elementId, message) {
