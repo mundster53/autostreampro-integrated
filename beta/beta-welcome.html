@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Welcome to the AutoStreamPro Founders Beta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="You've been accepted into the AutoStreamPro Founders Beta. Here's what to do next." />
+  <style>
+    :root {
+      --bg: #121212;
+      --muted: #9b9b9b;
+      --text: #ededed;
+      --primary: #1f8fff;
+      --accent: #afff00;
+      --cta: #ff007a;
+      --shadow-soft: 0 18px 35px rgba(0, 0, 0, 0.45);
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+      --radius-pill: 999px;
+      --transition-fast: 0.18s ease-out;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, rgba(31, 143, 255, 0.18), transparent 55%), #121212;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .page { max-width: 780px; margin: 0 auto; padding: 24px 16px 72px; }
+
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; margin-bottom: 32px;
+    }
+
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 1.05rem; letter-spacing: 0.03em;
+    }
+
+    .logo-icon {
+      width: 28px; height: 28px; border-radius: 9px;
+      background: conic-gradient(from 210deg, #1f8fff, #afff00, #ff007a, #1f8fff);
+      padding: 3px; display: flex; align-items: center; justify-content: center;
+    }
+
+    .logo-icon-inner {
+      width: 100%; height: 100%; border-radius: 7px;
+      background: #121212; display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; color: var(--accent); font-weight: 800;
+    }
+
+    nav { display: flex; align-items: center; gap: 14px; font-size: 0.85rem; color: var(--muted); }
+
+    .nav-link { padding: 6px 10px; border-radius: var(--radius-pill); }
+    .nav-link:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+
+    main { display: flex; flex-direction: column; gap: 24px; }
+
+    .card {
+      padding: 26px 22px;
+      border-radius: var(--radius-xl);
+      background: radial-gradient(circle at top left, rgba(31, 143, 255, 0.18), transparent 55%), #181818;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .pill {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:4px 12px; border-radius: var(--radius-pill);
+      background:rgba(31,143,255,0.1); border:1px solid rgba(31,143,255,0.65);
+      color:var(--muted); font-size:0.75rem; margin-bottom:12px;
+    }
+
+    .pill-dot {
+      width:8px; height:8px; border-radius:50%;
+      background:var(--accent);
+    }
+
+    h1 { font-size: clamp(1.9rem, 3vw, 2.3rem); margin-bottom: 8px; }
+
+    .lead {
+      font-size: 0.98rem; color: var(--muted);
+      max-width: 620px; margin-bottom: 16px;
+    }
+
+    .lead strong { color:var(--text); }
+
+    .steps { list-style:none; padding-left:0; margin-top:8px; }
+
+    .steps li {
+      display:flex; gap:10px; margin-bottom:10px;
+      font-size:0.9rem; color:var(--muted);
+    }
+
+    .step-number {
+      width:22px; height:22px; border-radius:999px;
+      background:rgba(31,143,255,0.15); border:1px solid rgba(31,143,255,0.6);
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.8rem; color:var(--text); flex-shrink:0; margin-top:2px;
+    }
+
+    .highlight-box {
+      margin-top: 16px; padding: 12px 14px;
+      border-radius: var(--radius-lg);
+      background:#151515; border:1px solid rgba(255,255,255,0.08);
+      font-size:0.86rem; color:var(--muted);
+    }
+
+    .highlight-box strong { color:var(--accent); }
+
+    .btn-row {
+      display:flex; flex-wrap:wrap; gap:12px;
+      align-items:center; margin-top:18px;
+    }
+
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:8px; padding:11px 20px;
+      border-radius: var(--radius-pill); border:none;
+      cursor:pointer; font-size:0.9rem; font-weight:600;
+      letter-spacing:0.03em; text-transform:uppercase;
+      text-decoration:none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg,#ff007a,#1f8fff);
+      color:#fff;
+    }
+
+    .btn-ghost {
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.18);
+      color:var(--muted);
+    }
+
+    .secondary-card {
+      padding:18px 18px;
+      border-radius: var(--radius-xl);
+      background:#151515;
+      border:1px solid rgba(255,255,255,0.06);
+      font-size:0.85rem; color:var(--muted);
+    }
+
+    .secondary-card h2 { font-size:1.05rem; margin-bottom:6px; }
+
+    .secondary-card ul { list-style:none; padding-left:0; margin-top:8px; }
+
+    .secondary-card li { margin-bottom:6px; }
+
+    footer {
+      margin-top:32px; padding-top:12px;
+      text-align:center; font-size:0.75rem; color:var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="logo">
+        <div class="logo-icon"><div class="logo-icon-inner">AS</div></div>
+        <span>AutoStreamPro</span>
+      </div>
+      <nav>
+        <a href="/free-trial" class="nav-link">Free Trial</a>
+        <a href="/signup" class="nav-link">Sign Up</a>
+        <a href="/login" class="nav-link">Sign In</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="card">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span>Founders Beta · Accepted</span>
+        </div>
+        <h1>Welcome to the AutoStreamPro Founders Beta</h1>
+        <p class="lead">
+          You're in. You'll be using AutoStreamPro on real streams and helping shape how it works for every creator who comes after you.
+          <strong>Here's what to do next.</strong>
+        </p>
+
+        <ul class="steps">
+          <li>
+            <div class="step-number">1</div>
+            <div>
+              <strong>Start onboarding.</strong><br />
+              Connect your streaming and short-form platforms so AutoStreamPro can monitor your streams
+              and queue clips. This only needs to be done once.
+            </div>
+          </li>
+          <li>
+            <div class="step-number">2</div>
+            <div>
+              <strong>Join the Founders Discord.</strong><br />
+              This is where we'll share updates, answer questions, and gather feedback after your streams.
+            </div>
+          </li>
+          <li>
+            <div class="step-number">3</div>
+            <div>
+              <strong>Stream like you always do.</strong><br />
+              Go live as usual. No overlays, no extra buttons. Let the system run and we'll handle the hard part.
+            </div>
+          </li>
+        </ul>
+
+        <div class="highlight-box">
+          <strong>Your Perks:</strong> 30 days of full beta access, direct access to the team,
+          and a permanent <strong>Founders Discount</strong> on all future plans as long as you stick with us.
+        </div>
+
+        <div class="btn-row">
+          <a href="/onboarding" class="btn btn-primary">Start Onboarding</a>
+          <a href="https://discord.gg/MB3jrkbG" class="btn btn-ghost">Join Founders Discord</a>
+        </div>
+      </section>
+
+      <section class="secondary-card">
+        <h2>How to Get the Most Out of the Beta</h2>
+        <ul>
+          <li>Stream at your normal times so we see real behavior.</li>
+          <li>After each stream, check your clips and tell us what hit or missed.</li>
+          <li>Don't hold back: "this part sucked" is very useful feedback.</li>
+          <li>Screenshot anything weird or broken and drop it in Discord.</li>
+        </ul>
+        <p style="margin-top:6px;">
+          The more honest you are, the better AutoStreamPro becomes — for you and for the next thousand streamers.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      AutoStreamPro · Thanks for helping build what streamers actually need.
+    </footer>
+  </div>
+</body>
+</html>

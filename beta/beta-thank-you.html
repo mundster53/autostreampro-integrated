@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Thanks for Applying – AutoStreamPro Founders Beta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Thanks for applying to the AutoStreamPro Founders Beta. Here's what happens next." />
+  <style>
+    :root {
+      --bg: #121212;
+      --muted: #9b9b9b;
+      --text: #ededed;
+      --primary: #1f8fff;
+      --accent: #afff00;
+      --cta: #ff007a;
+      --border-subtle: #2a2a2a;
+      --shadow-soft: 0 18px 35px rgba(0, 0, 0, 0.45);
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+      --radius-pill: 999px;
+      --transition-fast: 0.18s ease-out;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, rgba(31, 143, 255, 0.18), transparent 55%), #121212;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .page { max-width: 780px; margin: 0 auto; padding: 24px 16px 72px; }
+
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; margin-bottom: 32px;
+    }
+
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+
+    .logo-icon {
+      width: 28px; height: 28px; border-radius: 9px;
+      background: conic-gradient(from 210deg, #1f8fff, #afff00, #ff007a, #1f8fff);
+      padding: 3px; display: flex; align-items: center; justify-content: center;
+    }
+
+    .logo-icon-inner {
+      width: 100%; height: 100%; border-radius: 7px;
+      background: #121212; display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; color: var(--accent); font-weight: 800;
+    }
+
+    nav { display: flex; align-items: center; gap: 14px; }
+    .nav-link { padding: 6px 10px; border-radius: var(--radius-pill); color: var(--muted); text-decoration: none; }
+    .nav-link:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+
+    main { display: flex; flex-direction: column; gap: 24px; }
+
+    .card {
+      padding: 26px 22px;
+      border-radius: var(--radius-xl);
+      background: radial-gradient(circle at top left, rgba(31, 143, 255, 0.18), transparent 55%), #181818;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .pill {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:4px 12px; border-radius: var(--radius-pill);
+      background:rgba(31,143,255,0.1); border:1px solid rgba(31,143,255,0.65);
+      color:var(--muted); font-size:0.75rem; margin-bottom:12px;
+    }
+
+    .pill-dot {
+      width:8px; height:8px; border-radius:50%;
+      background:var(--accent);
+    }
+
+    h1 { font-size: 2.2rem; margin-bottom: 12px; }
+
+    .lead { font-size: 1rem; color: var(--muted); margin-bottom: 18px; }
+
+    .steps { list-style:none; padding-left:0; }
+    .steps li { display:flex; gap:10px; margin-bottom:12px; font-size:0.9rem; }
+
+    .step-number {
+      width:22px; height:22px; border-radius:999px;
+      background:rgba(31,143,255,0.15); border:1px solid rgba(31,143,255,0.6);
+      display:flex; align-items:center; justify-content:center; color:var(--text);
+    }
+
+    .highlight-box {
+      margin-top: 16px; padding: 14px;
+      border-radius: var(--radius-lg); background:#151515;
+      border:1px solid rgba(255,255,255,0.08); font-size:0.86rem; color:var(--muted);
+    }
+
+    .btn-row { display:flex; gap:12px; margin-top:18px; }
+
+    .btn {
+      padding:11px 20px; border-radius: var(--radius-pill);
+      font-weight:600; text-transform:uppercase; font-size:0.9rem;
+      display:flex; align-items:center; justify-content:center;
+      text-decoration:none; cursor:pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg,#ff007a,#1f8fff);
+      color:#fff;
+    }
+
+    .btn-ghost {
+      border:1px solid rgba(255,255,255,0.2);
+      color:var(--muted);
+    }
+
+    footer {
+      margin-top:32px; text-align:center; font-size:0.75rem; color:var(--muted);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <div class="logo">
+        <div class="logo-icon"><div class="logo-icon-inner">AS</div></div>
+        <span>AutoStreamPro</span>
+      </div>
+      <nav>
+        <a href="/free-trial" class="nav-link">Free Trial</a>
+        <a href="/signup" class="nav-link">Sign Up</a>
+        <a href="/login" class="nav-link">Sign In</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="card">
+        <div class="pill"><span class="pill-dot"></span>Application Received</div>
+        <h1>Thanks for Applying to the AutoStreamPro Founders Beta</h1>
+        <p class="lead">We'll review your streaming schedule and channel and get back to you soon.</p>
+
+        <ul class="steps">
+          <li>
+            <div class="step-number">1</div>
+            <div>Check your email for confirmation and next steps.</div>
+          </li>
+          <li>
+            <div class="step-number">2</div>
+            <div>Join the Founders Discord to get announcements and early access.</div>
+          </li>
+          <li>
+            <div class="step-number">3</div>
+            <div>If accepted, you'll get the onboarding link and your 30-day free beta access.</div>
+          </li>
+        </ul>
+
+        <div class="highlight-box">
+          Beta testers get a permanent <strong>Founders Discount</strong> on all future plans.
+        </div>
+
+        <div class="btn-row">
+          <a href="https://discord.gg/MB3jrkbG" class="btn btn-primary">Join Discord</a>
+          <a href="/beta" class="btn btn-ghost">Back to Beta Details</a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      AutoStreamPro · Built for streamers who would rather play than edit.
+    </footer>
+  </div>
+</body>
+</html>

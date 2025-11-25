@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AutoStreamPro Founders Beta – Next Round</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="You weren't selected for this round of the AutoStreamPro Founders Beta, but here's how to stay in the loop." />
+  <style>
+    :root {
+      --bg: #121212;
+      --muted: #9b9b9b;
+      --text: #ededed;
+      --primary: #1f8fff;
+      --accent: #afff00;
+      --cta: #ff007a;
+      --shadow-soft: 0 18px 35px rgba(0, 0, 0, 0.45);
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+      --radius-pill: 999px;
+      --transition-fast: 0.18s ease-out;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, rgba(31, 143, 255, 0.18), transparent 55%), #121212;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .page { max-width: 780px; margin: 0 auto; padding: 24px 16px 72px; }
+
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; margin-bottom: 32px;
+    }
+
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 1.05rem; letter-spacing: 0.03em;
+    }
+
+    .logo-icon {
+      width: 28px; height: 28px; border-radius: 9px;
+      background: conic-gradient(from 210deg, #1f8fff, #afff00, #ff007a, #1f8fff);
+      padding: 3px; display: flex; align-items: center; justify-content: center;
+    }
+
+    .logo-icon-inner {
+      width: 100%; height: 100%; border-radius: 7px;
+      background: #121212; display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; color: var(--accent); font-weight: 800;
+    }
+
+    nav { display: flex; align-items: center; gap: 14px; font-size: 0.85rem; color: var(--muted); }
+
+    .nav-link { padding: 6px 10px; border-radius: var(--radius-pill); }
+    .nav-link:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+
+    main { display: flex; flex-direction: column; gap: 24px; }
+
+    .card {
+      padding: 26px 22px;
+      border-radius: var(--radius-xl);
+      background: radial-gradient(circle at top left, rgba(31, 143, 255, 0.12), transparent 55%), #181818;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .pill {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:4px 12px; border-radius: var(--radius-pill);
+      background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.12);
+      color:var(--muted); font-size:0.75rem; margin-bottom:12px;
+    }
+
+    .pill-dot {
+      width:8px; height:8px; border-radius:50%;
+      background:#ffb800;
+    }
+
+    h1 { font-size: clamp(1.8rem, 3vw, 2.2rem); margin-bottom: 10px; }
+
+    .lead {
+      font-size: 0.98rem; color: var(--muted);
+      max-width: 620px; margin-bottom: 16px;
+    }
+
+    .lead strong { color:var(--text); }
+
+    .highlight-box {
+      margin-top: 8px; padding: 12px 14px;
+      border-radius: var(--radius-lg);
+      background:#151515; border:1px solid rgba(255,255,255,0.08);
+      font-size:0.86rem; color:var(--muted);
+    }
+
+    .btn-row {
+      display:flex; flex-wrap:wrap; gap:12px;
+      align-items:center; margin-top:18px;
+    }
+
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:8px; padding:11px 20px;
+      border-radius: var(--radius-pill); border:none;
+      cursor:pointer; font-size:0.9rem; font-weight:600;
+      letter-spacing:0.03em; text-transform:uppercase;
+      text-decoration:none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg,#ff007a,#1f8fff);
+      color:#fff;
+    }
+
+    .btn-ghost {
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.18);
+      color:var(--muted);
+    }
+
+    .secondary-card {
+      padding:18px 18px;
+      border-radius: var(--radius-xl);
+      background:#151515;
+      border:1px solid rgba(255,255,255,0.06);
+      font-size:0.85rem; color:var(--muted);
+    }
+
+    .secondary-card h2 { font-size:1.05rem; margin-bottom:6px; }
+
+    .secondary-card ul { list-style:none; padding-left:0; margin-top:8px; }
+
+    .secondary-card li { margin-bottom:6px; }
+
+    footer {
+      margin-top:32px; padding-top:12px;
+      text-align:center; font-size:0.75rem; color:var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="logo">
+        <div class="logo-icon"><div class="logo-icon-inner">AS</div></div>
+        <span>AutoStreamPro</span>
+      </div>
+      <nav>
+        <a href="/free-trial" class="nav-link">Free Trial</a>
+        <a href="/signup" class="nav-link">Sign Up</a>
+        <a href="/login" class="nav-link">Sign In</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="card">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span>Founders Beta · Next Round</span>
+        </div>
+        <h1>You're Not in This Wave — But You're Still on Our Radar</h1>
+        <p class="lead">
+          We kept this first Founders Beta group intentionally small so we can respond fast and fix things quickly.
+          <strong>You weren't selected for this wave, but that doesn't mean "no forever."</strong>
+        </p>
+
+        <div class="highlight-box">
+          Here's the honest version: we're testing AutoStreamPro with a tight batch of streamers first.
+          As we stabilize things and open up more slots, we'll reach back out — and your name is already on that list.
+        </div>
+
+        <div class="btn-row">
+          <a href="/free-trial" class="btn btn-primary">Start a Standard Free Trial</a>
+          <a href="/beta" class="btn btn-ghost">Back to Beta Details</a>
+        </div>
+      </section>
+
+      <section class="secondary-card">
+        <h2>How to Stay in the Loop</h2>
+        <ul>
+          <li>Keep streaming consistently — active channels get priority in future beta waves.</li>
+          <li>Use the normal free trial if you want to test things on your own schedule.</li>
+          <li>Watch for emails from us about the next beta wave or public release.</li>
+        </ul>
+        <p style="margin-top:6px;">
+          Thanks again for raising your hand. Most tools don't exist without people like you willing to test them before they're "perfect."
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      AutoStreamPro · Built for streamers who would rather play than edit.
+    </footer>
+  </div>
+</body>
+</html>
