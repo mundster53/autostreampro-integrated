@@ -2,582 +2,530 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>AutoStreamPro Founders Beta – Help Build the Future of Stream Automation</title>
+  <title>AutoStreamPro Founders Beta</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Join the AutoStreamPro Founders Beta. Help shape the stream automation engine that finds your best moments, turns them into clips, and posts them for you." />
   <style>
-    :root {
-      --bg: #121212;
-      --card: #1b1b1b;
-      --muted: #9b9b9b;
-      --text: #ededed;
-      --primary: #1f8fff;
-      --accent: #afff00;
-      --cta: #ff007a;
-      --border-subtle: #2a2a2a;
-      --shadow-soft: 0 18px 35px rgba(0, 0, 0, 0.45);
-      --radius-lg: 18px;
-      --radius-xl: 24px;
-      --radius-pill: 999px;
-      --transition-fast: 0.18s ease-out;
-    }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
+    
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, rgba(31, 143, 255, 0.18), transparent 55%), #121212;
-      color: var(--text);
-      line-height: 1.6;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #fafafa;
+      color: #1f2937;
+      line-height: 1.7;
     }
 
-    a { color: inherit; text-decoration: none; }
-
-    .page { max-width: 1080px; margin: 0 auto; padding: 24px 16px 72px; }
-
-    header {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 16px; margin-bottom: 32px;
+    .page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 80px 24px;
     }
 
-    .logo {
-      display: flex; align-items: center; gap: 10px;
-      font-weight: 700; font-size: 1.05rem; letter-spacing: 0.03em;
+    .header {
+      text-align: center;
+      margin-bottom: 60px;
     }
 
-    .logo-icon {
-      width: 28px; height: 28px; border-radius: 9px;
-      background: conic-gradient(from 210deg, #1f8fff, #afff00, #ff007a, #1f8fff);
-      padding: 3px; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 18px rgba(31, 143, 255, 0.5);
+    .beta-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      background: #059669;
+      color: #fff;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 20px;
     }
 
-    .logo-icon-inner {
-      width: 100%; height: 100%; border-radius: 7px;
-      background: #121212; display: flex; align-items: center; justify-content: center;
-      font-size: 0.7rem; color: var(--accent); font-weight: 800;
+    .beta-label .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #fff;
+      animation: blink 1.5s infinite;
     }
 
-    nav { display: flex; align-items: center; gap: 14px; font-size: 0.85rem; color: var(--muted); }
-
-    .nav-link {
-      padding: 6px 10px; border-radius: var(--radius-pill);
-      transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
-    }
-
-    .nav-link:hover {
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text); transform: translateY(-1px);
-    }
-
-    .nav-cta {
-      padding: 7px 14px; border-radius: var(--radius-pill);
-      background: rgba(31, 143, 255, 0.16); color: var(--text);
-      border: 1px solid rgba(31, 143, 255, 0.6); font-weight: 500;
-    }
-
-    .nav-cta:hover { background: rgba(31, 143, 255, 0.28); }
-
-    @media (max-width: 840px) {
-      header { flex-direction: column; align-items: flex-start; }
-    }
-
-    main { display: flex; flex-direction: column; gap: 32px; }
-
-    .hero {
-      display: grid;
-      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.6fr);
-      gap: 28px; align-items: stretch;
-    }
-
-    @media (max-width: 840px) {
-      .hero { grid-template-columns: minmax(0, 1fr); }
-    }
-
-    .hero-main {
-      padding: 26px 22px;
-      border-radius: var(--radius-xl);
-      background: radial-gradient(circle at top left, rgba(31, 143, 255, 0.18), transparent 55%), #181818;
-      box-shadow: var(--shadow-soft);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .pill {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 4px 12px; border-radius: var(--radius-pill);
-      background: rgba(31, 143, 255, 0.1); border: 1px solid rgba(31, 143, 255, 0.65);
-      color: var(--muted); font-size: 0.75rem; margin-bottom: 12px;
-    }
-
-    .pill-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--accent); box-shadow: 0 0 8px rgba(175, 255, 0, 0.7);
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
     }
 
     h1 {
-      font-size: clamp(1.8rem, 3vw, 2.4rem);
-      margin-bottom: 14px; letter-spacing: 0.02em;
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      line-height: 1.2;
+      color: #111827;
+      margin-bottom: 20px;
+      font-weight: 800;
     }
 
-    .hero-sub {
-      font-size: 0.96rem; color: var(--muted);
-      max-width: 560px; margin-bottom: 20px;
+    .subtitle {
+      font-size: 1.25rem;
+      color: #6b7280;
+      max-width: 640px;
+      margin: 0 auto 40px;
+      line-height: 1.6;
     }
 
-    .hero-sub strong { color: var(--text); font-weight: 600; }
-
-    .hero-ctas {
-      display: flex; flex-wrap: wrap; gap: 12px;
-      align-items: center; margin-bottom: 18px;
+    .value-prop {
+      padding: 32px;
+      background: #fff;
+      border: 2px solid #e5e7eb;
+      border-radius: 16px;
+      margin-bottom: 48px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
     }
 
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      gap: 8px; padding: 11px 20px; border-radius: var(--radius-pill);
-      border: none; cursor: pointer; font-size: 0.9rem;
-      font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
-      transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
-      white-space: nowrap;
+    .value-prop h2 {
+      font-size: 1.5rem;
+      color: #111827;
+      margin-bottom: 16px;
+      text-align: center;
     }
 
-    .btn-primary {
-      background: linear-gradient(135deg, #ff007a, #1f8fff);
-      color: #ffffff; box-shadow: 0 12px 24px rgba(0, 0, 0, 0.7);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.8);
-    }
-
-    .btn-ghost {
-      background: transparent;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      color: var(--muted);
-    }
-
-    .btn-ghost:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text); transform: translateY(-1px);
-    }
-
-    .hero-footnote {
-      font-size: 0.78rem; color: var(--muted);
-      max-width: 520px;
-    }
-
-    .hero-aside {
-      padding: 20px 18px;
-      border-radius: var(--radius-xl);
-      background: #151515;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      display: flex; flex-direction: column; gap: 10px;
-    }
-
-    .aside-title {
-      font-size: 0.95rem; font-weight: 600; margin-bottom: 4px;
-    }
-
-    .aside-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 8px; }
-
-    .aside-grid {
+    .value-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px; margin-bottom: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 24px;
+      margin-top: 24px;
     }
 
-    .aside-card {
-      padding: 8px 10px; border-radius: var(--radius-lg);
-      background: #191919; border: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 0.8rem;
+    .value-stat {
+      text-align: center;
     }
 
-    .aside-label {
-      font-size: 0.72rem; text-transform: uppercase;
-      letter-spacing: 0.08em; color: var(--muted); margin-bottom: 3px;
-    }
-
-    .aside-value { font-weight: 600; }
-
-    .tagline { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
-
-    .checklist {
-      list-style: none; padding-left: 0;
-      font-size: 0.8rem; color: var(--muted);
-    }
-
-    .checklist li {
-      display: flex; align-items: flex-start; gap: 6px;
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: #059669;
+      display: block;
       margin-bottom: 4px;
     }
 
-    .check-icon {
-      margin-top: 3px; font-size: 0.85rem; color: var(--accent);
+    .stat-label {
+      font-size: 0.9rem;
+      color: #6b7280;
+      font-weight: 500;
     }
 
-    .highlight { color: var(--accent); font-weight: 600; }
-
-    section.block {
-      margin-top: 8px; padding: 22px 20px;
-      border-radius: var(--radius-xl);
-      background: rgba(18, 18, 18, 0.92);
-      border: 1px solid var(--border-subtle);
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
+    .perks {
+      margin-bottom: 60px;
     }
 
-    section.block + section.block { margin-top: 20px; }
-
-    section.block h2 {
-      font-size: 1.1rem; margin-bottom: 10px;
+    .section-header {
+      text-align: center;
+      margin-bottom: 40px;
     }
 
-    section.block h3 {
-      font-size: 0.92rem; margin-bottom: 6px;
+    .section-header h2 {
+      font-size: 2rem;
+      color: #111827;
+      margin-bottom: 8px;
     }
 
-    .section-intro {
-      font-size: 0.9rem; color: var(--muted);
-      margin-bottom: 12px; max-width: 640px;
+    .section-header p {
+      font-size: 1.1rem;
+      color: #6b7280;
     }
 
-    .columns-2 {
+    .perk-list {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
+      gap: 20px;
     }
 
-    @media (max-width: 768px) {
-      .columns-2 { grid-template-columns: minmax(0, 1fr); }
+    .perk-item {
+      display: flex;
+      gap: 20px;
+      padding: 28px;
+      background: #fff;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      transition: all 0.3s;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
     }
 
-    ul { list-style: none; padding-left: 0; }
+    .perk-item:hover {
+      border-color: #059669;
+      box-shadow: 0 8px 24px rgba(5, 150, 105, 0.1);
+      transform: translateX(4px);
+    }
 
-    li { font-size: 0.86rem; margin-bottom: 6px; color: var(--muted); }
+    .perk-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      flex-shrink: 0;
+    }
 
-    li strong { color: var(--text); }
+    .perk-content h3 {
+      font-size: 1.2rem;
+      color: #111827;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
 
-    .badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 2px 8px; font-size: 0.7rem;
+    .perk-content p {
+      font-size: 0.95rem;
+      color: #6b7280;
+      line-height: 1.6;
+    }
+
+    .comparison {
+      padding: 40px;
+      background: #fff;
+      border: 2px solid #e5e7eb;
+      border-radius: 16px;
+      margin-bottom: 60px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .comparison h3 {
+      font-size: 1.5rem;
+      text-align: center;
+      margin-bottom: 32px;
+      color: #111827;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .comparison-col {
+      padding: 24px;
+      border-radius: 12px;
+    }
+
+    .comparison-col:first-child {
+      background: #fef2f2;
+      border: 2px solid #fecaca;
+    }
+
+    .comparison-col:last-child {
+      background: #f0fdf4;
+      border: 3px solid #000;
+    }
+
+    .comparison-col h4 {
+      font-size: 1.1rem;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .comparison-col:first-child h4 { color: #dc2626; }
+    .comparison-col:last-child h4 { color: #059669; }
+
+    .comparison-col ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .comparison-col li {
+      padding: 8px 0;
+      padding-left: 28px;
+      position: relative;
+      font-size: 0.9rem;
+      color: #374151;
+    }
+
+    .comparison-col:first-child li::before {
+      content: "✗";
+      position: absolute;
+      left: 0;
+      color: #dc2626;
+      font-weight: bold;
+    }
+
+    .comparison-col:last-child li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #059669;
+      font-weight: bold;
+    }
+
+    .requirements {
+      padding: 40px;
+      background: #fff;
+      border: 2px solid #e5e7eb;
+      border-radius: 16px;
+      margin-bottom: 60px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .requirements h3 {
+      font-size: 1.5rem;
+      text-align: center;
+      color: #111827;
+      margin-bottom: 24px;
+    }
+
+    .req-checklist {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .req-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: #f9fafb;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .req-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: #059669;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .req-text {
+      font-size: 0.9rem;
+      color: #374151;
+      font-weight: 600;
+    }
+
+    .cta-section {
+      text-align: center;
+      padding: 60px 40px;
+      background: linear-gradient(135deg, #059669, #10b981);
+      border-radius: 20px;
+      color: #fff;
+      margin-bottom: 40px;
+      box-shadow: 0 8px 32px rgba(5, 150, 105, 0.3);
+    }
+
+    .cta-section h2 {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+      font-weight: 800;
+    }
+
+    .cta-section p {
+      font-size: 1.2rem;
+      margin-bottom: 32px;
+      opacity: 0.95;
+    }
+
+    .cta-button {
+      display: inline-block;
+      padding: 18px 48px;
+      background: #fff;
+      color: #059669;
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-decoration: none;
       border-radius: 999px;
-      background: rgba(31, 143, 255, 0.22);
-      color: var(--text); margin-left: 6px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     }
 
-    .faq-item { margin-bottom: 10px; }
-
-    .faq-q {
-      font-size: 0.9rem; font-weight: 600; margin-bottom: 2px;
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     }
 
-    .faq-a { font-size: 0.84rem; color: var(--muted); }
-
-    .cta-stack {
-      display: flex; flex-wrap: wrap; gap: 12px;
-      align-items: center; margin-top: 10px;
+    .early-cta {
+      display: inline-block;
+      padding: 16px 40px;
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 700;
+      text-decoration: none;
+      border-radius: 999px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 16px rgba(5, 150, 105, 0.3);
+      margin-bottom: 20px;
     }
 
-    .tiny-pill {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 3px 9px; border-radius: 999px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      font-size: 0.7rem; margin-bottom: 4px;
+    .early-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(5, 150, 105, 0.4);
     }
 
-    .tiny-pill-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: #ffb800; box-shadow: 0 0 6px rgba(255, 184, 0, 0.8);
+    .social-proof {
+      text-align: center;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.9);
+      margin-top: 24px;
     }
 
     footer {
-      margin-top: 32px; padding: 16px 4px 0;
-      font-size: 0.75rem; color: var(--muted); text-align: center;
+      text-align: center;
+      padding: 32px;
+      color: #9ca3af;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      .page { padding: 60px 20px; }
+      h1 { font-size: 2rem; }
+      .value-grid { grid-template-columns: 1fr; }
+      .comparison-grid { grid-template-columns: 1fr; }
+      .req-checklist { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <header>
-      <div class="logo">
-        <div class="logo-icon"><div class="logo-icon-inner">AS</div></div>
-        <span>AutoStreamPro</span>
+    <div class="header">
+      <div class="beta-label">
+        <span class="dot"></span>
+        <span>Beta Program Now Open</span>
       </div>
-      <nav>
-        <a href="/free-trial" class="nav-link">Free Trial</a>
-        <a href="/signup" class="nav-link">Sign Up</a>
-        <a href="/login" class="nav-link nav-cta">Sign In</a>
-      </nav>
-    </header>
 
-    <main>
-      <!-- HERO -->
-      <section class="hero">
-        <div class="hero-main">
-          <div class="pill">
-            <span class="pill-dot"></span>
-            <span>Founders Beta · Limited Spots</span>
-          </div>
-          <h1>Help Build the Stream Automation Engine You Actually Want</h1>
-          <p class="hero-sub">
-            AutoStreamPro watches your streams, finds the moments worth posting,
-            turns them into clips, and publishes them automatically — without hype or
-            fake promises. <strong>The Founders Beta lets you shape how it works.</strong>
-          </p>
+      <h1>Join the AutoStreamPro Founders Beta</h1>
 
-          <div class="hero-ctas">
-            <a href="https://forms.gle/38BnLqpAQFuNk41U7" class="btn btn-primary">
-              Apply for Beta Access
-            </a>
-            <a href="#how-it-works" class="btn btn-ghost">
-              How the Beta Works
-            </a>
-          </div>
+      <p class="subtitle">
+        We're hand-selecting 20-30 streamers to test our clip automation platform. 
+        In exchange, you get 30 days free + lifetime founder benefits.
+      </p>
 
-          <p class="hero-footnote">
-            We're opening a small number of slots for streamers who stream
-            consistently, want to save time, and are willing to give honest feedback.
-            No contracts. No obligation. Just real testing.
-          </p>
+      <a href="https://forms.gle/38BnLqpAQFuNk41U7" class="early-cta">Apply for Beta Access</a>
+    </div>
+
+    <div class="value-prop">
+      <h2>What's Actually Included</h2>
+      <div class="value-grid">
+        <div class="value-stat">
+          <span class="stat-number">$0</span>
+          <span class="stat-label">Cost for 30 days</span>
         </div>
 
-        <aside class="hero-aside">
-          <div class="aside-title">Who This Beta Is For</div>
-          <div class="aside-sub">
-            If this sounds like you, you're exactly who we want helping shape AutoStreamPro.
-          </div>
+        <div class="value-stat">
+          <span class="stat-number">20%</span>
+          <span class="stat-label">Off forever</span>
+        </div>
 
-          <div class="aside-grid">
-            <div class="aside-card">
-              <div class="aside-label">Streaming Schedule</div>
-              <div class="aside-value">3+ streams / week</div>
-              <div class="tagline">You're serious enough to be consistent.</div>
-            </div>
-            <div class="aside-card">
-              <div class="aside-label">Session Length</div>
-              <div class="aside-value">1–4+ hours</div>
-              <div class="tagline">Plenty of moments to capture.</div>
-            </div>
-            <div class="aside-card">
-              <div class="aside-label">Platforms</div>
-              <div class="aside-value">Kick · Twitch · YT Live</div>
-              <div class="tagline">Shorts/TikTok is a bonus.</div>
-            </div>
-            <div class="aside-card">
-              <div class="aside-label">Mindset</div>
-              <div class="aside-value">No BS. Real growth.</div>
-              <div class="tagline">You value time over hype.</div>
-            </div>
-          </div>
+        <div class="value-stat">
+          <span class="stat-number">∞</span>
+          <span class="stat-label">Founder status</span>
+        </div>
+      </div>
+    </div>
 
-          <ul class="checklist">
-            <li><span class="check-icon">✔</span><span>You want more clips without living in an editor.</span></li>
-            <li><span class="check-icon">✔</span><span>You're okay with "good automation now" instead of chasing perfect later.</span></li>
-            <li><span class="check-icon">✔</span><span>You're willing to say, "this part sucked, fix it."</span></li>
+    <section class="perks">
+      <div class="section-header">
+        <h2>Founder Perks</h2>
+        <p>What you get for being an early tester</p>
+      </div>
+
+      <div class="perk-list">
+        <div class="perk-item">
+          <div class="perk-icon">🎯</div>
+          <div class="perk-content">
+            <h3>Shape the Product</h3>
+            <p>Your feedback directly influences what we build. Request features, report bugs, suggest improvements. We're building this for you.</p>
+          </div>
+        </div>
+
+        <div class="perk-item">
+          <div class="perk-icon">⚡</div>
+          <div class="perk-content">
+            <h3>Early Access to Everything</h3>
+            <p>Test new features weeks before public release. See the roadmap. Know what's coming. Get first dibs on premium tools.</p>
+          </div>
+        </div>
+
+        <div class="perk-item">
+          <div class="perk-icon">💬</div>
+          <div class="perk-content">
+            <h3>Direct Developer Access</h3>
+            <p>Private Discord with the team building AutoStreamPro. No support tickets. No waiting days for responses. Real conversations.</p>
+          </div>
+        </div>
+
+        <div class="perk-item">
+          <div class="perk-icon">💰</div>
+          <div class="perk-content">
+            <h3>Locked-In Pricing Forever</h3>
+            <p>20% founders discount stays with you for life. As we add features and pricing changes, you're grandfathered in at founder rates.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="comparison">
+      <h3>Why Join the Beta vs. Waiting?</h3>
+      <div class="comparison-grid">
+        <div class="comparison-col">
+          <h4>Wait for Public Launch</h4>
+          <ul>
+            <li>Pay full price immediately</li>
+            <li>No input on features</li>
+            <li>Standard support queue</li>
+            <li>Miss founder benefits</li>
           </ul>
-
-          <p class="tagline">
-            <span class="highlight">Perk:</span> All beta testers get a permanent <strong>Founders Discount</strong> on every future plan.
-          </p>
-        </aside>
-      </section>
-
-      <!-- HOW BETA WORKS -->
-      <section id="how-it-works" class="block">
-        <h2>How the Founders Beta Works</h2>
-        <p class="section-intro">
-          This isn't a demo. You'll be using AutoStreamPro on real streams with real content.
-          Our job: make your content workflow lighter. Your job: help us make it better.
-        </p>
-        <div class="columns-2">
-          <div>
-            <h3>Step 1 – Apply</h3>
-            <ul>
-              <li>Fill out a short application (under 2 minutes).</li>
-              <li>Share your channel, schedule, and why you want in.</li>
-              <li>We review each application manually.</li>
-            </ul>
-
-            <h3>Step 2 – Onboarding</h3>
-            <ul>
-              <li>Connect your streaming platform(s).</li>
-              <li>Connect the short-form platforms you want AutoStreamPro to post to.</li>
-              <li>We walk you through your first test run.</li>
-            </ul>
-          </div>
-          <div>
-            <h3>Step 3 – Stream Like Normal</h3>
-            <ul>
-              <li>No overlays, no pop-ups, no extra buttons.</li>
-              <li>You go live exactly like you always do.</li>
-              <li>AutoStreamPro watches in the background and detects hype segments.</li>
-            </ul>
-
-            <h3>Step 4 – Review & Improve</h3>
-            <ul>
-              <li>Clips are batched and scheduled within a set window.</li>
-              <li>You tell us what worked, what missed, and what's annoying.</li>
-              <li>We use that feedback to improve the system before public launch.</li>
-            </ul>
-          </div>
         </div>
 
-        <div class="cta-stack">
-          <a href="https://forms.gle/38BnLqpAQFuNk41U7" class="btn btn-primary">
-            Apply to Join the Beta
-          </a>
-          <span style="font-size:0.78rem;color:var(--muted);">
-            We're prioritizing streamers who go live multiple times per week and want consistent clips without more work.
-          </span>
+        <div class="comparison-col">
+          <h4>Join Founders Beta</h4>
+          <ul>
+            <li>30 days completely free</li>
+            <li>Shape what we build</li>
+            <li>Direct line to developers</li>
+            <li>20% off for life</li>
+          </ul>
         </div>
-      </section>
+      </div>
+    </div>
 
-      <!-- WHAT YOU GET / WHAT WE ASK -->
-      <section class="block">
-        <h2>What You Get vs. What We Ask</h2>
-        <p class="section-intro">
-          You get real value. We get real-world feedback from serious creators. Fair trade.
-        </p>
-
-        <div class="columns-2">
-          <div>
-            <h3>What You Get <span class="badge">Beta Perks</span></h3>
-            <ul>
-              <li><strong>30 days of full access</strong> to AutoStreamPro.</li>
-              <li><strong>Early access</strong> to features before public release.</li>
-              <li><strong>Priority support</strong> directly from the builders.</li>
-              <li><strong>Founders Discount for life</strong> — locked pricing as we grow.</li>
-              <li><strong>First in line</strong> for future experiments and features.</li>
-            </ul>
-          </div>
-          <div>
-            <h3>What We Ask From You</h3>
-            <ul>
-              <li>Stream at least <strong>3 times per week</strong> during the beta.</li>
-              <li>Let the system run so we can gather real data.</li>
-              <li>Give <strong>honest feedback</strong> when something is confusing or broken.</li>
-              <li>Share <strong>real talk</strong> about clip quality, timing, and posting.</li>
-              <li>Keep beta features <strong>private</strong> until public launch.</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <!-- FIT CHECK -->
-      <section class="block">
-        <h2>Is This Beta Right For You?</h2>
-        <p class="section-intro">
-          We'd rather have a small group of serious streamers than a huge list of people who never log in.
-        </p>
-        <div class="columns-2">
-          <div>
-            <h3>Perfect Fit If...</h3>
-            <ul>
-              <li>You stream regularly and want to grow without burning out.</li>
-              <li>You're tired of saying "I'll clip it later" and never doing it.</li>
-              <li>You know consistent posting is your gap, not your gameplay.</li>
-              <li>You'd rather ship good clips automatically than chase perfect edits manually.</li>
-              <li>You like getting in early on tools that actually respect your time.</li>
-            </ul>
-          </div>
-          <div>
-            <h3>Probably Not For You If...</h3>
-            <ul>
-              <li>You only go live once every few weeks.</li>
-              <li>You never post clips and don't plan to.</li>
-              <li>You're looking for a magic "go viral now" button.</li>
-              <li>You don't want to touch anything that's still being refined.</li>
-            </ul>
-          </div>
+    <div class="requirements">
+      <h3>Beta Requirements</h3>
+      <div class="req-checklist">
+        <div class="req-item">
+          <div class="req-check">✓</div>
+          <div class="req-text">Stream 3+ times/week</div>
         </div>
 
-        <div class="cta-stack">
-          <a href="https://forms.gle/38BnLqpAQFuNk41U7" class="btn btn-primary">
-            I'm In – Let Me Apply
-          </a>
-          <a href="https://discord.gg/MB3jrkbG" class="btn btn-ghost">
-            Join the Founders Discord
-          </a>
-        </div>
-      </section>
-
-      <!-- FAQ -->
-      <section class="block">
-        <h2>Beta FAQ</h2>
-        <div class="section-intro">
-          Straight answers. No marketing fluff.
+        <div class="req-item">
+          <div class="req-check">✓</div>
+          <div class="req-text">1+ hour per stream</div>
         </div>
 
-        <div class="faq-item">
-          <div class="faq-q">Will AutoStreamPro make me go viral?</div>
-          <div class="faq-a">
-            No. AutoStreamPro doesn't control the algorithm. It helps you post more often
-            with less effort so you get more chances to be seen. That's the honest version.
-          </div>
+        <div class="req-item">
+          <div class="req-check">✓</div>
+          <div class="req-text">Provide weekly feedback</div>
         </div>
 
-        <div class="faq-item">
-          <div class="faq-q">Does it interrupt my gameplay or add overlays?</div>
-          <div class="faq-a">
-            No. AutoStreamPro watches your stream in the background. No overlays, no
-            pop-ups, no extra buttons to press while you're live.
-          </div>
+        <div class="req-item">
+          <div class="req-check">✓</div>
+          <div class="req-text">Kick, Twitch, or YouTube</div>
         </div>
+      </div>
+    </div>
 
-        <div class="faq-item">
-          <div class="faq-q">Which platforms can it post to?</div>
-          <div class="faq-a">
-            The goal is to handle TikTok, YouTube Shorts, Instagram Reels, and native
-            clips where possible — without you manually cutting, exporting, and uploading
-            every single time.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-q">How is this different from the normal free trial?</div>
-          <div class="faq-a">
-            The free trial lets anyone test the product. The Founders Beta gives you
-            direct influence on how it works, priority support, and a permanent founders
-            discount for helping us shape the final version.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-q">What happens after the beta?</div>
-          <div class="faq-a">
-            If you love it, you can roll straight into the public release with
-            your founders discount locked in. If it's not for you, you walk away with
-            zero obligation and (hopefully) a lighter content workflow for a month.
-          </div>
-        </div>
-      </section>
-
-      <!-- FINAL CTA -->
-      <section class="block">
-        <div class="tiny-pill">
-          <span class="tiny-pill-dot"></span>
-          <span>Limited Founders Spots</span>
-        </div>
-        <h2>Stop Losing Moments. Help Build the Tool That Saves Them.</h2>
-        <p class="section-intro">
-          Every stream is full of moments worth posting. Most of them never leave your VOD.
-          AutoStreamPro is here to change that — and your feedback is what makes it real.
-        </p>
-        <div class="cta-stack">
-          <a href="https://forms.gle/38BnLqpAQFuNk41U7" class="btn btn-primary">
-            Apply for Founders Beta
-          </a>
-          <a href="/free-trial" class="btn btn-ghost">
-            Just Give Me the Standard Free Trial
-          </a>
-        </div>
-      </section>
-    </main>
+    <div class="cta-section">
+      <h2>Ready to Join?</h2>
+      <p>Applications are reviewed within 24-48 hours</p>
+      <a href="https://forms.gle/38BnLqpAQFuNk41U7" class="cta-button">Apply for Beta Access</a>
+      <div class="social-proof">✓ We review every application personally</div>
+    </div>
 
     <footer>
-      AutoStreamPro · Built for streamers who are tired of editing instead of playing.
+      AutoStreamPro · Built by streamers who got tired of editing clips at 2am
     </footer>
   </div>
 </body>
-
 </html>
