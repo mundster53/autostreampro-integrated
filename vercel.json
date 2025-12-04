@@ -1,6 +1,6 @@
 {
   "outputDirectory": ".",
-  "cleanUrls": true,
+  "cleanUrls": false,
   "rewrites": [
     {
       "source": "/api/clips/:path*",
