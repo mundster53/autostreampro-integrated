@@ -558,14 +558,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         // Connect TikTok
-document.getElementById('tiktokBtn').addEventListener('click', () => {
-    const state = Math.random().toString(36).substring(7);
+document.getElementById('tiktokBtn').addEventListener('click', async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        alert('Please log in first');
+        return;
+    }
+    
+    const state = btoa(JSON.stringify({ userId: user.id, timestamp: Date.now() }));
     sessionStorage.setItem('tiktok_oauth_state', state);
     
-    const redirectUri = 'https://www.autostreampro.com/auth/tiktok.html';  // Points to your existing file
+    const redirectUri = 'https://api.autostreampro.com/api/tiktok-callback';
     const authUrl = 'https://www.tiktok.com/v2/auth/authorize/' +
         '?client_key=' + 'awjxvzdv42wi6hjn' +
-        '&scope=user.info.basic,video.upload' +
+        '&scope=user.info.basic,video.upload,video.publish' +
         '&response_type=code' +
         '&redirect_uri=' + encodeURIComponent(redirectUri) +
         '&state=' + state;
