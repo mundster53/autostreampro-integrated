@@ -89,8 +89,8 @@
         
         setTimeout(() => {
             activityList.innerHTML += `
-                <div class="feed-item">✅ Posted to TikTok successfully!</div>
-                <div class="feed-item">📱 View on TikTok: <a href="#" onclick="alert('Would open TikTok post')">tiktok.com/@user/video/123</a></div>
+                <div class="feed-item">✅ Posted to YouTube successfully!</div>
+                <div class="feed-item">📱 View on YouTube: <a href="#" onclick="alert('Would open YouTube post')">youtube.com/shorts/f1TPAjrktNE</a></div>
             `;
         }, 3000);
     }
