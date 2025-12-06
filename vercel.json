@@ -1,6 +1,13 @@
 {
   "outputDirectory": ".",
   "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/auto-clip-maker",
+      "destination": "/free-trial",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/clips/:path*",
