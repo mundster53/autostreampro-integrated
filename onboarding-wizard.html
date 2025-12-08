@@ -267,12 +267,19 @@ function markYouTubeSelected() {
       if (!user) { alert('Please log in first'); window.location.href='/login.html'; return; }
 
       try {
+        console.log('[Kick Connect] Attempting connection for user:', user.id, 'username:', username);
+        
         const resp = await fetch('https://autostreampro-backend-production.up.railway.app/api/connect-kick', {
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ userId: user.id, kickUsername: username })
         });
+        
+        console.log('[Kick Connect] Response status:', resp.status);
+        
         const result = await resp.json();
+        console.log('[Kick Connect] Result:', result);
+        
         if (result.success) {
           if (valEl) {
             valEl.className = 'validation-message success';
@@ -281,6 +288,7 @@ function markYouTubeSelected() {
           }
           document.getElementById('nextBtn').disabled = false; // allow Next
         } else {
+          console.error('[Kick Connect] Server returned error:', result.error);
           if (valEl) {
             valEl.className = 'validation-message error';
             valEl.textContent = result.error || 'Could not verify that Kick channel';
@@ -288,9 +296,10 @@ function markYouTubeSelected() {
           }
         }
       } catch (e) {
+        console.error('[Kick Connect] Network/fetch error:', e.name, e.message);
         if (valEl) {
           valEl.className = 'validation-message error';
-          valEl.textContent = 'Connection error. Please try again.';
+          valEl.textContent = 'Network error - try refreshing or use a different browser. (Error: ' + e.message + ')';
           valEl.style.display = 'block';
         }
       }
