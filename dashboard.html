@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AutoStreamPro - Dashboard</title>
+    <!-- dashboard.html v3.0 - Simplified, fixed 50% threshold (admin-controlled) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
@@ -454,9 +455,6 @@
         .toast.success { background: #10b981; }
         .toast.error { background: #ef4444; }
 
-                .toast.success { background: #10b981; }
-        .toast.error { background: #ef4444; }
-        
         /* Modal for monitoring notification */
         .modal-overlay {
             position: fixed;
@@ -759,54 +757,32 @@
                         <button onclick="window.open('/demo-features.html', '_blank')" class="demo-button" style="width: auto; margin: 0; padding: 0.5rem 1rem; font-size: 0.85rem;">
                             Upload to Youtube
                         </button>
-                        
-
                     </div>
 
-                    <!-- Threshold Control -->
-                    <div style="background: #f5f5f5; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
-                        <h2 style="margin-bottom: 10px; color: #1f2937;">Viral Score Threshold</h2>
-                        <p style="color: #64748b; margin-bottom: 20px;">Only clips scoring above this threshold will be automatically posted to your social media channels.</p>
-                        
-                        <div style="display: flex; align-items: center; gap: 20px; margin: 20px 0;">
-                            <span>0%</span>
-                            <input type="range" min="0" max="100" value="40" id="thresholdSlider" style="flex: 1; height: 8px;">
-                            <span>100%</span>
-                            <div id="thresholdValue" style="font-size: 36px; font-weight: bold; color: #4CAF50; min-width: 100px; text-align: center;">40%</div>
-                        </div>
-                        
-                        <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 14px; color: #666;">
-                            <span>🎮 New Streamer: 30%</span>
-                            <span>📈 Growing: 40%</span>
-                            <span>⭐ Established: 60%</span>
-                        </div>
-                        
-                        <button onclick="saveThreshold()" style="background: #4CAF50; color: white; border: none; padding: 10px 30px; border-radius: 6px; font-size: 16px; cursor: pointer; margin-top: 20px;">Save Threshold</button>
-                    </div>
+                    <!-- REMOVED: Threshold Control slider - now admin-controlled at 50% -->
 
                     <!-- Global Auto-Publish Settings -->
-<div style="background: #f0f9ff; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #3b82f6;">
-    <h3 style="color: #1f2937; margin-bottom: 15px;">🚀 Global Auto-Publish Settings</h3>
-    
-    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-            <input type="checkbox" id="globalAutoPublish" onchange="toggleGlobalAutoPublish()" 
-                   style="width: 20px; height: 20px; cursor: pointer;">
-            <span style="font-size: 16px; font-weight: 500;">
-                Automatically publish ALL clips above threshold
-            </span>
-        </label>
-    </div>
-    
-    <div style="background: #fff; padding: 10px; border-radius: 8px; margin-top: 10px;">
-        <p style="color: #64748b; margin: 0; font-size: 14px;">
-            ✅ Clips scoring above <span id="autoThreshold" style="font-weight: bold;">40%</span> will auto-upload<br>
-            ⚡ YouTube Shorts (≤60s): Limited by membership tier (5 - 20 shorts per day)<br>
-            ⏰ Long videos (>60s): Limited to 6 per day<br>
-    
-        </p>
-    </div>
-</div>
+                    <div style="background: #f0f9ff; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #3b82f6;">
+                        <h3 style="color: #1f2937; margin-bottom: 15px;">🚀 Auto-Publish Settings</h3>
+                        
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" id="globalAutoPublish" onchange="toggleGlobalAutoPublish()" 
+                                       style="width: 20px; height: 20px; cursor: pointer;">
+                                <span style="font-size: 16px; font-weight: 500;">
+                                    Automatically publish clips above threshold
+                                </span>
+                            </label>
+                        </div>
+                        
+                        <div style="background: #fff; padding: 10px; border-radius: 8px; margin-top: 10px;">
+                            <p style="color: #64748b; margin: 0; font-size: 14px;">
+                                ✅ Clips scoring above <span style="font-weight: bold;">50%</span> will auto-upload<br>
+                                ⚡ YouTube Shorts (≤60s): Limited by membership tier (5 - 20 shorts per day)<br>
+                                ⏰ Long videos (>60s): Limited to 6 per day
+                            </p>
+                        </div>
+                    </div>
 
                     <!-- Clips Table -->
                     <div class="clips-table-container">
@@ -815,7 +791,7 @@
                                 <tr>
                                     <th>Clip</th>
                                     <th>AI Title & Tags</th>
-                                    <th>Score</th>
+                                    <th>AutoStreamPro Score</th>
                                     <th>Status</th>
                                     <th>Posted To</th>
                                 </tr>
@@ -934,29 +910,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- TEMPORARY FOR TIKTOK APPROVAL - Remove after approval -->
-// <div style="background: #f0f0f0; padding: 20px; margin: 20px 0; border-radius: 8px; border: 2px dashed #666;">
-//    <h3>TikTok Upload Demo (Sandbox)</h3>
-//     <p>Demonstrating video.upload scope capability:</p>
-//     <button onclick="demoTikTokUpload()" style="background: #000; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
-   //     📤 Upload Clip to TikTok
-//    </button>
-//    <div id="tiktok-demo-result" style="margin-top: 10px;"></div>
-// </div>
-
-// <script>
-// TEMPORARY FOR TIKTOK APPROVAL
-// function demoTikTokUpload() {
-    // document.getElementById('tiktok-demo-result').innerHTML = 
-   //     '<div style="color: green;">✓ Video upload initiated via Content Posting API (video.upload scope)</div>';
-   //     // ADD THESE 3 LINES
-   // setTimeout(() => {
-   //     alert('Clip successfully queued for TikTok! User will be notified when posted.');
-   // }, 1000);
-//}
-// END TEMPORARY
-</script>
             </div>
 
             <!-- Right Sidebar -->
@@ -1010,9 +963,8 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
-<!-- Current Game Setting -->
+                    <!-- Current Game Setting -->
                     <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
                         <label style="display: block; font-size: 0.9rem; color: #888; margin-bottom: 8px;">🎮 Current Game (for clip titles)</label>
                         <div style="display: flex; gap: 8px;">
@@ -1064,28 +1016,8 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-// Threshold slider update
-document.getElementById('thresholdSlider').addEventListener('input', (e) => {
-    document.getElementById('thresholdValue').textContent = e.target.value + '%';
-});
-
-// Load user's saved threshold when dashboard loads
-async function loadUserThreshold() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    
-    const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('virality_threshold')
-        .eq('user_id', user.id)
-        .single();
-    
-    if (profile && profile.virality_threshold) {
-        const threshold = Math.round(profile.virality_threshold * 100);
-        document.getElementById('thresholdSlider').value = threshold;
-        document.getElementById('thresholdValue').textContent = threshold + '%';
-    }
-}
+// FIXED threshold - admin controlled (50%)
+const FIXED_THRESHOLD = 0.50;
 
 // Load monitoring status
 async function loadMonitoringStatus() {
@@ -1148,38 +1080,6 @@ function getTimeAgo(date) {
     return `${hours}h ago`;
 }
 
-
-// Save threshold
-async function saveThreshold() {
-    try {
-        const threshold = document.getElementById('thresholdSlider').value / 100;
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) {
-            showToast('Please log in first', 'error');
-            return;
-        }
-        
-        const response = await fetch('https://autostreampro-backend-production.up.railway.app/api/update-threshold', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userId: user.id,
-                threshold: threshold
-            })
-        });
-        
-        if (response.ok) {
-            showToast(`Threshold saved: ${threshold * 100}%`, 'success');
-        } else {
-            showToast('Failed to save threshold', 'error');
-        }
-    } catch (error) {
-        showToast('Failed to save threshold', 'error');
-        console.error('Save threshold error:', error);
-    }
-}
-
 // Load clips from database
 async function loadClips() {
     const { data: { user } } = await supabase.auth.getUser();
@@ -1222,7 +1122,7 @@ function displayClips(clips) {
                     <div style="width: 100px; background: #e0e0e0; height: 8px; border-radius: 4px;">
                         <div style="width: ${clip.ai_score * 100}%; background: ${getScoreColor(clip.ai_score)}; height: 100%; border-radius: 4px;"></div>
                     </div>
-                    <span>${Math.round(clip.ai_score * 100)}%</span>
+                    <span title="AutoStreamPro internal quality rating">${Math.round(clip.ai_score * 100)}%</span>
                 </div>
             </td>
             <td>
@@ -1245,8 +1145,8 @@ function displayClips(clips) {
                         Auto-publish
                     </label>
                     <button onclick="deleteClip('${clip.id}')" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-top: 8px; display: block;">
-    🗑️ Delete
-</button>
+                        🗑️ Delete
+                    </button>
                 </div>
             </td>
         </tr>
@@ -1280,14 +1180,12 @@ async function publishToYouTube(clipId) {
         button.disabled = true;
         button.textContent = '⏳ Publishing...';
         
-        // Get current user
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             showToast('Please log in first', 'error');
             return;
         }
         
-        // Call the upload-to-youtube function directly
         const response = await fetch('/.netlify/functions/upload-to-youtube', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1300,8 +1198,6 @@ async function publishToYouTube(clipId) {
             button.textContent = '✅ Published';
             button.style.background = '#4CAF50';
             showToast(`Published to YouTube! ${result.youtubeUrl || ''}`, 'success');
-            
-            // Reload clips to update status
             loadClips();
         } else {
             button.disabled = false;
@@ -1317,7 +1213,6 @@ async function publishToYouTube(clipId) {
 // TikTok publishing variables
 let currentTikTokClipId = null;
 
-// Show TikTok publish modal
 function showTikTokPublishModal(clipId, title) {
     const titleMatch = title.match(/'([^']+)'/);
     const cleanTitle = titleMatch ? titleMatch[1] : 'Gaming Clip';
@@ -1331,15 +1226,12 @@ function showTikTokPublishModal(clipId, title) {
     document.getElementById('tiktokModal').style.display = 'block';
 }
 
-// Close TikTok modal
 function closeTikTokModal() {
     document.getElementById('tiktokModal').style.display = 'none';
     currentTikTokClipId = null;
 }
 
-// Updated publishToTikTok function
 async function publishToTikTok(clipId) {
-    // Get the clip data first to get the title
     const { data: clips } = await supabase
         .from('clips')
         .select('viral_title, title')
@@ -1350,7 +1242,6 @@ async function publishToTikTok(clipId) {
     showTikTokPublishModal(clipId, title);
 }
 
-// Confirmed TikTok publish
 async function publishToTikTokConfirmed() {
     const title = document.getElementById('tiktokTitle').value;
     const privacy = document.getElementById('tiktokPrivacy').value;
@@ -1383,7 +1274,6 @@ async function publishToTikTokConfirmed() {
         if (result.success) {
             closeTikTokModal();
             showToast('Video uploaded to TikTok! Processing may take a few minutes.', 'success');
-            // Refresh clips after a delay
             setTimeout(loadClips, 3000);
         } else {
             alert('Failed to upload: ' + result.error);
@@ -1393,13 +1283,11 @@ async function publishToTikTokConfirmed() {
     }
 }
 
-// Replace lines 738-741 with this:
 async function toggleAutoPublish(clipId, enabled) {
     try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         
-        // Update clip's auto-publish status
         const { error } = await supabase
             .from('clips')
             .update({ 
@@ -1417,7 +1305,6 @@ async function toggleAutoPublish(clipId, enabled) {
             'success'
         );
         
-        // If enabled, trigger immediate upload
         if (enabled) {
             publishToYouTube(clipId);
         }
@@ -1430,7 +1317,6 @@ async function toggleAutoPublish(clipId, enabled) {
 // Check authentication and load dashboard
 async function loadDashboard() {
     try {
-        // Check if user is authenticated
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         
         if (authError || !user) {
@@ -1439,15 +1325,12 @@ async function loadDashboard() {
             return;
         }
 
-        // Display user email
         document.getElementById('userEmail').textContent = user.email;
 
-        // Load all dashboard data
         await loadUserStats();
         await loadPlatformConnections();
-        await loadUserThreshold();
         await loadClips();
-         await loadAutoPublishSettings();
+        await loadAutoPublishSettings();
 
     } catch (error) {
         console.error('Dashboard loading error:', error);
@@ -1458,12 +1341,10 @@ async function loadDashboard() {
 // Load user stats from database
 async function loadUserStats() {
     try {
-        // For now, display default values since we don't have streaming data yet
         document.getElementById('activeStreams').textContent = '0';
         document.getElementById('totalViews').textContent = '0';
         document.getElementById('revenue').textContent = '$0';
         
-        // Update change indicators
         document.getElementById('streamsChange').textContent = 'No active streams';
         document.getElementById('viewsChange').textContent = 'Start streaming to track views';
         document.getElementById('revenueChange').textContent = 'No revenue yet';
@@ -1478,7 +1359,6 @@ async function loadPlatformConnections() {
     console.log('Loading platform connections...');
     
     try {
-        // Get current user
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         
         if (!user) {
@@ -1486,7 +1366,6 @@ async function loadPlatformConnections() {
             return;
         }
         
-        // Query the streaming_connections table with the current user's ID
         const { data, error } = await supabase
             .from('streaming_connections')
             .select('*')
@@ -1499,7 +1378,6 @@ async function loadPlatformConnections() {
             
             let connectedCount = 0;
             
-            // Check each platform
             const platforms = ['twitch', 'youtube', 'tiktok', 'kick'];
             platforms.forEach(platform => {
                 const connected = data.some(conn => conn.platform === platform && conn.is_active);
@@ -1513,12 +1391,10 @@ async function loadPlatformConnections() {
                 }
             });
             
-            // Update connected count
             document.getElementById('connectedPlatforms').textContent = connectedCount;
             
         } else {
             console.log('No platform connections found');
-            // Set all to disconnected
             ['twitch', 'youtube', 'tiktok', 'kick'].forEach(platform => {
                 document.getElementById(`${platform}-status`).textContent = 'Visit Setup';
                 document.getElementById(`${platform}-status`).className = 'connection-status disconnected';
@@ -1544,7 +1420,6 @@ async function signOut() {
 }
 
 // Stream monitoring activation
-// Stream monitoring activation
 async function toggleMonitoring() {
     try {
         const btn = document.getElementById('goingLiveBtn');
@@ -1568,7 +1443,6 @@ async function toggleMonitoring() {
             return;
         }
         
-        // Get current monitoring status
         const { data: connections } = await supabase
             .from('streaming_connections')
             .select('platform, monitor, platform_username, channel')
@@ -1582,16 +1456,13 @@ async function toggleMonitoring() {
             return;
         }
         
-        // Check if any monitoring is currently active
         const hasActiveMonitoring = connections.some(c => c.monitor === true);
         
         if (hasActiveMonitoring) {
-            // PAUSE monitoring
             await pauseMonitoring(user.id, connections);
             showToast('Monitoring paused', 'success');
             updateMonitoringButton(false, null);
         } else {
-            // START monitoring
             await startMonitoring(user.id, session.access_token, connections);
             showToast('Monitoring activated!', 'success');
             await loadMonitoringStatus();
@@ -1678,13 +1549,10 @@ document.addEventListener('DOMContentLoaded', () => {
     loadMonitoringStatus();
     loadCurrentGame();
     
-    // Refresh data every 30 seconds
-    // Clear any existing interval first
-if (window.dashboardInterval) {
-    clearInterval(window.dashboardInterval);
-}
-// Set new interval and store reference
-window.dashboardInterval = setInterval(refreshDashboard, 300000);
+    if (window.dashboardInterval) {
+        clearInterval(window.dashboardInterval);
+    }
+    window.dashboardInterval = setInterval(refreshDashboard, 300000);
 });
 
 // Handle authentication state changes
@@ -1693,6 +1561,7 @@ supabase.auth.onAuthStateChange((event, session) => {
         window.location.href = '/login.html';
     }
 });
+
 // Global auto-publish toggle
 async function toggleGlobalAutoPublish() {
     try {
@@ -1706,13 +1575,13 @@ async function toggleGlobalAutoPublish() {
             return;
         }
         
-        // Update user preferences
+        // Use FIXED threshold
         const { error } = await supabase
             .from('user_preferences')
             .upsert({
                 user_id: user.id,
                 auto_publish_enabled: enabled,
-                viral_threshold: parseFloat(document.getElementById('thresholdSlider').value) / 100,
+                viral_threshold: FIXED_THRESHOLD,
                 updated_at: new Date().toISOString()
             }, {
                 onConflict: 'user_id'
@@ -1721,12 +1590,11 @@ async function toggleGlobalAutoPublish() {
         if (error) throw error;
         
         showToast(enabled ? 
-            '✅ Global auto-publish ENABLED! All clips above threshold will upload automatically.' : 
+            '✅ Global auto-publish ENABLED! All clips above 50% will upload automatically.' : 
             '⏸️ Global auto-publish DISABLED. Clips require manual approval.', 
             'success'
         );
         
-        // If enabling, process any pending clips
         if (enabled) {
             processPendingClips();
         }
@@ -1743,22 +1611,20 @@ async function processPendingClips() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         
-        // Get all clips above threshold
+        // Use FIXED threshold
         const { data: clips } = await supabase
             .from('clips')
             .select('*')
             .eq('user_id', user.id)
-            .gte('ai_score', 0.40)
+            .gte('ai_score', FIXED_THRESHOLD)
             .in('status', ['queued', 'ready'])
             .is('posted_platforms', null);
         
         if (clips && clips.length > 0) {
             showToast(`Processing ${clips.length} pending clips...`, 'success');
             
-            // Process each clip
             for (const clip of clips) {
                 await publishToYouTube(clip.id);
-                // Add delay to avoid rate limits
                 await new Promise(resolve => setTimeout(resolve, 2000));
             }
         }
@@ -1777,7 +1643,6 @@ async function deleteClip(clipId) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         
-        // Call delete function
         const response = await fetch('/.netlify/functions/delete-clip', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1791,7 +1656,7 @@ async function deleteClip(clipId) {
         
         if (result.success) {
             showToast('Clip deleted successfully', 'success');
-            loadClips(); // Reload clips table
+            loadClips();
         } else {
             showToast(result.error || 'Failed to delete clip', 'error');
         }
@@ -1809,15 +1674,12 @@ async function loadAutoPublishSettings() {
         
         const { data: prefs } = await supabase
             .from('user_preferences')
-            .select('auto_publish_enabled, viral_threshold')
+            .select('auto_publish_enabled')
             .eq('user_id', user.id)
             .single();
         
         if (prefs) {
             document.getElementById('globalAutoPublish').checked = prefs.auto_publish_enabled || false;
-            // Update threshold display
-            const threshold = Math.round((prefs.viral_threshold || 0.40) * 100);
-            document.getElementById('autoThreshold').textContent = `${threshold}%`;
         }
     } catch (error) {
         console.error('Load settings error:', error);
@@ -1829,12 +1691,12 @@ function closeMonitoringModal() {
     document.getElementById('monitoringModal').style.display = 'none';
 }
 
-// ========== ADD DISCORD FUNCTIONS HERE ==========
+// Discord functions placeholder
 async function checkDiscordConnection() {
-    // ... (rest of the Discord functions from the artifact)
+    // Discord webhook check logic
 }
 
-// ========== CURRENT GAME FUNCTIONS ==========
+// Current Game functions
 async function loadCurrentGame() {
     try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -1894,6 +1756,7 @@ async function saveCurrentGame() {
 }
 
 </script>
+
 <div id="monitoringModal" class="modal-overlay">
     <div class="modal-content">
         <h2 style="font-size: 2rem; color: #10b981; margin-bottom: 1rem;">✅ Stream Monitoring Active!</h2>
