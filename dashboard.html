@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AutoStreamPro - Dashboard</title>
-    <!-- dashboard.html v3.0 - Simplified, fixed 50% threshold (admin-controlled) -->
+    <!-- dashboard.html v3.1 - Added AI consent checkbox & YouTube privacy for API compliance -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
@@ -727,6 +727,62 @@
             color: white;
             font-size: 14px;
         }
+
+        /* AI Consent Checkbox Styling - YouTube API Compliance */
+        .consent-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s ease;
+            margin-bottom: 15px;
+        }
+
+        .consent-checkbox:hover {
+            border-color: #3b82f6;
+        }
+
+        .consent-checkbox.checked {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .consent-checkbox input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            margin-top: 2px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .consent-checkbox .consent-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #374151;
+        }
+
+        .consent-checkbox .consent-text strong {
+            color: #1f2937;
+        }
+
+        .privacy-dropdown {
+            padding: 10px 14px;
+            font-size: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            min-width: 150px;
+        }
+
+        .privacy-dropdown:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
     </style>
 </head>
     
@@ -761,24 +817,49 @@
 
                     <!-- REMOVED: Threshold Control slider - now admin-controlled at 50% -->
 
-                    <!-- Global Auto-Publish Settings -->
+                    <!-- Publishing Settings with AI Consent - YouTube API Compliant (III.C.1, III.C.3) -->
                     <div style="background: #f0f9ff; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #3b82f6;">
-                        <h3 style="color: #1f2937; margin-bottom: 15px;">🚀 Auto-Publish Settings</h3>
+                        <h3 style="color: #1f2937; margin-bottom: 15px;">🎬 Publishing Settings</h3>
                         
-                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <!-- AI Consent Checkbox - MUST be unchecked by default per YouTube API compliance -->
+                        <label class="consent-checkbox" id="aiConsentLabel">
+                            <input type="checkbox" id="aiContentConsent" onchange="updateAIConsent(this)">
+                            <span class="consent-text">
+                                <strong>Enable AI-Powered Optimization</strong><br>
+                                I authorize AutoStreamPro to automatically generate and apply AI-powered titles, descriptions, and tags to my clips before publishing to YouTube and other platforms.
+                            </span>
+                        </label>
+                        
+                        <!-- Default YouTube Privacy Setting -->
+                        <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap; margin-bottom: 15px;">
+                            <label style="font-weight: 500; color: #374151;">
+                                📺 Default YouTube Privacy:
+                            </label>
+                            <select id="youtubePrivacyDefault" class="privacy-dropdown" onchange="updatePrivacyDefault(this)">
+                                <option value="public">Public</option>
+                                <option value="unlisted" selected>Unlisted</option>
+                                <option value="private">Private</option>
+                            </select>
+                            <span style="font-size: 13px; color: #6b7280;">(Applied to all uploads)</span>
+                        </div>
+
+                        <!-- Auto-Publish Toggle -->
+                        <div style="padding-top: 15px; border-top: 1px solid #e5e7eb;">
                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                                 <input type="checkbox" id="globalAutoPublish" onchange="toggleGlobalAutoPublish()" 
                                        style="width: 20px; height: 20px; cursor: pointer;">
                                 <span style="font-size: 16px; font-weight: 500;">
-                                    Automatically publish clips above threshold
+                                    🚀 Auto-publish clips scoring above 50%
                                 </span>
                             </label>
+                            <p style="color: #64748b; margin: 8px 0 0 30px; font-size: 13px;">
+                                Requires AI optimization to be enabled above
+                            </p>
                         </div>
                         
-                        <div style="background: #fff; padding: 10px; border-radius: 8px; margin-top: 10px;">
+                        <div style="background: #fff; padding: 10px; border-radius: 8px; margin-top: 15px;">
                             <p style="color: #64748b; margin: 0; font-size: 14px;">
-                                ✅ Clips scoring above <span style="font-weight: bold;">50%</span> will auto-upload<br>
-                                ⚡ YouTube Shorts (≤60s): Limited by membership tier (5 - 20 shorts per day)<br>
+                                ⚡ YouTube Shorts (≤60s): Limited by membership tier (5 - 20 per day)<br>
                                 ⏰ Long videos (>60s): Limited to 6 per day
                             </p>
                         </div>
@@ -1562,16 +1643,25 @@ supabase.auth.onAuthStateChange((event, session) => {
     }
 });
 
-// Global auto-publish toggle
+// Global auto-publish toggle - requires AI consent per YouTube API compliance
 async function toggleGlobalAutoPublish() {
+    const autoPublishCheckbox = document.getElementById('globalAutoPublish');
+    const aiConsentCheckbox = document.getElementById('aiContentConsent');
+    
+    // Require AI consent to be enabled for auto-publish
+    if (autoPublishCheckbox.checked && !aiConsentCheckbox.checked) {
+        autoPublishCheckbox.checked = false;
+        showToast('Please enable AI optimization first', 'error');
+        return;
+    }
+    
     try {
-        const checkbox = document.getElementById('globalAutoPublish');
-        const enabled = checkbox.checked;
+        const enabled = autoPublishCheckbox.checked;
         
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             showToast('Please log in first', 'error');
-            checkbox.checked = false;
+            autoPublishCheckbox.checked = false;
             return;
         }
         
@@ -1590,8 +1680,8 @@ async function toggleGlobalAutoPublish() {
         if (error) throw error;
         
         showToast(enabled ? 
-            '✅ Global auto-publish ENABLED! All clips above 50% will upload automatically.' : 
-            '⏸️ Global auto-publish DISABLED. Clips require manual approval.', 
+            '🚀 Auto-publish enabled! Clips above 50% will upload automatically.' : 
+            '⏸️ Auto-publish disabled. Clips require manual approval.', 
             'success'
         );
         
@@ -1666,7 +1756,7 @@ async function deleteClip(clipId) {
     }
 }
 
-// Load user's auto-publish settings
+// Load user's publishing settings (AI consent, privacy default, auto-publish)
 async function loadAutoPublishSettings() {
     try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -1674,15 +1764,88 @@ async function loadAutoPublishSettings() {
         
         const { data: prefs } = await supabase
             .from('user_preferences')
-            .select('auto_publish_enabled')
+            .select('auto_publish_enabled, ai_content_consent, youtube_privacy_default')
             .eq('user_id', user.id)
             .single();
         
         if (prefs) {
+            // AI Consent - MUST default to FALSE (unchecked) per YouTube API compliance
+            const aiConsent = prefs.ai_content_consent === true;
+            document.getElementById('aiContentConsent').checked = aiConsent;
+            if (aiConsent) {
+                document.getElementById('aiConsentLabel').classList.add('checked');
+            }
+            
+            // YouTube Privacy Default
+            if (prefs.youtube_privacy_default) {
+                document.getElementById('youtubePrivacyDefault').value = prefs.youtube_privacy_default;
+            }
+            
+            // Auto-publish
             document.getElementById('globalAutoPublish').checked = prefs.auto_publish_enabled || false;
         }
     } catch (error) {
         console.error('Load settings error:', error);
+    }
+}
+
+// Update AI content consent - YouTube API Compliance (III.C.3)
+async function updateAIConsent(checkbox) {
+    const label = document.getElementById('aiConsentLabel');
+    
+    if (checkbox.checked) {
+        label.classList.add('checked');
+    } else {
+        label.classList.remove('checked');
+        // If disabling AI consent, also disable auto-publish
+        document.getElementById('globalAutoPublish').checked = false;
+    }
+    
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        const { error } = await supabase
+            .from('user_preferences')
+            .upsert({
+                user_id: user.id,
+                ai_content_consent: checkbox.checked,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id' });
+        
+        if (error) throw error;
+        
+        showToast(checkbox.checked ? 
+            '✅ AI optimization enabled' : 
+            '⏸️ AI optimization disabled', 
+            'success'
+        );
+    } catch (error) {
+        console.error('AI consent error:', error);
+        showToast('Failed to save setting', 'error');
+    }
+}
+
+// Update default YouTube privacy - YouTube API Compliance (III.C.1)
+async function updatePrivacyDefault(select) {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        const { error } = await supabase
+            .from('user_preferences')
+            .upsert({
+                user_id: user.id,
+                youtube_privacy_default: select.value,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id' });
+        
+        if (error) throw error;
+        
+        showToast(`YouTube default: ${select.value}`, 'success');
+    } catch (error) {
+        console.error('Privacy default error:', error);
+        showToast('Failed to save setting', 'error');
     }
 }
 
