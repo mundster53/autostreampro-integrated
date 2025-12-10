@@ -1012,6 +1012,19 @@
                     </div>
                 </div>
 
+<!-- Current Game Setting -->
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <label style="display: block; font-size: 0.9rem; color: #888; margin-bottom: 8px;">🎮 Current Game (for clip titles)</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="currentGameInput" placeholder="e.g., Battlefield 6, Fortnite, Valorant" 
+                                style="flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #fff; font-size: 0.95rem;">
+                            <button onclick="saveCurrentGame()" 
+                                style="padding: 10px 16px; border-radius: 8px; border: none; background: #6366f1; color: white; cursor: pointer; font-weight: 500;">Save</button>
+                        </div>
+                        <div id="gameSavedIndicator" style="font-size: 0.8rem; color: #22c55e; margin-top: 6px; display: none;">✓ Game saved!</div>
+                    </div>
+                </div>
+
                 <!-- Quick Actions -->
                 <div class="actions-card">
                     <h3 class="section-title" style="font-size: 1.1rem;">Quick Actions</h3>
@@ -1663,6 +1676,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDashboard();
     checkDiscordConnection();
     loadMonitoringStatus();
+    loadCurrentGame();
     
     // Refresh data every 30 seconds
     // Clear any existing interval first
@@ -1818,6 +1832,65 @@ function closeMonitoringModal() {
 // ========== ADD DISCORD FUNCTIONS HERE ==========
 async function checkDiscordConnection() {
     // ... (rest of the Discord functions from the artifact)
+}
+
+// ========== CURRENT GAME FUNCTIONS ==========
+async function loadCurrentGame() {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        const { data: connections } = await supabase
+            .from('streaming_connections')
+            .select('current_game')
+            .eq('user_id', user.id)
+            .not('current_game', 'is', null)
+            .limit(1);
+        
+        if (connections && connections.length > 0 && connections[0].current_game) {
+            document.getElementById('currentGameInput').value = connections[0].current_game;
+        }
+    } catch (err) {
+        console.error('Error loading current game:', err);
+    }
+}
+
+async function saveCurrentGame() {
+    const gameInput = document.getElementById('currentGameInput');
+    const gameName = gameInput.value.trim();
+    const indicator = document.getElementById('gameSavedIndicator');
+    
+    if (!gameName) {
+        showToast('Please enter a game name', 'error');
+        return;
+    }
+    
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            showToast('Please log in first', 'error');
+            return;
+        }
+        
+        const { error } = await supabase
+            .from('streaming_connections')
+            .update({ current_game: gameName })
+            .eq('user_id', user.id);
+        
+        if (error) throw error;
+        
+        indicator.style.display = 'block';
+        showToast('Game saved: ' + gameName, 'success');
+        
+        setTimeout(() => {
+            indicator.style.display = 'none';
+        }, 3000);
+        
+        console.log('Current game saved:', gameName);
+    } catch (err) {
+        console.error('Error saving current game:', err);
+        showToast('Failed to save game', 'error');
+    }
 }
 
 </script>
