@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AutoStreamPro - Quick Setup</title>
+  <!-- onboarding-wizard.html v3.0 - Simplified 4-step wizard, fixed 50% threshold -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
@@ -24,7 +25,7 @@
     @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.7)}70%{box-shadow:0 0 0 10px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
     .step-line{width:40px;height:2px;background:rgba(255,255,255,.3);transition:.3s}
     .step-line.completed{background:#10b981}
-    .step-labels{display:flex;justify-content:center;gap:20px;font-size:.75rem;color:rgba(255,255,255,.9)}
+    .step-labels{display:flex;justify-content:center;gap:30px;font-size:.75rem;color:rgba(255,255,255,.9)}
     .step-label{width:60px;text-align:center}
     .wizard-content{padding:40px;min-height:400px;display:flex;flex-direction:column}
     .step-title{font-size:1.3rem;color:#333;margin-bottom:10px;font-weight:600}
@@ -56,18 +57,15 @@
     @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
     .success-screen{text-align:center;padding:40px}
     .success-icon{font-size:4rem;color:#10b981;margin-bottom:20px}
-    .quick-settings{display:flex;flex-direction:column;gap:15px}
-    .setting-option{background:#f9fafb;border:2px solid #e5e7eb;border-radius:8px;padding:15px;cursor:pointer;transition:.2s}
-    .setting-option:hover{border-color:#667eea}
-    .setting-option.selected{border-color:#667eea;background:#f3f4ff}
   </style>
 </head>
 <body>
   <div class="wizard-container">
     <div class="progress-header">
       <h1 class="progress-title">🚀 AutoStreamPro Quick Setup</h1>
-      <p class="progress-subtitle">Get your clips automated in 5 minutes!</p>
+      <p class="progress-subtitle">Get your clips automated in 3 minutes!</p>
 
+      <!-- 4 steps now instead of 5 -->
       <div class="step-indicators">
         <div class="step-item"><div class="step-circle active" id="step1">1</div></div>
         <div class="step-line" id="line1"></div>
@@ -76,21 +74,18 @@
         <div class="step-item"><div class="step-circle upcoming" id="step3">3</div></div>
         <div class="step-line" id="line3"></div>
         <div class="step-item"><div class="step-circle upcoming" id="step4">4</div></div>
-        <div class="step-line" id="line4"></div>
-        <div class="step-item"><div class="step-circle upcoming" id="step5">5</div></div>
       </div>
 
       <div class="step-labels">
         <div class="step-label">Stream</div>
         <div class="step-label">Connect</div>
         <div class="step-label">Publish</div>
-        <div class="step-label">Settings</div>
-        <div class="step-label">Verify</div>
+        <div class="step-label">Done</div>
       </div>
     </div>
 
     <div class="wizard-content">
-      <!-- Step 1 -->
+      <!-- Step 1: Platform Selection -->
       <div class="step-content active" id="content1">
         <h2 class="step-title">Where do you stream?</h2>
         <p class="step-description">Choose your main streaming platform. You can add more later.</p>
@@ -108,7 +103,7 @@
         </div>
       </div>
 
-      <!-- Step 2 -->
+      <!-- Step 2: Connect Platform -->
       <div class="step-content" id="content2">
         <h2 class="step-title">Connect your <span id="platformName">Platform</span></h2>
         <p class="step-description">We'll monitor your stream and create clips automatically.</p>
@@ -139,7 +134,7 @@
         </div>
       </div>
 
-      <!-- Step 3 -->
+      <!-- Step 3: Publishing Platforms -->
       <div class="step-content" id="content3">
         <h2 class="step-title">Where should we post your clips?</h2>
         <p class="step-description">Connect at least one platform to share your viral moments.</p>
@@ -156,38 +151,18 @@
         <div id="publishConnections" style="margin-top:20px"></div>
       </div>
 
-      <!-- Step 4 -->
+      <!-- Step 4: Complete (was Step 5) -->
       <div class="step-content" id="content4">
-        <h2 class="step-title">Choose your settings</h2>
-        <p class="step-description">We've set recommended defaults. Adjust if needed.</p>
-
-        <div class="quick-settings">
-          <div class="setting-option selected" data-threshold="40">
-            <div style="font-weight:600">🎯 Balanced (Recommended)</div>
-            <div style="font-size:.875rem;color:#666">40% viral threshold - Expect 3-5 clips per stream</div>
-          </div>
-          <div class="setting-option" data-threshold="60">
-            <div style="font-weight:600">🏆 Quality Focus</div>
-            <div style="font-size:.875rem;color:#666">60% viral threshold - Only the best 1-2 clips</div>
-          </div>
-          <div class="setting-option" data-threshold="25">
-            <div style="font-weight:600">📈 Growth Mode</div>
-            <div style="font-size:.875rem;color:#666">25% viral threshold - More clips, 8-10 per stream</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 5 -->
-      <div class="step-content" id="content5">
         <h2 class="step-title">Almost done!</h2>
         <p class="step-description">Click below to complete your setup.</p>
         <div style="text-align:center;padding:40px">
           <div style="font-size:3rem">🎮</div>
           <p style="margin-top:20px">Your streaming setup will be ready to go!</p>
+          <p style="margin-top:10px;color:#666;font-size:.9rem">We'll automatically detect your best moments and create clips.</p>
         </div>
       </div>
 
-      <!-- Success -->
+      <!-- Success Screen -->
       <div class="step-content" id="contentSuccess">
         <div class="success-screen">
           <div class="success-icon">✅</div>
@@ -197,7 +172,7 @@
         </div>
       </div>
 
-      <!-- Nav -->
+      <!-- Navigation -->
       <div class="wizard-navigation" id="wizardNav">
         <button class="nav-btn btn-back" id="backBtn" style="visibility:hidden">← Back</button>
         <button class="nav-btn btn-next" id="nextBtn" disabled>Next →</button>
@@ -211,44 +186,41 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-    // ---------- OAuth config ----------
-    const twitchClientId = 'mzjsqcwxj9mexsa8vaimtzanbe7pll';
-
     // ---------- Wizard state ----------
     let currentStep = 1;
+    const totalSteps = 4; // Changed from 5 to 4
     let selectedPlatform = null;
     let selectedPublishPlatforms = [];
-    let selectedThreshold = 40; // percent
+    
+    // FIXED threshold - admin controlled, not user controlled
+    const FIXED_THRESHOLD = 0.50; // 50%
 
-    // --- YouTube connection state (Step 3 should not re-auth if already connected)
-let yConnected = false;
+    // --- YouTube connection state
+    let yConnected = false;
 
-async function fetchConnections() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { youtube: false };
-  const { data, error } = await supabase
-    .from('streaming_connections')
-    .select('youtube_connected')
-    .eq('user_id', user.id)
-    .maybeSingle();
-  return { youtube: !!(data && data.youtube_connected) };
-}
+    async function fetchConnections() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { youtube: false };
+      const { data, error } = await supabase
+        .from('streaming_connections')
+        .select('youtube_connected')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      return { youtube: !!(data && data.youtube_connected) };
+    }
 
-function markYouTubeSelected() {
-  // select the Step 3 YouTube tile and enable Next (no OAuth)
-  const ytTile = document.querySelector('.platform-option[data-publish="youtube"]');
-  if (ytTile && !ytTile.classList.contains('selected')) ytTile.classList.add('selected');
-  if (!selectedPublishPlatforms.includes('youtube')) selectedPublishPlatforms.push('youtube');
-  if (typeof updateNavigationState === 'function') updateNavigationState();
-  // Optional status message pane you already render:
-  const box = document.getElementById('publishConnections');
-  if (box) {
-    box.innerHTML = `<div style="padding:12px;border-radius:8px;background:#ecfdf5;color:#065f46">
-      YouTube connected ✔ — we’ll publish clips there.
-    </div>`;
-  }
-}
-
+    function markYouTubeSelected() {
+      const ytTile = document.querySelector('.platform-option[data-publish="youtube"]');
+      if (ytTile && !ytTile.classList.contains('selected')) ytTile.classList.add('selected');
+      if (!selectedPublishPlatforms.includes('youtube')) selectedPublishPlatforms.push('youtube');
+      if (typeof updateNavigationState === 'function') updateNavigationState();
+      const box = document.getElementById('publishConnections');
+      if (box) {
+        box.innerHTML = `<div style="padding:12px;border-radius:8px;background:#ecfdf5;color:#065f46">
+          YouTube connected ✔ — we'll publish clips there.
+        </div>`;
+      }
+    }
 
     // ---------- Platform connections ----------
     async function connectKick() {
@@ -286,7 +258,7 @@ function markYouTubeSelected() {
             valEl.textContent = `✓ Connected: ${username}`;
             valEl.style.display = 'block';
           }
-          document.getElementById('nextBtn').disabled = false; // allow Next
+          document.getElementById('nextBtn').disabled = false;
         } else {
           console.error('[Kick Connect] Server returned error:', result.error);
           if (valEl) {
@@ -306,16 +278,16 @@ function markYouTubeSelected() {
     }
 
     async function connectTwitch() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) { 
-    alert('Please log in first'); 
-    window.location.href='/login.html'; 
-    return; 
-  }
-  
-  const returnTo = encodeURIComponent('https://www.autostreampro.com/onboarding-wizard.html');
-  window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/twitch?userId=${user.id}&return_to=${returnTo}`;
-}
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { 
+        alert('Please log in first'); 
+        window.location.href='/login.html'; 
+        return; 
+      }
+      
+      const returnTo = encodeURIComponent('https://www.autostreampro.com/onboarding-wizard.html');
+      window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/twitch?userId=${user.id}&return_to=${returnTo}`;
+    }
 
     // ---------- UI helpers ----------
     function showPlatformConnection() {
@@ -334,11 +306,11 @@ function markYouTubeSelected() {
     }
 
     function nextStep() {
-      if (currentStep < 5) {
+      if (currentStep < totalSteps) {
         document.getElementById(`step${currentStep}`).classList.remove('active');
         document.getElementById(`step${currentStep}`).classList.add('completed');
         document.getElementById(`step${currentStep}`).innerHTML = '✓';
-        if (currentStep > 0 && currentStep < 5) document.getElementById(`line${currentStep}`).classList.add('completed');
+        if (currentStep < totalSteps) document.getElementById(`line${currentStep}`).classList.add('completed');
         document.getElementById(`content${currentStep}`).classList.remove('active');
 
         currentStep++;
@@ -348,7 +320,7 @@ function markYouTubeSelected() {
 
         updateNavigationState();
         if (currentStep === 2) showPlatformConnection();
-        if (currentStep === 5) document.getElementById('nextBtn').textContent='Complete Setup';
+        if (currentStep === totalSteps) document.getElementById('nextBtn').textContent='Complete Setup';
       } else {
         completeSetup();
       }
@@ -382,57 +354,50 @@ function markYouTubeSelected() {
       else if (currentStep === 2) nextBtn.disabled = true;
       else nextBtn.disabled = false;
 
-      nextBtn.textContent = currentStep === 5 ? 'Complete Setup' : 'Next →';
+      nextBtn.textContent = currentStep === totalSteps ? 'Complete Setup' : 'Next →';
     }
 
     async function completeSetup() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) { alert('Please log in first'); window.location.href='/login.html'; return; }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { alert('Please log in first'); window.location.href='/login.html'; return; }
 
-  try {
-    // Save UI preferences (percent value)
-    const { error } = await supabase
-      .from('user_preferences')
-      .upsert({
-        user_id: user.id,
-        viral_threshold: selectedThreshold,
-        clip_length: 30,
-        auto_clips: true,
-        auto_titles: true,
-        auto_post: true,
-        updated_at: new Date()
-      }, { onConflict: 'user_id' });
-    if (error) throw error;
+      try {
+        // Save preferences with FIXED threshold (admin controlled)
+        const { error } = await supabase
+          .from('user_preferences')
+          .upsert({
+            user_id: user.id,
+            viral_threshold: FIXED_THRESHOLD * 100, // Store as percentage (50)
+            clip_length: 30,
+            auto_clips: true,
+            auto_titles: true,
+            auto_post: true,
+            updated_at: new Date()
+          }, { onConflict: 'user_id' });
+        if (error) throw error;
 
-    // Persist decimal threshold for backend (0.25–0.95)
-    const { error: upErr } = await supabase
-      .from('user_profiles')
-      .upsert(
-        { user_id: user.id, viral_threshold: (selectedThreshold / 100) },
-        { onConflict: 'user_id' }
-      );
-    if (upErr) throw upErr;
+        // Persist decimal threshold for backend (0.50)
+        const { error: upErr } = await supabase
+          .from('user_profiles')
+          .upsert(
+            { user_id: user.id, virality_threshold: FIXED_THRESHOLD },
+            { onConflict: 'user_id' }
+          );
+        if (upErr) throw upErr;
 
-    // ✅ NEW: force-refresh this user's live HLS so monitoring starts immediately
-    await fetch('/.netlify/functions/refresh-all-hls', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ userId: user.id }),
-    });
-
-    // Success UI
-    document.getElementById('content5').classList.remove('active');
-    document.getElementById('contentSuccess').classList.add('active');
-    document.getElementById('wizardNav').style.display='none';
-    document.getElementById('step5').classList.remove('active');
-    document.getElementById('step5').classList.add('completed');
-    document.getElementById('step5').innerHTML='✓';
-    document.getElementById('line4').classList.add('completed');
-  } catch(e) {
-    console.error('Error saving preferences:', e);
-    alert('Failed to save settings. Please try again.');
-  }
-}
+        // Success UI
+        document.getElementById('content4').classList.remove('active');
+        document.getElementById('contentSuccess').classList.add('active');
+        document.getElementById('wizardNav').style.display='none';
+        document.getElementById('step4').classList.remove('active');
+        document.getElementById('step4').classList.add('completed');
+        document.getElementById('step4').innerHTML='✓';
+        document.getElementById('line3').classList.add('completed');
+      } catch(e) {
+        console.error('Error saving preferences:', e);
+        alert('Failed to save settings. Please try again.');
+      }
+    }
 
     // ---------- Auth & onboarding checks ----------
     async function checkAuth() {
@@ -448,7 +413,7 @@ function markYouTubeSelected() {
         .select('id')
         .eq('user_id', user.id)
         .limit(1);
-      if (!connections || connections.length === 0) return; // stay here
+      if (!connections || connections.length === 0) return;
     }
 
     // ---------- Init ----------
@@ -457,13 +422,12 @@ function markYouTubeSelected() {
       await checkOnboardingStatus();
 
       // Load current connections so Step 3 behaves correctly
-    try {
-      const conn = await fetchConnections();
-      yConnected = conn.youtube;
-      if (yConnected) markYouTubeSelected();
-      window.yConnected = yConnected;
-    } catch {}
-
+      try {
+        const conn = await fetchConnections();
+        yConnected = conn.youtube;
+        if (yConnected) markYouTubeSelected();
+        window.yConnected = yConnected;
+      } catch {}
 
       // Step 1 selections
       document.querySelectorAll('[data-platform]').forEach(el=>{
@@ -472,7 +436,6 @@ function markYouTubeSelected() {
           el.classList.add('selected');
           selectedPlatform = el.getAttribute('data-platform');
           updateNavigationState();
-          // NEW: remember & select YouTube so we don't re-auth on tile click
           yConnected = true;
           markYouTubeSelected();
         });
@@ -492,45 +455,35 @@ function markYouTubeSelected() {
         });
       });
 
-      // Step 4 settings
-      document.querySelectorAll('.setting-option').forEach(el=>{
-        el.addEventListener('click', ()=>{
-          document.querySelectorAll('.setting-option').forEach(x=>x.classList.remove('selected'));
-          el.classList.add('selected');
-          selectedThreshold = parseInt(el.getAttribute('data-threshold'),10);
-        });
-      
-      });
+      // Handle OAuth returns
+      const urlParams = new URLSearchParams(window.location.search);
 
       // --- YouTube: handle callback (?youtube=connected) ---
-const youtubeStatus = urlParams.get('youtube');
-if (youtubeStatus === 'connected') {
-  // Advance the wizard to Step 3
-  selectedPlatform = 'youtube';
-  document.getElementById('step1').classList.remove('active');
-  document.getElementById('step1').classList.add('completed');
-  document.getElementById('step1').innerHTML='✓';
-  document.getElementById('line1').classList.add('completed');
-  document.getElementById('step2').classList.remove('upcoming');
-  document.getElementById('step2').classList.add('completed');
-  document.getElementById('step2').innerHTML='✓';
-  document.getElementById('line2').classList.add('completed');
-  document.getElementById('content1').classList.remove('active');
-  document.getElementById('content2').classList.remove('active');
-  currentStep = 3;
-  document.getElementById('content3').classList.add('active');
-  document.getElementById('step3').classList.remove('upcoming');
-  document.getElementById('step3').classList.add('active');
-  
-  // Mark YouTube as connected
-  yConnected = true;
-  window.yConnected = true;
-  markYouTubeSelected();
-  updateNavigationState();
-  
-  // Clean URL
-  window.history.replaceState({}, document.title, '/onboarding-wizard.html');
-}
+      const youtubeStatus = urlParams.get('youtube');
+      if (youtubeStatus === 'connected') {
+        selectedPlatform = 'youtube';
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('step1').classList.add('completed');
+        document.getElementById('step1').innerHTML='✓';
+        document.getElementById('line1').classList.add('completed');
+        document.getElementById('step2').classList.remove('upcoming');
+        document.getElementById('step2').classList.add('completed');
+        document.getElementById('step2').innerHTML='✓';
+        document.getElementById('line2').classList.add('completed');
+        document.getElementById('content1').classList.remove('active');
+        document.getElementById('content2').classList.remove('active');
+        currentStep = 3;
+        document.getElementById('content3').classList.add('active');
+        document.getElementById('step3').classList.remove('upcoming');
+        document.getElementById('step3').classList.add('active');
+        
+        yConnected = true;
+        window.yConnected = true;
+        markYouTubeSelected();
+        updateNavigationState();
+        
+        window.history.replaceState({}, document.title, '/onboarding-wizard.html');
+      }
 
       // Buttons
       document.getElementById('nextBtn').addEventListener('click', nextStep);
@@ -539,53 +492,48 @@ if (youtubeStatus === 'connected') {
       document.getElementById('twitchConnectBtn').addEventListener('click', connectTwitch);
 
       const ytWizardBtn = document.getElementById('youtubeConnectBtn');
-if (ytWizardBtn) {
-  ytWizardBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    
-    // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { 
-      alert('Please log in first'); 
-      window.location.href='/login.html'; 
-      return; 
-    }
-    
-    if (yConnected) {
-      // Already connected → jump to Step 3 visuals
-      selectedPlatform = 'youtube';
-      document.getElementById('step1').classList.remove('active');
-      document.getElementById('step1').classList.add('completed');
-      document.getElementById('step1').innerHTML='✓';
-      document.getElementById('line1').classList.add('completed');
-      document.getElementById('step2').classList.remove('upcoming');
-      document.getElementById('step2').classList.add('completed');
-      document.getElementById('step2').innerHTML='✓';
-      document.getElementById('line2').classList.add('completed');
-      document.getElementById('content1').classList.remove('active');
-      document.getElementById('content2').classList.remove('active');
-      currentStep = 3;
-      document.getElementById('content3').classList.add('active');
-      document.getElementById('step3').classList.remove('upcoming');
-      document.getElementById('step3').classList.add('active');
-      markYouTubeSelected();
-      updateNavigationState();
-      return;
-    }
-    
-    // Not connected yet → start OAuth with Railway backend
-    const returnTo = encodeURIComponent('https://www.autostreampro.com/onboarding-wizard.html');
-    window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/youtube?userId=${user.id}&return_to=${returnTo}`;
-  });
-}
+      if (ytWizardBtn) {
+        ytWizardBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) { 
+            alert('Please log in first'); 
+            window.location.href='/login.html'; 
+            return; 
+          }
+          
+          if (yConnected) {
+            selectedPlatform = 'youtube';
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step1').classList.add('completed');
+            document.getElementById('step1').innerHTML='✓';
+            document.getElementById('line1').classList.add('completed');
+            document.getElementById('step2').classList.remove('upcoming');
+            document.getElementById('step2').classList.add('completed');
+            document.getElementById('step2').innerHTML='✓';
+            document.getElementById('line2').classList.add('completed');
+            document.getElementById('content1').classList.remove('active');
+            document.getElementById('content2').classList.remove('active');
+            currentStep = 3;
+            document.getElementById('content3').classList.add('active');
+            document.getElementById('step3').classList.remove('upcoming');
+            document.getElementById('step3').classList.add('active');
+            markYouTubeSelected();
+            updateNavigationState();
+            return;
+          }
+          
+          const returnTo = encodeURIComponent('https://www.autostreampro.com/onboarding-wizard.html');
+          window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/youtube?userId=${user.id}&return_to=${returnTo}`;
+        });
+      }
 
       // Kick enter key
       const kickInput = document.getElementById('kickUsername');
       if (kickInput) kickInput.addEventListener('keypress', e=>{ if (e.key==='Enter') connectKick(); });
 
-      // Handle OAuth returns:
-      // 1) Twitch returns with ?code&state=twitch to this page
-      const urlParams = new URLSearchParams(window.location.search);
+      // Handle Twitch OAuth return
       const code = urlParams.get('code');
       const state = urlParams.get('state');
       if (code && state === 'twitch') {
@@ -608,20 +556,16 @@ if (ytWizardBtn) {
         window.history.replaceState({}, document.title, '/onboarding-wizard.html');
       }
 
-
-
-      // 3) DEV: jump straight to Step 3 if ?step=3 (bypass Kick/Twitch during testing)
+      // DEV: jump straight to Step 3 if ?step=3
       if (urlParams.get('step') === '3') {
         document.getElementById('step1').classList.remove('active');
         document.getElementById('step1').classList.add('completed');
         document.getElementById('step1').innerHTML='✓';
         document.getElementById('line1').classList.add('completed');
-
         document.getElementById('step2').classList.remove('upcoming');
         document.getElementById('step2').classList.add('completed');
         document.getElementById('step2').innerHTML='✓';
         document.getElementById('line2').classList.add('completed');
-
         document.getElementById('content1').classList.remove('active');
         document.getElementById('content2').classList.remove('active');
         currentStep = 3;
@@ -631,143 +575,114 @@ if (ytWizardBtn) {
         updateNavigationState();
       }
 
-      // 4) DEV: immediately start TikTok OAuth if ?start=tiktok
+      // DEV: immediately start TikTok OAuth if ?start=tiktok
       if (urlParams.get('start') === 'tiktok') {
         const { data: { user: oauthUser } } = await supabase.auth.getUser();
         if (oauthUser) {
           const returnTo = encodeURIComponent('/onboarding-wizard.html#tiktok');
           sessionStorage.setItem('tiktok_return_to', '/onboarding-wizard.html#tiktok');
           window.location.href = `/auth/tiktok?user=${encodeURIComponent(oauthUser.id)}&direct=1&return_to=${returnTo}`;
-          return; // stop executing after redirect
+          return;
         }
       }
 
-      // Make shared state/functions available to the second <script>
-          window.yConnected = yConnected;
-          window.selectedPublishPlatforms = selectedPublishPlatforms;
-          window.updateNavigationState = updateNavigationState;
-
-    });
-
-      // Make shared state/functions available to the second <script>
+      // Make shared state/functions available
       window.yConnected = yConnected;
       window.selectedPublishPlatforms = selectedPublishPlatforms;
       window.updateNavigationState = updateNavigationState;
-
+    });
   </script>
 
   <script>
-(function () {
-  function ready(fn){ document.readyState !== 'loading' ? fn() : document.addEventListener('DOMContentLoaded', fn); }
-  function setStatus(html, isError=false) {
-    const box = document.getElementById('publishConnections');
-    if (!box) return;
-    box.innerHTML = `<div style="padding:12px;border-radius:8px;${isError ? 'background:#fee2e2;color:#991b1b' : 'background:#ecfdf5;color:#065f46'}">${html}</div>`;
-  }
-  function q(name){ return document.getElementById(name); }
+    (function () {
+      function ready(fn){ document.readyState !== 'loading' ? fn() : document.addEventListener('DOMContentLoaded', fn); }
+      function setStatus(html, isError=false) {
+        const box = document.getElementById('publishConnections');
+        if (!box) return;
+        box.innerHTML = `<div style="padding:12px;border-radius:8px;${isError ? 'background:#fee2e2;color:#991b1b' : 'background:#ecfdf5;color:#065f46'}">${html}</div>`;
+      }
+      function q(name){ return document.getElementById(name); }
 
-  ready(function () {
-    const tiktokTile = document.querySelector('.platform-option[data-publish="tiktok"]');
-    const youtubeTile = document.querySelector('.platform-option[data-publish="youtube"]');
+      ready(function () {
+        const tiktokTile = document.querySelector('.platform-option[data-publish="tiktok"]');
+        const youtubeTile = document.querySelector('.platform-option[data-publish="youtube"]');
 
-    // 1) Start TikTok OAuth (server-side) when the TikTok tile is clicked
-    if (tiktokTile) {
-      tiktokTile.style.cursor = 'pointer';
-      tiktokTile.addEventListener('click', async function () {
-        try {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (!user) { setStatus('Please log in first.', true); window.location.href='/login.html'; return; }
-          const returnTo = encodeURIComponent('/onboarding-wizard.html#tiktok');
-          sessionStorage.setItem('tiktok_return_to', '/onboarding-wizard.html#tiktok');
-          window.location.href = `/auth/tiktok?user=${encodeURIComponent(user.id)}&direct=0&return_to=${returnTo}`;
-        } catch (e) {
-          setStatus('Could not start TikTok connect. Please try again.', true);
+        // Start TikTok OAuth when the TikTok tile is clicked
+        if (tiktokTile) {
+          tiktokTile.style.cursor = 'pointer';
+          tiktokTile.addEventListener('click', async function () {
+            try {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (!user) { setStatus('Please log in first.', true); window.location.href='/login.html'; return; }
+              const returnTo = encodeURIComponent('/onboarding-wizard.html#tiktok');
+              sessionStorage.setItem('tiktok_return_to', '/onboarding-wizard.html#tiktok');
+              window.location.href = `/auth/tiktok?user=${encodeURIComponent(user.id)}&direct=0&return_to=${returnTo}`;
+            } catch (e) {
+              setStatus('Could not start TikTok connect. Please try again.', true);
+            }
+          });
+        }
+
+        // YouTube tile: if already connected, just select; otherwise start OAuth
+        if (youtubeTile && !youtubeTile.dataset.wired) {
+          youtubeTile.dataset.wired = '1';
+          youtubeTile.style.cursor = 'pointer';
+          youtubeTile.addEventListener('click', async function () {
+            try {
+              if (window.yConnected) {
+                if (!youtubeTile.classList.contains('selected')) youtubeTile.classList.add('selected');
+                if (Array.isArray(window.selectedPublishPlatforms) && !window.selectedPublishPlatforms.includes('youtube')) {
+                  window.selectedPublishPlatforms.push('youtube');
+                }
+                if (typeof window.updateNavigationState === 'function') window.updateNavigationState();
+                return;
+              }
+              window.location.href = '/auth/youtube?return_to=' + encodeURIComponent('/onboarding-wizard.html');
+            } catch {
+              window.location.href = '/auth/youtube?return_to=' + encodeURIComponent('/onboarding-wizard.html');
+            }
+          });
+        }
+
+        // Handle return from TikTok: land on /onboarding-wizard.html#tiktok
+        if (location.hash === '#tiktok') {
+          try {
+            q('content1')?.classList.remove('active');
+            q('content2')?.classList.remove('active');
+            q('content3')?.classList.add('active');
+
+            q('step1')?.classList.remove('active'); q('step1')?.classList.add('completed'); if (q('step1')) q('step1').innerHTML = '✓';
+            q('line1')?.classList.add('completed');
+            q('step2')?.classList.remove('upcoming'); q('step2')?.classList.add('completed'); if (q('step2')) q('step2').innerHTML = '✓';
+            q('line2')?.classList.add('completed');
+            q('step3')?.classList.remove('upcoming'); q('step3')?.classList.add('active');
+          } catch {}
+
+          const tile = tiktokTile;
+          if (tile && !tile.classList.contains('selected')) tile.classList.add('selected');
+          if (Array.isArray(window.selectedPublishPlatforms)) {
+            if (!window.selectedPublishPlatforms.includes('tiktok')) window.selectedPublishPlatforms.push('tiktok');
+          }
+          if (typeof window.updateNavigationState === 'function') window.updateNavigationState();
+
+          const err = new URLSearchParams(window.location.search).get('err');
+          if (err) {
+            const msgMap = {
+              missing_env: 'TikTok auth is misconfigured on the server (missing env vars).',
+              token_exchange_failed: 'TikTok did not grant access. Please try again.',
+              db_upsert_failed: 'Connected to TikTok, but failed saving your connection. Try again.',
+              unexpected_error: 'Unexpected error while connecting TikTok. Please try again.'
+            };
+            setStatus(`TikTok: ${msgMap[err] || ('Error: ' + err)}`, true);
+          } else {
+            setStatus('TikTok connected ✔ Auto-post enabled for your account.');
+          }
+
+          history.replaceState({}, document.title, '/onboarding-wizard.html#tiktok');
         }
       });
-    }
-
-    // 2) YouTube tile: if already connected, just select; otherwise start OAuth
-if (youtubeTile && !youtubeTile.dataset.wired) {
-  youtubeTile.dataset.wired = '1';
-  youtubeTile.style.cursor = 'pointer';
-  youtubeTile.addEventListener('click', async function () {
-    try {
-      // If we already have a connection, don't re-auth; just toggle/select
-      if (window.yConnected) {
-        if (!youtubeTile.classList.contains('selected')) youtubeTile.classList.add('selected');
-        if (Array.isArray(window.selectedPublishPlatforms) && !window.selectedPublishPlatforms.includes('youtube')) {
-          window.selectedPublishPlatforms.push('youtube');
-        }
-        if (typeof window.updateNavigationState === 'function') window.updateNavigationState();
-        return;
-      }
-
-      // Not connected yet → start OAuth once
-      window.location.href = '/auth/youtube?return_to=' + encodeURIComponent('/onboarding-wizard.html');
-    } catch {
-      // fallback to OAuth if anything odd happens
-      window.location.href = '/auth/youtube?return_to=' + encodeURIComponent('/onboarding-wizard.html');
-    }
-  });
-}
-
-    // 3) Handle return from TikTok: land on /onboarding-wizard.html#tiktok
-    if (location.hash === '#tiktok') {
-      // Ensure the wizard is on Step 3 visually
-      try {
-        q('content1')?.classList.remove('active');
-        q('content2')?.classList.remove('active');
-        q('content3')?.classList.add('active');
-
-        q('step1')?.classList.remove('active'); q('step1')?.classList.add('completed'); if (q('step1')) q('step1').innerHTML = '✓';
-        q('line1')?.classList.add('completed');
-        q('step2')?.classList.remove('upcoming'); q('step2')?.classList.add('completed'); if (q('step2')) q('step2').innerHTML = '✓';
-        q('line2')?.classList.add('completed');
-        q('step3')?.classList.remove('upcoming'); q('step3')?.classList.add('active');
-      } catch {}
-
-      // Select the TikTok tile and enable Next
-      const tile = tiktokTile;
-      if (tile && !tile.classList.contains('selected')) tile.classList.add('selected');
-      if (Array.isArray(window.selectedPublishPlatforms)) {
-        if (!window.selectedPublishPlatforms.includes('tiktok')) window.selectedPublishPlatforms.push('tiktok');
-      }
-      if (typeof window.updateNavigationState === 'function') window.updateNavigationState();
-
-      // Status message (and error mapping if present)
-      const err = new URLSearchParams(window.location.search).get('err');
-      if (err) {
-        const msgMap = {
-          missing_env: 'TikTok auth is misconfigured on the server (missing env vars).',
-          token_exchange_failed: 'TikTok did not grant access. Please try again.',
-          db_upsert_failed: 'Connected to TikTok, but failed saving your connection. Try again.',
-          unexpected_error: 'Unexpected error while connecting TikTok. Please try again.'
-        };
-        setStatus(`TikTok: ${msgMap[err] || ('Error: ' + err)}`, true);
-      } else {
-        setStatus('TikTok connected ✔ Auto-post enabled for your account.');
-      }
-
-      // Clean querystring but keep #tiktok
-      history.replaceState({}, document.title, '/onboarding-wizard.html#tiktok');
-    }
-  });
-})();
-
-  async function signedFetch(url, options = {}) {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) throw new Error('Not signed in');
-    return fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-        ...(options.headers || {})
-      }
-    });
-  }
-
-</script>
+    })();
+  </script>
 
 </body>
 </html>
