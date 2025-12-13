@@ -1500,7 +1500,7 @@ async function loadPlatformConnections() {
             
             let connectedCount = 0;
             
-            const platforms = ['twitch', 'youtube', 'tiktok', 'kick'];
+            const platforms = ['twitch', 'youtube', 'tiktok', 'kick', 'instagram'];
             platforms.forEach(platform => {
                 const connected = data.some(conn => conn.platform === platform && conn.is_active);
                 if (connected) {
@@ -1517,7 +1517,7 @@ async function loadPlatformConnections() {
             
         } else {
             console.log('No platform connections found');
-            ['twitch', 'youtube', 'tiktok', 'kick'].forEach(platform => {
+            ['twitch', 'youtube', 'tiktok', 'kick', 'instagram'].forEach(platform => {
                 document.getElementById(`${platform}-status`).textContent = 'Visit Setup';
                 document.getElementById(`${platform}-status`).className = 'connection-status disconnected';
             });
