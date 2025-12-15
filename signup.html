@@ -705,9 +705,37 @@ async function createFreeAccount(email, password, type, promoData = null) {
         let selectedPlan = 'expert';
         let selectedPrice = 50;
         
+        // A/B Test variant
+        let abVariant = 'card_required'; // default
+        let visitorId = localStorage.getItem('asp_visitor_id');
+        if (!visitorId) {
+            visitorId = 'v_' + Math.random().toString(36).substr(2, 9) + Date.now();
+            localStorage.setItem('asp_visitor_id', visitorId);
+        }
+
         // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             console.log('📄 Page loaded');
+            
+            // Get A/B test variant
+            try {
+                const abResponse = await fetch(`https://autostreampro-backend-production.up.railway.app/api/ab-test?test_name=trial_card_requirement&visitor_id=${visitorId}`);
+                const abData = await abResponse.json();
+                abVariant = abData.variant;
+                console.log('🧪 A/B variant:', abVariant);
+                
+                // Update trial badge based on variant
+                const trialBadge = document.querySelector('.trial-badge');
+                if (trialBadge) {
+                    if (abVariant === 'no_card') {
+                        trialBadge.innerHTML = '🎮 21-Day Free Trial • No Credit Card Required';
+                    } else {
+                        trialBadge.innerHTML = '🎮 21-Day Free Trial • Cancel Anytime';
+                    }
+                }
+            } catch (e) {
+                console.log('A/B test fetch failed, using default');
+            }
             
             setupPlanSelection();
             setupForm();
@@ -1052,13 +1080,57 @@ await createStripeCheckout(authData.user, promoData);
 async function createStripeCheckout(user, promoData = { valid: false, discount: 0 }) {
     try {
         console.log('💳 Creating Stripe checkout...');
+        console.log('🧪 A/B variant:', abVariant);
         
+        // Track signup in A/B test
+        await fetch('https://autostreampro-backend-production.up.railway.app/api/ab-test/convert', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                visitor_id: visitorId,
+                test_name: 'trial_card_requirement',
+                event: 'signed_up',
+                email: user.email,
+                user_id: user.id
+            })
+        });
+        
+        // No-card variant: skip Stripe, go straight to onboarding
+        if (abVariant === 'no_card') {
+            console.log('🆓 No-card trial - skipping Stripe');
+            
+            // Update user profile with trial info
+            await supabase
+                .from('user_profiles')
+                .update({
+                    subscription_status: 'trial',
+                    subscription_plan: selectedPlan,
+                    trial_ends_at: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString()
+                })
+                .eq('user_id', user.id);
+            
+            // Track trial started
+            await fetch('https://autostreampro-backend-production.up.railway.app/api/ab-test/convert', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    visitor_id: visitorId,
+                    test_name: 'trial_card_requirement',
+                    event: 'trial_started'
+                })
+            });
+            
+            window.location.href = '/onboarding-wizard.html';
+            return;
+        }
+        
+        // Card-required variant: go to Stripe
         const requestBody = {
             plan: selectedPlan,
             userEmail: user.email,
             userId: user.id,
             userName: user.email.split('@')[0],
-            trialDays: 30  // Always 30-day trial
+            trialDays: 21
         };
         
         // Add promo data if valid
@@ -1072,9 +1144,7 @@ async function createStripeCheckout(user, promoData = { valid: false, discount: 
         
         const response = await fetch('/.netlify/functions/stripe-checkout', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody)
         });
         
@@ -1082,6 +1152,18 @@ async function createStripeCheckout(user, promoData = { valid: false, discount: 
         
         if (data.success && data.checkoutUrl) {
             console.log('✅ Redirecting to Stripe...');
+            
+            // Track trial started
+            await fetch('https://autostreampro-backend-production.up.railway.app/api/ab-test/convert', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    visitor_id: visitorId,
+                    test_name: 'trial_card_requirement',
+                    event: 'trial_started'
+                })
+            });
+            
             window.location.href = data.checkoutUrl;
         } else {
             throw new Error(data.message || 'Payment setup failed');
