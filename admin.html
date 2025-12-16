@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Command Center - AutoStreamPro</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -1605,11 +1604,8 @@
 
     <script>
         // Config
-        const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
         const API_BASE = 'https://autostreampro-backend-production.up.railway.app';
-        let authToken = null;
+        let authToken = localStorage.getItem('adminToken');
 
         // Init
         document.addEventListener('DOMContentLoaded', () => {
@@ -1620,18 +1616,18 @@
 
         // Check existing session
         async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                authToken = session.access_token;
-                // Verify admin access via backend
-                const res = await fetch(`${API_BASE}/api/admin/dashboard`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                if (res.ok) {
-                    showApp(session.user);
-                } else {
-                    authToken = null;
-                }
+            if (!authToken) return;
+            
+            const res = await fetch(`${API_BASE}/api/admin/dashboard`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            
+            if (res.ok) {
+                const decoded = JSON.parse(atob(authToken));
+                showApp({ email: decoded.email });
+            } else {
+                localStorage.removeItem('adminToken');
+                authToken = null;
             }
         }
 
@@ -1648,23 +1644,21 @@
             error.classList.remove('visible');
             
             try {
-                const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
-                if (authError) throw authError;
-                
-                authToken = data.session.access_token;
-                
-                // Verify admin access via backend
-                const res = await fetch(`${API_BASE}/api/admin/dashboard`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
+                const res = await fetch(`${API_BASE}/api/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
                 });
                 
-                if (!res.ok) {
-                    await supabase.auth.signOut();
-                    authToken = null;
-                    throw new Error('Access denied. Admin credentials required.');
+                const data = await res.json();
+                
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || 'Login failed');
                 }
                 
-                showApp(data.user);
+                authToken = data.token;
+                localStorage.setItem('adminToken', authToken);
+                showApp(data.admin);
             } catch (err) {
                 error.textContent = err.message;
                 error.classList.add('visible');
@@ -1682,8 +1676,8 @@
             loadDashboard();
         }
 
-        async function logout() {
-            await supabase.auth.signOut();
+        function logout() {
+            localStorage.removeItem('adminToken');
             authToken = null;
             document.getElementById('app-container').classList.remove('active');
             document.getElementById('login-screen').classList.remove('hidden');
