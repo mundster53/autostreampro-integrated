@@ -1316,6 +1316,10 @@
                     <span class="nav-icon">📋</span>
                     <span>Activity Log</span>
                 </div>
+                <div class="nav-item" data-section="admins">
+                    <span class="nav-icon">🔐</span>
+                    <span>Admin Users</span>
+                </div>
             </div>
 
             <div class="sidebar-footer">
@@ -1535,7 +1539,57 @@
                     </table>
                 </div>
             </section>
+
+            <!-- Admin Users -->
+            <section class="section" id="section-admins">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Admin Users</h1>
+                        <p class="page-subtitle">Manage who has access to this dashboard</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="showInviteModal()">➕ Invite Admin</button>
+                    </div>
+                </div>
+                <div class="content-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Name</th>
+                                <th>Invited By</th>
+                                <th>Last Login</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admins-table">
+                            <tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </main>
+    </div>
+
+    <!-- Invite Admin Modal -->
+    <div class="modal-overlay" id="invite-modal">
+        <div class="modal" style="max-width:500px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Invite Admin</h2>
+                <button class="modal-close" onclick="closeInviteModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field" style="margin-bottom:20px;">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="invite-email" class="form-input" placeholder="email@example.com" style="width:100%;padding:14px;background:var(--bg-deep);border:1px solid var(--border-subtle);border-radius:12px;color:var(--text-primary);font-family:inherit;">
+                </div>
+                <div class="form-field" style="margin-bottom:24px;">
+                    <label class="form-label">Name (optional)</label>
+                    <input type="text" id="invite-name" class="form-input" placeholder="John Doe" style="width:100%;padding:14px;background:var(--bg-deep);border:1px solid var(--border-subtle);border-radius:12px;color:var(--text-primary);font-family:inherit;">
+                </div>
+                <button class="btn btn-primary" onclick="sendAdminInvite()" style="width:100%;">📧 Send Invite</button>
+            </div>
+        </div>
     </div>
 
     <!-- User Modal -->
@@ -1555,7 +1609,6 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
         const API_BASE = 'https://autostreampro-backend-production.up.railway.app';
-        const ADMIN_EMAILS = ['bret@autostreampro.com', 'bretjmundt@gmail.com', 'duncanmundt1@gmail.com', 'mundstermom@gmail.com'];
         let authToken = null;
 
         // Init
@@ -1568,9 +1621,17 @@
         // Check existing session
         async function checkSession() {
             const { data: { session } } = await supabase.auth.getSession();
-            if (session && ADMIN_EMAILS.includes(session.user.email.toLowerCase())) {
+            if (session) {
                 authToken = session.access_token;
-                showApp(session.user);
+                // Verify admin access via backend
+                const res = await fetch(`${API_BASE}/api/admin/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (res.ok) {
+                    showApp(session.user);
+                } else {
+                    authToken = null;
+                }
             }
         }
 
@@ -1587,14 +1648,22 @@
             error.classList.remove('visible');
             
             try {
-                if (!ADMIN_EMAILS.includes(email.toLowerCase())) {
-                    throw new Error('Access denied. Admin credentials required.');
-                }
-                
                 const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
                 if (authError) throw authError;
                 
                 authToken = data.session.access_token;
+                
+                // Verify admin access via backend
+                const res = await fetch(`${API_BASE}/api/admin/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!res.ok) {
+                    await supabase.auth.signOut();
+                    authToken = null;
+                    throw new Error('Access denied. Admin credentials required.');
+                }
+                
                 showApp(data.user);
             } catch (err) {
                 error.textContent = err.message;
@@ -1653,6 +1722,7 @@
                         case 'abtests': loadABTests(); break;
                         case 'health': loadHealth(); break;
                         case 'activity': loadActivityLog(); break;
+                        case 'admins': loadAdmins(); break;
                     }
                 });
             });
@@ -2078,7 +2148,7 @@
         function sendEmail(email) {
             const subject = encodeURIComponent('AutoStreamPro - ');
             const body = encodeURIComponent(`Hi,\n\n\n\nBest regards,\nBret\nAutoStreamPro\nhttps://autostreampro.com`);
-            window.open(`https://mail.zoho.com/zm/#compose?to=${email}&subject=${subject}&body=${body}`, '_blank');
+            window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
         }
 
         // Beta
@@ -2218,6 +2288,93 @@
             if (action?.includes('create') || action?.includes('approve')) return 'badge-volt';
             return 'badge-muted';
         }
+
+        // Admin Management
+        async function loadAdmins() {
+            const data = await api('/api/admin/admins');
+            if (!data) return;
+            
+            document.getElementById('admins-table').innerHTML = data.admins.map(a => `
+                <tr>
+                    <td style="font-weight:500;">${a.email}</td>
+                    <td>${a.name || '—'}</td>
+                    <td style="font-size:0.85rem;color:var(--text-muted);">${a.invited_by || 'Original'}</td>
+                    <td style="font-size:0.85rem;">${a.last_login ? new Date(a.last_login).toLocaleString() : 'Never'}</td>
+                    <td>
+                        <button class="action-btn" onclick="removeAdmin('${a.email}')" title="Remove Admin" style="color:var(--accent-rose);">🗑️</button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted)">No admins found</td></tr>';
+        }
+
+        function showInviteModal() {
+            document.getElementById('invite-modal').classList.add('active');
+            document.getElementById('invite-email').value = '';
+            document.getElementById('invite-name').value = '';
+            document.getElementById('invite-email').focus();
+        }
+
+        function closeInviteModal() {
+            document.getElementById('invite-modal').classList.remove('active');
+        }
+
+        async function sendAdminInvite() {
+            const email = document.getElementById('invite-email').value.trim();
+            const name = document.getElementById('invite-name').value.trim();
+            
+            if (!email) {
+                toast('Email is required', 'error');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/admins/invite`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, name })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    toast(`Invite sent to ${email}`, 'success');
+                    closeInviteModal();
+                    loadAdmins();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                toast(`Failed: ${err.message}`, 'error');
+            }
+        }
+
+        async function removeAdmin(email) {
+            if (!confirm(`Remove ${email} as admin?`)) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/admins/${encodeURIComponent(email)}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    toast('Admin removed', 'success');
+                    loadAdmins();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                toast(`Failed: ${err.message}`, 'error');
+            }
+        }
+
+        // Close invite modal on escape/click outside
+        document.getElementById('invite-modal').addEventListener('click', e => { 
+            if (e.target.classList.contains('modal-overlay')) closeInviteModal(); 
+        });
 
         // Helpers
         function formatDate(d) {
