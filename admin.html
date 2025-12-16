@@ -1283,6 +1283,10 @@
                     <span class="nav-icon">👥</span>
                     <span>Users</span>
                 </div>
+                <div class="nav-item" data-section="clips">
+                    <span class="nav-icon">🎬</span>
+                    <span>Failed Clips</span>
+                </div>
                 <div class="nav-item" data-section="beta">
                     <span class="nav-icon">🧪</span>
                     <span>Beta Program</span>
@@ -1307,6 +1311,10 @@
                 <div class="nav-item" data-section="health">
                     <span class="nav-icon">💚</span>
                     <span>Health</span>
+                </div>
+                <div class="nav-item" data-section="activity">
+                    <span class="nav-icon">📋</span>
+                    <span>Activity Log</span>
                 </div>
             </div>
 
@@ -1354,6 +1362,7 @@
                         <p class="page-subtitle">Manage all registered accounts</p>
                     </div>
                     <div class="header-actions">
+                        <button class="btn btn-ghost" onclick="exportUsersCSV()">📥 Export CSV</button>
                         <div class="search-wrapper">
                             <span class="search-icon">🔍</span>
                             <input type="text" class="search-input" id="user-search" placeholder="Search by email or name..." oninput="searchUsers(this.value)">
@@ -1374,6 +1383,35 @@
                         </thead>
                         <tbody id="users-table">
                             <tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Failed Clips -->
+            <section class="section" id="section-clips">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Failed Clips</h1>
+                        <p class="page-subtitle">Clips that failed processing - reprocess or delete</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-ghost" onclick="loadFailedClips()">🔄 Refresh</button>
+                    </div>
+                </div>
+                <div class="content-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Platform</th>
+                                <th>Created</th>
+                                <th>Error</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="failed-clips-table">
+                            <tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -1467,6 +1505,35 @@
                     </div>
                 </div>
                 <div class="health-grid" id="health-grid"><div class="loading"><div class="spinner"></div></div></div>
+            </section>
+
+            <!-- Activity Log -->
+            <section class="section" id="section-activity">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Activity Log</h1>
+                        <p class="page-subtitle">Admin actions audit trail</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-ghost" onclick="loadActivityLog()">🔄 Refresh</button>
+                    </div>
+                </div>
+                <div class="content-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Admin</th>
+                                <th>Action</th>
+                                <th>Target</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activity-log-table">
+                            <tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </section>
         </main>
     </div>
@@ -1580,10 +1647,12 @@
                     switch(section) {
                         case 'dashboard': loadDashboard(); break;
                         case 'users': loadUsers(); break;
+                        case 'clips': loadFailedClips(); break;
                         case 'beta': loadBeta(); break;
                         case 'trials': loadTrials(); break;
                         case 'abtests': loadABTests(); break;
                         case 'health': loadHealth(); break;
+                        case 'activity': loadActivityLog(); break;
                     }
                 });
             });
@@ -1718,6 +1787,102 @@
             renderUsers(filtered);
         }
 
+        function exportUsersCSV() {
+            if (!allUsers.length) { toast('No users to export', 'error'); return; }
+            
+            const headers = ['Email', 'Name', 'Status', 'Plan', 'Beta', 'Clips', 'Joined', 'User ID'];
+            const rows = allUsers.map(u => [
+                u.email || '',
+                u.full_name || '',
+                u.subscription_status || '',
+                u.subscription_plan || '',
+                u.is_beta_tester ? 'Yes' : 'No',
+                u.total_clips || 0,
+                u.created_at ? new Date(u.created_at).toLocaleDateString() : '',
+                u.user_id || ''
+            ]);
+            
+            const csv = [headers, ...rows].map(row => 
+                row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+            ).join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `autostreampro-users-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            toast(`Exported ${allUsers.length} users`, 'success');
+        }
+
+        // Failed Clips
+        async function loadFailedClips() {
+            const data = await api('/api/admin/clips/failed');
+            if (!data) return;
+            
+            document.getElementById('failed-clips-table').innerHTML = data.clips.map(c => `
+                <tr>
+                    <td>
+                        <div style="max-width:250px;">
+                            <div style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.viral_title || c.title || 'Untitled'}</div>
+                            <div style="font-size:0.75rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">${c.id.slice(0,8)}...</div>
+                        </div>
+                    </td>
+                    <td><span class="badge badge-electric">${c.source_platform || 'unknown'}</span></td>
+                    <td>${formatDate(c.created_at)}</td>
+                    <td style="max-width:200px;font-size:0.8rem;color:var(--accent-rose);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${c.error_message || ''}">${c.error_message || 'Unknown error'}</td>
+                    <td style="display:flex;gap:8px;">
+                        <button class="action-btn" onclick="reprocessClip('${c.id}')" title="Reprocess">🔄</button>
+                        <button class="action-btn" onclick="deleteClip('${c.id}')" title="Delete" style="color:var(--accent-rose);">🗑️</button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted)">No failed clips 🎉</td></tr>';
+        }
+
+        async function reprocessClip(clipId) {
+            if (!confirm('Reprocess this clip?')) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/clips/${clipId}/reprocess`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    toast('Clip queued for reprocessing', 'success');
+                    loadFailedClips();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                toast(`Failed: ${err.message}`, 'error');
+            }
+        }
+
+        async function deleteClip(clipId) {
+            if (!confirm('Delete this clip permanently?')) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/clips/${clipId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    toast('Clip deleted', 'success');
+                    loadFailedClips();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                toast(`Failed: ${err.message}`, 'error');
+            }
+        }
+
         async function viewUser(userId) {
             document.getElementById('user-modal').classList.add('active');
             document.getElementById('modal-body').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
@@ -1737,6 +1902,60 @@
                     <div class="detail-item"><div class="detail-label">Plan</div><div class="detail-value">${u.subscription_plan || 'None'}</div></div>
                     <div class="detail-item"><div class="detail-label">Beta Tester</div><div class="detail-value">${u.is_beta_tester ? '✅ Yes' : '❌ No'}</div></div>
                     <div class="detail-item"><div class="detail-label">Trial Ends</div><div class="detail-value">${u.daysUntilTrialEnds !== null ? u.daysUntilTrialEnds + ' days' : 'N/A'}</div></div>
+                </div>
+                
+                <div style="margin-bottom:24px; display:flex; gap:12px;">
+                    <button class="btn ${u.subscription_status === 'paused' ? 'btn-primary' : 'btn-ghost'}" onclick="togglePause('${u.user_id}', ${u.subscription_status === 'paused'})" style="flex:1">
+                        ${u.subscription_status === 'paused' ? '▶️ Resume Subscription' : '⏸️ Pause Subscription'}
+                    </button>
+                    <button class="btn btn-ghost" onclick="sendEmail('${u.email}')" style="flex:1">
+                        ✉️ Send Email
+                    </button>
+                    <button class="btn btn-ghost" onclick="deleteUser('${u.user_id}', '${u.email}')" style="background:rgba(244,63,94,0.1);color:var(--accent-rose);border-color:var(--accent-rose);">
+                        🗑️ Delete
+                    </button>
+                </div>
+                
+                <h4 class="section-title">Edit User</h4>
+                <div style="background:var(--bg-elevated);border-radius:16px;padding:20px;margin-bottom:32px;">
+                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px;">
+                        <div>
+                            <label style="display:block;font-size:0.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Subscription Plan</label>
+                            <select id="edit-plan" style="width:100%;padding:12px;background:var(--bg-deep);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-family:inherit;">
+                                <option value="" ${!u.subscription_plan ? 'selected' : ''}>None</option>
+                                <option value="basic" ${u.subscription_plan === 'basic' ? 'selected' : ''}>Basic</option>
+                                <option value="pro" ${u.subscription_plan === 'pro' ? 'selected' : ''}>Pro</option>
+                                <option value="enterprise" ${u.subscription_plan === 'enterprise' ? 'selected' : ''}>Enterprise</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Status</label>
+                            <select id="edit-status" style="width:100%;padding:12px;background:var(--bg-deep);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-family:inherit;">
+                                <option value="" ${!u.subscription_status ? 'selected' : ''}>None</option>
+                                <option value="trial" ${u.subscription_status === 'trial' ? 'selected' : ''}>Trial</option>
+                                <option value="active" ${u.subscription_status === 'active' ? 'selected' : ''}>Active</option>
+                                <option value="paused" ${u.subscription_status === 'paused' ? 'selected' : ''}>Paused</option>
+                                <option value="expired" ${u.subscription_status === 'expired' ? 'selected' : ''}>Expired</option>
+                                <option value="cancelled" ${u.subscription_status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Trial Ends</label>
+                            <input type="date" id="edit-trial-ends" value="${u.trial_ends_at ? u.trial_ends_at.split('T')[0] : ''}" style="width:100%;padding:12px;background:var(--bg-deep);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-family:inherit;">
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Beta Tester</label>
+                            <select id="edit-beta" style="width:100%;padding:12px;background:var(--bg-deep);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-family:inherit;">
+                                <option value="false" ${!u.is_beta_tester ? 'selected' : ''}>No</option>
+                                <option value="true" ${u.is_beta_tester ? 'selected' : ''}>Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block;font-size:0.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Admin Notes</label>
+                        <textarea id="edit-notes" rows="3" placeholder="Internal notes about this user..." style="width:100%;padding:12px;background:var(--bg-deep);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-family:inherit;resize:vertical;">${u.notes || ''}</textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveUserEdits('${u.user_id}')" style="width:100%;">💾 Save Changes</button>
                 </div>
                 
                 <h4 class="section-title">Connected Platforms</h4>
@@ -1772,6 +1991,95 @@
         }
 
         function closeModal() { document.getElementById('user-modal').classList.remove('active'); }
+
+        async function togglePause(userId, isPaused) {
+            const action = isPaused ? 'resume' : 'pause';
+            if (!confirm(`Are you sure you want to ${action} this subscription?`)) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/users/${userId}/pause`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ paused: !isPaused })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    toast(`Subscription ${action}d successfully`, 'success');
+                    viewUser(userId);
+                    loadUsers();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                toast(`Failed to ${action}: ${err.message}`, 'error');
+            }
+        }
+
+        async function deleteUser(userId, email) {
+            if (!confirm(`⚠️ DELETE USER?\n\nThis will permanently delete:\n• ${email}\n• All their clips\n• All their connections\n\nThis cannot be undone!`)) return;
+            
+            if (!confirm(`FINAL CONFIRMATION\n\nType YES to confirm you want to delete ${email}`)) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    toast('User deleted successfully', 'success');
+                    closeModal();
+                    loadUsers();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                toast(`Failed to delete: ${err.message}`, 'error');
+            }
+        }
+
+        async function saveUserEdits(userId) {
+            const updates = {
+                subscription_plan: document.getElementById('edit-plan').value || null,
+                subscription_status: document.getElementById('edit-status').value || null,
+                trial_ends_at: document.getElementById('edit-trial-ends').value ? new Date(document.getElementById('edit-trial-ends').value).toISOString() : null,
+                is_beta_tester: document.getElementById('edit-beta').value === 'true',
+                notes: document.getElementById('edit-notes').value || null
+            };
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updates)
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    toast('User updated successfully', 'success');
+                    viewUser(userId);
+                    loadUsers();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                toast(`Failed to save: ${err.message}`, 'error');
+            }
+        }
+
+        function sendEmail(email) {
+            const subject = encodeURIComponent('AutoStreamPro - ');
+            const body = encodeURIComponent(`Hi,\n\n\n\nBest regards,\nBret\nAutoStreamPro\nhttps://autostreampro.com`);
+            window.open(`https://mail.zoho.com/zm/#compose?to=${email}&subject=${subject}&body=${body}`, '_blank');
+        }
 
         // Beta
         async function loadBeta() {
@@ -1885,6 +2193,30 @@
                     <div class="health-sublabel">Last 24 hours</div>
                 </div>
             `;
+        }
+
+        // Activity Log
+        async function loadActivityLog() {
+            const data = await api('/api/admin/activity-log');
+            if (!data) return;
+            
+            document.getElementById('activity-log-table').innerHTML = data.activities.map(a => `
+                <tr>
+                    <td style="white-space:nowrap;font-size:0.85rem;">${new Date(a.created_at).toLocaleString()}</td>
+                    <td style="font-size:0.85rem;">${a.admin_email?.split('@')[0] || 'Unknown'}</td>
+                    <td><span class="badge ${getActionBadge(a.action)}">${a.action}</span></td>
+                    <td style="font-size:0.85rem;">${a.target_type ? `${a.target_type}: ${a.target_id?.slice(0,8) || ''}...` : '—'}</td>
+                    <td style="font-size:0.8rem;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;">${a.details ? JSON.stringify(a.details).slice(0,50) : '—'}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted)">No activity logged yet</td></tr>';
+        }
+
+        function getActionBadge(action) {
+            if (action?.includes('delete')) return 'badge-rose';
+            if (action?.includes('pause')) return 'badge-flame';
+            if (action?.includes('update') || action?.includes('edit')) return 'badge-electric';
+            if (action?.includes('create') || action?.includes('approve')) return 'badge-volt';
+            return 'badge-muted';
         }
 
         // Helpers
