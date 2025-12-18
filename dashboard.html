@@ -1336,20 +1336,138 @@ async function publishToYouTube(clipId) {
     }
 }
 
-// TikTok publishing variables
 let currentTikTokClipId = null;
+let tiktokCreatorData = null;
 
-function showTikTokPublishModal(clipId, title) {
+async function showTikTokPublishModal(clipId, title) {
     const titleMatch = title.match(/'([^']+)'/);
     const cleanTitle = titleMatch ? titleMatch[1] : 'Gaming Clip';
     
     currentTikTokClipId = clipId;
-    document.getElementById('tiktokTitle').value = cleanTitle;
-    document.getElementById('tiktokPrivacy').value = '';
-    document.getElementById('tiktokAllowComment').checked = false;
-    document.getElementById('tiktokAllowDuet').checked = false;
-    document.getElementById('tiktokAllowStitch').checked = false;
+    
+    // Show modal with loading state
     document.getElementById('tiktokModal').style.display = 'block';
+    document.getElementById('tiktokModalLoading').style.display = 'block';
+    document.getElementById('tiktokModalContent').style.display = 'none';
+    
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            alert('Please log in first');
+            closeTikTokModal();
+            return;
+        }
+        
+        // Fetch creator info from TikTok API
+        const response = await fetch('/api/tiktok-creator-info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id })
+        });
+        
+        const result = await response.json();
+        
+        if (!result.success) {
+            alert('Failed to load TikTok account info: ' + result.error);
+            closeTikTokModal();
+            return;
+        }
+        
+        tiktokCreatorData = result.data;
+        
+        // Display creator nickname
+        document.getElementById('tiktokCreatorNickname').textContent = '@' + (tiktokCreatorData.creator_nickname || tiktokCreatorData.creator_username);
+        
+        // Populate privacy dropdown dynamically
+        const privacySelect = document.getElementById('tiktokPrivacy');
+        privacySelect.innerHTML = '<option value="">Select privacy level...</option>';
+        
+        const privacyLabels = {
+            'PUBLIC_TO_EVERYONE': 'Public to Everyone',
+            'MUTUAL_FOLLOW_FRIENDS': 'Mutual Follow Friends',
+            'FOLLOWER_OF_CREATOR': 'Followers Only',
+            'SELF_ONLY': 'Only Me (Private)'
+        };
+        
+        tiktokCreatorData.privacy_level_options.forEach(option => {
+            const opt = document.createElement('option');
+            opt.value = option;
+            opt.textContent = privacyLabels[option] || option;
+            privacySelect.appendChild(opt);
+        });
+        
+        // Set up interaction checkboxes (unchecked by default, grey out if disabled)
+        const commentCheckbox = document.getElementById('tiktokAllowComment');
+        const duetCheckbox = document.getElementById('tiktokAllowDuet');
+        const stitchCheckbox = document.getElementById('tiktokAllowStitch');
+        
+        commentCheckbox.checked = false;
+        duetCheckbox.checked = false;
+        stitchCheckbox.checked = false;
+        
+        // Grey out disabled interactions
+        if (tiktokCreatorData.comment_disabled) {
+            commentCheckbox.disabled = true;
+            document.getElementById('tiktokCommentLabel').style.opacity = '0.5';
+            document.getElementById('tiktokCommentLabel').title = 'Comments disabled in your TikTok settings';
+        } else {
+            commentCheckbox.disabled = false;
+            document.getElementById('tiktokCommentLabel').style.opacity = '1';
+            document.getElementById('tiktokCommentLabel').title = '';
+        }
+        
+        if (tiktokCreatorData.duet_disabled) {
+            duetCheckbox.disabled = true;
+            document.getElementById('tiktokDuetLabel').style.opacity = '0.5';
+            document.getElementById('tiktokDuetLabel').title = 'Duet disabled in your TikTok settings';
+        } else {
+            duetCheckbox.disabled = false;
+            document.getElementById('tiktokDuetLabel').style.opacity = '1';
+            document.getElementById('tiktokDuetLabel').title = '';
+        }
+        
+        if (tiktokCreatorData.stitch_disabled) {
+            stitchCheckbox.disabled = true;
+            document.getElementById('tiktokStitchLabel').style.opacity = '0.5';
+            document.getElementById('tiktokStitchLabel').title = 'Stitch disabled in your TikTok settings';
+        } else {
+            stitchCheckbox.disabled = false;
+            document.getElementById('tiktokStitchLabel').style.opacity = '1';
+            stitchCheckbox.title = '';
+        }
+        
+        // Check if user can post
+        if (!tiktokCreatorData.can_post) {
+            document.getElementById('tiktokPostingBlocked').style.display = 'block';
+            document.getElementById('tiktokPostButton').disabled = true;
+            document.getElementById('tiktokPostButton').style.opacity = '0.5';
+        } else {
+            document.getElementById('tiktokPostingBlocked').style.display = 'none';
+            document.getElementById('tiktokPostButton').disabled = false;
+            document.getElementById('tiktokPostButton').style.opacity = '1';
+        }
+        
+        // Reset commercial content
+        document.getElementById('tiktokCommercialContent').checked = false;
+        document.getElementById('tiktokCommercialOptions').style.display = 'none';
+        
+        // Set title
+        document.getElementById('tiktokTitle').value = cleanTitle;
+        
+        // Show content, hide loading
+        document.getElementById('tiktokModalLoading').style.display = 'none';
+        document.getElementById('tiktokModalContent').style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error loading TikTok creator info:', error);
+        alert('Error loading TikTok account info: ' + error.message);
+        closeTikTokModal();
+    }
+}
+
+function toggleCommercialOptions() {
+    const isChecked = document.getElementById('tiktokCommercialContent').checked;
+    document.getElementById('tiktokCommercialOptions').style.display = isChecked ? 'block' : 'none';
 }
 
 function closeTikTokModal() {
@@ -1974,49 +2092,88 @@ async function saveCurrentGame() {
     </div>
 </div>
 
-<!-- TikTok Publish Modal -->
 <div id="tiktokModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
-    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px;">
-        <h3 style="margin-bottom: 20px;">Post to TikTok</h3>
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
         
-        <div style="margin-bottom: 15px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Title (Required)</label>
-            <input type="text" id="tiktokTitle" maxlength="150" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        <!-- Loading State -->
+        <div id="tiktokModalLoading" style="text-align: center; padding: 40px;">
+            <div style="width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid #000; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
+            <p>Loading TikTok account info...</p>
         </div>
         
-        <div style="margin-bottom: 15px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Privacy Level (Required)</label>
-            <select id="tiktokPrivacy" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                <option value="">Select privacy level...</option>
-                <option value="PUBLIC_TO_EVERYONE">Public to Everyone</option>
-                <option value="MUTUAL_FOLLOW_FRIENDS">Mutual Follow Friends</option>
-                <option value="SELF_ONLY">Only Me (Private)</option>
-            </select>
-        </div>
-        
-        <div style="margin-bottom: 15px;">
-            <label style="display: block; margin-bottom: 10px; font-weight: 500;">Interaction Settings</label>
-            <label style="display: block; margin-bottom: 5px; cursor: pointer;">
-                <input type="checkbox" id="tiktokAllowComment"> Allow Comments
-            </label>
-            <label style="display: block; margin-bottom: 5px; cursor: pointer;">
-                <input type="checkbox" id="tiktokAllowDuet"> Allow Duet
-            </label>
-            <label style="display: block; cursor: pointer;">
-                <input type="checkbox" id="tiktokAllowStitch"> Allow Stitch
-            </label>
-        </div>
-        
-        <div style="margin-bottom: 20px; padding: 10px; background: #f5f5f5; border-radius: 4px;">
-            <p style="margin: 0; font-size: 14px;">By posting, you agree to TikTok's <a href="https://www.tiktok.com/music-usage-confirmation" target="_blank">Music Usage Confirmation</a></p>
-        </div>
-        
-        <div style="display: flex; gap: 10px; justify-content: flex-end;">
-            <button onclick="closeTikTokModal()" style="padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">Cancel</button>
-            <button onclick="publishToTikTokConfirmed()" style="padding: 10px 20px; border: none; background: #000; color: white; border-radius: 4px; cursor: pointer;">Post to TikTok</button>
+        <!-- Content (hidden until loaded) -->
+        <div id="tiktokModalContent" style="display: none;">
+            <h3 style="margin-bottom: 10px;">Post to TikTok</h3>
+            
+            <!-- Creator Nickname Display (REQUIRED) -->
+            <div id="tiktokCreatorInfo" style="margin-bottom: 20px; padding: 10px; background: #f0f0f0; border-radius: 6px;">
+                <p style="margin: 0; font-size: 14px;">Posting to: <strong id="tiktokCreatorNickname">@username</strong></p>
+            </div>
+            
+            <!-- Posting Blocked Warning (hidden by default) -->
+            <div id="tiktokPostingBlocked" style="display: none; margin-bottom: 20px; padding: 15px; background: #fee; border: 1px solid #f00; border-radius: 6px;">
+                <p style="margin: 0; color: #c00; font-weight: 500;">⚠️ You've reached your daily posting limit on TikTok. Please try again tomorrow.</p>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Title (Required)</label>
+                <input type="text" id="tiktokTitle" maxlength="150" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Privacy Level (Required)</label>
+                <select id="tiktokPrivacy" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="">Select privacy level...</option>
+                    <!-- Options populated dynamically from API -->
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 500;">Interaction Settings</label>
+                <label id="tiktokCommentLabel" style="display: block; margin-bottom: 5px; cursor: pointer;">
+                    <input type="checkbox" id="tiktokAllowComment"> Allow Comments
+                </label>
+                <label id="tiktokDuetLabel" style="display: block; margin-bottom: 5px; cursor: pointer;">
+                    <input type="checkbox" id="tiktokAllowDuet"> Allow Duet
+                </label>
+                <label id="tiktokStitchLabel" style="display: block; cursor: pointer;">
+                    <input type="checkbox" id="tiktokAllowStitch"> Allow Stitch
+                </label>
+            </div>
+            
+            <!-- Commercial Content Disclosure (REQUIRED) -->
+            <div style="margin-bottom: 15px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 500;">Commercial Content Disclosure</label>
+                <label style="display: block; margin-bottom: 10px; cursor: pointer;">
+                    <input type="checkbox" id="tiktokCommercialContent" onchange="toggleCommercialOptions()"> This video promotes a brand, product, or service
+                </label>
+                <div id="tiktokCommercialOptions" style="display: none; margin-left: 20px;">
+                    <label style="display: block; margin-bottom: 5px; cursor: pointer;">
+                        <input type="radio" name="commercialType" value="your_brand"> Your Brand - You are promoting yourself or your own business
+                    </label>
+                    <label style="display: block; cursor: pointer;">
+                        <input type="radio" name="commercialType" value="branded_content"> Branded Content - You are promoting another brand or business
+                    </label>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px; padding: 10px; background: #f5f5f5; border-radius: 4px;">
+                <p style="margin: 0; font-size: 14px;">By posting, you agree to TikTok's <a href="https://www.tiktok.com/music-usage-confirmation" target="_blank">Music Usage Confirmation</a></p>
+            </div>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="closeTikTokModal()" style="padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">Cancel</button>
+                <button id="tiktokPostButton" onclick="publishToTikTokConfirmed()" style="padding: 10px 20px; border: none; background: #000; color: white; border-radius: 4px; cursor: pointer;">Post to TikTok</button>
+            </div>
         </div>
     </div>
 </div>
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
 
 </body>
 </html>
