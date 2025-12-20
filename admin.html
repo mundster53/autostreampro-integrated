@@ -1607,7 +1607,7 @@
         // Config
         const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
         const API_BASE = 'https://autostreampro-backend-production.up.railway.app';
         let authToken = null;
 
@@ -1620,7 +1620,7 @@
 
         // Check existing session
         async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
                 authToken = session.access_token;
                 // Verify admin access via backend
@@ -1648,7 +1648,7 @@
             error.classList.remove('visible');
             
             try {
-                const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+                const { data, error: authError } = await supabaseClient.auth.signInWithPassword({ email, password });
                 if (authError) throw authError;
                 
                 authToken = data.session.access_token;
@@ -1659,7 +1659,7 @@
                 });
                 
                 if (!res.ok) {
-                    await supabase.auth.signOut();
+                    await supabaseClient.auth.signOut();
                     authToken = null;
                     throw new Error('Access denied. Not an admin.');
                 }
@@ -1683,7 +1683,7 @@
         }
 
         async function logout() {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             authToken = null;
             document.getElementById('app-container').classList.remove('active');
             document.getElementById('login-screen').classList.remove('hidden');

@@ -1132,7 +1132,7 @@
 const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
 
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // FIXED threshold - admin controlled (50%)
 const FIXED_THRESHOLD = 0.50;
@@ -1140,7 +1140,7 @@ const FIXED_THRESHOLD = 0.50;
 // Load monitoring status
 async function loadMonitoringStatus() {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) return;
         
         const { data: connections } = await supabase
@@ -1200,7 +1200,7 @@ function getTimeAgo(date) {
 
 // Load clips from database
 async function loadClips() {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) return;
     
     try {
@@ -1301,7 +1301,7 @@ async function publishToYouTube(clipId) {
         button.innerHTML = '⏳ Publishing...';
         button.className = 'yt-btn';
         
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) {
             showToast('Please log in first', 'error');
             button.innerHTML = originalHTML;
@@ -1351,7 +1351,7 @@ async function showTikTokPublishModal(clipId, title) {
     document.getElementById('tiktokModalContent').style.display = 'none';
     
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) {
             alert('Please log in first');
             closeTikTokModal();
@@ -1496,7 +1496,7 @@ async function publishToTikTokConfirmed() {
     }
     
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) {
             alert('Please log in first');
             return;
@@ -1529,7 +1529,7 @@ async function publishToTikTokConfirmed() {
 
 async function toggleAutoPublish(clipId, enabled) {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) return;
         
         const { error } = await supabase
@@ -1561,7 +1561,7 @@ async function toggleAutoPublish(clipId, enabled) {
 // Check authentication and load dashboard
 async function loadDashboard() {
     try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
         
         if (authError || !user) {
             console.log('User not authenticated, redirecting to login');
@@ -1603,7 +1603,7 @@ async function loadPlatformConnections() {
     console.log('Loading platform connections...');
     
     try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
         
         if (!user) {
             console.log('No user logged in');
@@ -1653,7 +1653,7 @@ async function loadPlatformConnections() {
 // Sign out function
 async function signOut() {
     try {
-        const { error } = await supabase.auth.signOut();
+        const { error } = await supabaseClient.auth.signOut();
         if (error) throw error;
         
         window.location.href = '/login.html';
@@ -1671,7 +1671,7 @@ async function toggleMonitoring() {
         btn.disabled = true;
         statusSpan.textContent = '⏳ Processing...';
         
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) {
             showToast('Please log in first', 'error');
             btn.disabled = false;
@@ -1679,7 +1679,7 @@ async function toggleMonitoring() {
             return;
         }
         
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) {
             showToast('User not found', 'error');
             btn.disabled = false;
@@ -1800,7 +1800,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Handle authentication state changes
-supabase.auth.onAuthStateChange((event, session) => {
+supabaseClient.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_OUT') {
         window.location.href = '/login.html';
     }
@@ -1821,7 +1821,7 @@ async function toggleGlobalAutoPublish() {
     try {
         const enabled = autoPublishCheckbox.checked;
         
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) {
             showToast('Please log in first', 'error');
             autoPublishCheckbox.checked = false;
@@ -1861,7 +1861,7 @@ async function toggleGlobalAutoPublish() {
 // Process pending clips when auto-publish is enabled
 async function processPendingClips() {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) return;
         
         // Use FIXED threshold
@@ -1893,7 +1893,7 @@ async function deleteClip(clipId) {
     }
     
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) return;
         
         const response = await fetch('/.netlify/functions/delete-clip', {
@@ -1922,7 +1922,7 @@ async function deleteClip(clipId) {
 // Load user's publishing settings (AI consent, privacy default, auto-publish)
 async function loadAutoPublishSettings() {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) return;
         
         const { data: prefs } = await supabase
@@ -1965,7 +1965,7 @@ async function updateAIConsent(checkbox) {
     }
     
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) return;
         
         const { error } = await supabase
@@ -1992,7 +1992,7 @@ async function updateAIConsent(checkbox) {
 // Update default YouTube privacy - YouTube API Compliance (III.C.1)
 async function updatePrivacyDefault(select) {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) return;
         
         const { error } = await supabase
@@ -2025,7 +2025,7 @@ async function checkDiscordConnection() {
 // Current Game functions
 async function loadCurrentGame() {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) return;
         
         const { data: connections } = await supabase
@@ -2054,7 +2054,7 @@ async function saveCurrentGame() {
     }
     
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) {
             showToast('Please log in first', 'error');
             return;

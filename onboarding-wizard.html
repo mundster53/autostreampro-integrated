@@ -188,7 +188,7 @@
     // ---------- Supabase init ----------
     const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     // ---------- Wizard state ----------
     let currentStep = 1;
@@ -203,7 +203,7 @@
     let yConnected = false;
 
     async function fetchConnections() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabaseClient.auth.getUser();
       if (!user) return { youtube: false };
       const { data, error } = await supabase
         .from('streaming_connections')
@@ -239,7 +239,7 @@
         return;
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabaseClient.auth.getUser();
       if (!user) { alert('Please log in first'); window.location.href='/login.html'; return; }
 
       try {
@@ -282,7 +282,7 @@
     }
 
     async function connectTwitch() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabaseClient.auth.getUser();
       if (!user) { 
         alert('Please log in first'); 
         window.location.href='/login.html'; 
@@ -362,7 +362,7 @@
     }
 
     async function completeSetup() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabaseClient.auth.getUser();
       if (!user) { alert('Please log in first'); window.location.href='/login.html'; return; }
 
       try {
@@ -405,12 +405,12 @@
 
     // ---------- Auth & onboarding checks ----------
     async function checkAuth() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabaseClient.auth.getUser();
       if (!user) window.location.href='/login.html';
     }
 
     async function checkOnboardingStatus() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabaseClient.auth.getUser();
       if (!user) return;
       const { data: connections } = await supabase
         .from('streaming_connections')
@@ -500,7 +500,7 @@
         ytWizardBtn.addEventListener('click', async (e) => {
           e.preventDefault();
           
-          const { data: { user } } = await supabase.auth.getUser();
+          const { data: { user } } = await supabaseClient.auth.getUser();
           if (!user) { 
             alert('Please log in first'); 
             window.location.href='/login.html'; 
@@ -581,7 +581,7 @@
 
       // DEV: immediately start TikTok OAuth if ?start=tiktok
       if (urlParams.get('start') === 'tiktok') {
-        const { data: { user: oauthUser } } = await supabase.auth.getUser();
+        const { data: { user: oauthUser } } = await supabaseClient.auth.getUser();
         if (oauthUser) {
           const returnTo = encodeURIComponent('/onboarding-wizard.html#tiktok');
           sessionStorage.setItem('tiktok_return_to', '/onboarding-wizard.html#tiktok');
@@ -616,7 +616,7 @@
           tiktokTile.style.cursor = 'pointer';
           tiktokTile.addEventListener('click', async function () {
             try {
-              const { data: { user } } = await supabase.auth.getUser();
+              const { data: { user } } = await supabaseClient.auth.getUser();
               if (!user) { setStatus('Please log in first.', true); window.location.href='/login.html'; return; }
               const returnTo = encodeURIComponent('/onboarding-wizard.html#tiktok');
               sessionStorage.setItem('tiktok_return_to', '/onboarding-wizard.html#tiktok');

@@ -493,7 +493,7 @@
         // Initialize Supabase
         const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
         
         // OAuth Configuration
 const twitchClientId = 'mzjsqcwxj9mexsa8vaimtzanbe7pll';  // Your REAL Twitch Client ID
@@ -504,7 +504,7 @@ async function getCurrentUser() {
         // Wait a bit for session to stabilize
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const { data: { user }, error } = await supabaseClient.auth.getUser();
         
         if (!user) {
             // Check if we just came from login (prevent immediate redirect)
@@ -515,7 +515,7 @@ async function getCurrentUser() {
                 // Give it one more chance
                 sessionStorage.removeItem('just_logged_in');
                 await new Promise(resolve => setTimeout(resolve, 1000));
-                const { data: { user: retryUser } } = await supabase.auth.getUser();
+                const { data: { user: retryUser } } = await supabaseClient.auth.getUser();
                 if (retryUser) return retryUser;
             }
             
@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!confirm('Disconnect Twitch?')) return;
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabaseClient.auth.getUser();
       if (!user) { alert('Please log in first'); return; }
 
       const res = await fetch('/api/disconnect-twitch', {
@@ -597,7 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Connect TikTok
 document.getElementById('tiktokBtn').addEventListener('click', async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
         alert('Please log in first');
         return;
@@ -623,7 +623,7 @@ document.getElementById('kickBtn').addEventListener('click', async () => {
     if (!username) return;
     
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) {
             alert('Please log in first');
             return;
@@ -665,7 +665,7 @@ async function savePlatformConnection(platform, data) {
         const user = await getCurrentUser();
         if (!user) return;
         
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) {
             showError('No session found. Please log in again.');
             return;
@@ -992,7 +992,7 @@ async function connectKick() {
     
     try {
         // Get the current user
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         
         if (!user) {
             alert('Please log in first');
@@ -1034,7 +1034,7 @@ async function disconnectTikTok() {
 
   try {
     // Get user ID - use the same method as other functions
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
     alert('Please log in first');
     return;
@@ -1114,7 +1114,7 @@ async function disconnectPlatform(platform) {
 
   try {
     // GET THE USER FIRST
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
         alert('Please log in first');
         return;
@@ -1154,7 +1154,7 @@ async function disconnectPlatform(platform) {
 // Check Kick on page load
 async function checkKickConnection() {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) return;
         
         const { data } = await supabase
@@ -1237,7 +1237,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // lazily get (or create) a Supabase client without colliding with your globals
   async function getSb() {
-    if (window.supabase && typeof window.supabase.auth?.getSession === 'function') {
+    if (window.supabase && typeof window.supabaseClient.auth?.getSession === 'function') {
       return window.supabase;
     }
     if (!window.__asp_sb_private) {
@@ -1282,7 +1282,7 @@ if (btn) {
     e.preventDefault();
 
     // Get the current user first
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
       alert('Please log in first');
       return;
@@ -1465,7 +1465,7 @@ if (btn) {
 <script id="asp-onboarding-fix">
 (function () {
   // --- Guard: requires Supabase script already loaded on the page ---
-  if (!window.supabase || !window.supabase.auth) {
+  if (!window.supabase || !window.supabaseClient.auth) {
     console.warn('[ASP] Supabase client missing; skipping OAuth exchange fix.');
     return;
   }
@@ -1504,7 +1504,7 @@ if (btn) {
     pullAndClean(['youtube_code', 'code']);
 
     // Get Supabase session -> send Authorization: Bearer <jwt> -> POST to your CF Pages Function
-    window.supabase.auth.getSession()
+    window.supabaseClient.auth.getSession()
       .then(function (res) {
         var session = res && res.data ? res.data.session : null;
         var jwt = session && session.access_token ? session.access_token : null;
