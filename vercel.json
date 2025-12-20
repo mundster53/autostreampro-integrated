@@ -20,6 +20,14 @@
     {
       "source": "/api/ai/:path*",
       "destination": "https://api.autostreampro.com/api/ai/:path*"
+    },
+    {
+      "source": "/api/tiktok-creator-info",
+      "destination": "https://api.autostreampro.com/api/tiktok-creator-info"
+    },
+    {
+      "source": "/api/upload-to-tiktok",
+      "destination": "https://api.autostreampro.com/api/upload-to-tiktok"
     }
   ],
   "headers": [
