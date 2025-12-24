@@ -444,7 +444,7 @@
             <div class="plans-section">
                 <h3 class="plans-title">Choose Your Plan</h3>
                 
-                <div class="plan-card" data-plan="starter" data-price="20">
+                <div class="plan-card" data-plan="starter" data-price="25">
                     <div class="plan-header">
                         <div class="plan-info">
                             <div class="plan-name">Starter</div>
@@ -457,7 +457,7 @@
                     </div>
                 </div>
                 
-                <div class="plan-card popular selected" data-plan="expert" data-price="50">
+                <div class="plan-card popular selected" data-plan="expert" data-price="45">
                     <div class="plan-header">
                         <div class="plan-info">
                             <div class="plan-name">Expert</div>
@@ -470,7 +470,7 @@
                     </div>
                 </div>
                 
-                <div class="plan-card" data-plan="pro" data-price="75">
+                <div class="plan-card" data-plan="pro" data-price="70">
                     <div class="plan-header">
                         <div class="plan-info">
                             <div class="plan-name">Pro</div>
@@ -744,7 +744,7 @@ async function createFreeAccount(email, password, type, promoData = null) {
             const urlParams = new URLSearchParams(window.location.search);
             const planFromUrl = urlParams.get('plan');
             if (planFromUrl && ['starter', 'expert', 'pro'].includes(planFromUrl)) {
-                const prices = {starter: 20, expert: 50, pro: 75};
+                const prices = {starter: 25, expert: 45, pro: 70};
                 selectPlan(planFromUrl, prices[planFromUrl]);
             }
             
