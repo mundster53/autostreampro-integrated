@@ -752,9 +752,10 @@ async function createFreeAccount(email, password, type, promoData = null) {
         });
         
         // Setup plan selection
+        // Setup plan selection
         function setupPlanSelection() {
             const planCards = document.querySelectorAll('.plan-card');
-            console.log(`🎯 Found ${planCards.length} plan cards`);
+            console.log('🎯 Found ' + planCards.length + ' plan cards');
             
             planCards.forEach(card => {
                 card.addEventListener('click', function() {
@@ -765,7 +766,7 @@ async function createFreeAccount(email, password, type, promoData = null) {
         
         // Select plan
         function selectPlan(plan, price) {
-            console.log(`📦 Plan selected: ${plan} ($${price})`);
+            console.log('📦 Plan selected: ' + plan + ' ($' + price + ')');
             
             // Remove selected from all cards
             document.querySelectorAll('.plan-card').forEach(card => {
@@ -773,7 +774,7 @@ async function createFreeAccount(email, password, type, promoData = null) {
             });
             
             // Add selected to clicked card
-            const selectedCard = document.querySelector(`[data-plan="${plan}"]`);
+            const selectedCard = document.querySelector('[data-plan="' + plan + '"]');
             if (selectedCard) {
                 selectedCard.classList.add('selected');
             }
