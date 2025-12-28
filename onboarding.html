@@ -364,11 +364,11 @@
                 <div class="platform-card" data-platform="instagram">
                     <div class="platform-icon instagram-icon">I</div>
                     <div class="platform-name">Instagram</div>
-                    <button class="connect-btn" disabled>
-                        <span class="coming-soon">Coming Soon</span>
+                    <button class="connect-btn" id="instagramBtn">
+                        Connect Instagram
                     </button>
-                    <button onclick="disconnectPlatform('instagram')" class="disconnect-btn" style="margin-top: 10px;">
-                    Disconnect Instagram
+                    <button onclick="disconnectPlatform('instagram')" class="disconnect-btn" id="instagramDisconnectBtn" style="margin-top: 10px; display: none;">
+                        Disconnect Instagram
                     </button>
                 </div>
                 
@@ -547,6 +547,17 @@ async function getCurrentUser() {
             el.style.display = 'block';
             setTimeout(() => el.style.display = 'none', 5000);
         }
+
+        // Connect Instagram
+        document.getElementById('instagramBtn').addEventListener('click', async () => {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) {
+                showError('Please log in first');
+                return;
+            }
+            const state = encodeURIComponent(JSON.stringify({ userId: user.id }));
+            window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/instagram?state=${state}`;
+        });
         
         // Connect Twitch
         document.getElementById('twitchBtn').addEventListener('click', () => {
