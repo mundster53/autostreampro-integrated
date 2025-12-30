@@ -33,18 +33,14 @@ exports.handler = async (event, context) => {
         const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
         
         // Parse request body
-        const { plan, userEmail, userId, userName } = JSON.parse(event.body);
-        
-        // Validate required fields
-        if (!plan || !userEmail || !userId) {
-            return {
-                statusCode: 400,
-                headers,
-                body: JSON.stringify({ 
-                    error: 'Missing required fields: plan, userEmail, userId' 
-                })
-            };
-        }
+       const { plan, userEmail, userName } = req.body;
+    
+    // Validate required fields
+    if (!plan || !userEmail) {
+      return res.status(400).json({ 
+        error: 'Missing required fields: plan, userEmail' 
+      });
+    }
 
         // Define plan pricing
         const planPricing = {

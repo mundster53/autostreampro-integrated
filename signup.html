@@ -492,18 +492,9 @@
                         <div id="email-error" class="message error"></div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" id="password" name="password" class="form-input" placeholder="Choose a secure password" required>
-                        <div id="password-error" class="message error"></div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="promoCode" class="form-label">Promo Code (Optional)</label>
-                        <input type="text" id="promoCode" name="promoCode" class="form-input" placeholder="Enter promo code for discount">
-                        <div id="promo-error" class="message error"></div>
-                        <div id="promo-success" class="message success"></div>
-                    </div>
+                    <p style="color: #64748b; font-size: 14px; margin: 16px 0; text-align: center;">
+                        🎟️ Have a promo code? You can enter it on the payment page.
+                    </p>
                     
                     <button type="submit" class="signup-btn" id="signup-btn">
                         Get Started →
@@ -694,17 +685,16 @@
             console.log('🚀 Form submitted');
             
             const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
             const btn = document.getElementById('signup-btn');
             
-            console.log('📊 Data: email=' + email + ', password=' + password.length + ' chars, plan=' + selectedPlan);
+            console.log('📊 Data: email=' + email + ', plan=' + selectedPlan);
             
             // Clear previous messages
             clearMessages();
             
             // Basic validation
-            if (!email || !password) {
-                showError('form-message', 'Please enter both email and password');
+            if (!email) {
+                showError('form-message', 'Please enter your email address');
                 return;
             }
             
@@ -713,8 +703,8 @@
                 return;
             }
             
-            if (password.length < 6) {
-                showError('password-error', 'Password must be at least 6 characters');
+            if (!selectedPlan) {
+                showError('form-message', 'Please select a plan');
                 return;
             }
             
@@ -726,113 +716,52 @@
             
             // Show loading
             btn.disabled = true;
-            btn.textContent = 'Creating Account...';
+            btn.textContent = 'Redirecting to Payment...';
             
             try {
                 console.log('🔄 Processing signup...');
-                
-                // Check promo code first
-                const promoCode = document.getElementById('promoCode').value.trim();
-                let promoData = { valid: false, discount: 0 };
 
-                if (promoCode) {
-                    console.log('🎫 Validating promo code:', promoCode);
-                    promoData = await validatePromoCode(promoCode);
-                    
-                    if (promoData.valid) {
-                        console.log('✅ Valid promo code:', promoData.discount + '% discount');
-                        document.getElementById('promo-success').textContent = '✅ ' + (promoData.displayText || promoData.discount + '% discount') + ' applied!';
-                        document.getElementById('promo-success').style.display = 'block';
-                    } else {
-                        console.log('❌ Invalid promo code');
-                        showError('promo-error', promoData.message || 'Invalid promo code');
-                        btn.disabled = false;
-                        btn.textContent = 'Get Started →';
-                        return;
-                    }
-                }
-
-                // Family detection
+                // Family detection - family members still get special handling
                 const isFamily = familyEmails.includes(email.toLowerCase());
 
-                // Create auth account first
-                console.log('🔄 Creating auth account...');
-                const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: password
-                });
-
-                if (authError) {
-                    if (authError.message.includes('already registered') || authError.message.includes('already exists')) {
-                        showError('form-message', 'Account already exists. Please sign in instead.');
-                        btn.disabled = false;
-                        btn.textContent = 'Get Started →';
-                        return;
-                    }
-                    throw authError;
-                }
-
-                console.log('✅ Auth account created:', authData.user.id);
-
-                // Handle ONLY family members as free forever
                 if (isFamily) {
-                    console.log('🎉 Family member - free forever');
+                    // Family members need to create account here since they skip Stripe
+                    const tempPassword = Math.random().toString(36).slice(-12) + 'A1!';
                     
-                    showSuccess('form-message', '🎉 Welcome to the family! You have lifetime Pro access.');
-                    
-                    // Store user info for dashboard
-                    sessionStorage.setItem('userEmail', email);
-                    sessionStorage.setItem('userId', authData.user.id);
-                    sessionStorage.setItem('isFamilyMember', 'true');
-                    sessionStorage.setItem('hasLifetimeAccess', 'true');
-                    sessionStorage.setItem('subscriptionPlan', 'pro');
-                    sessionStorage.setItem('subscriptionStatus', 'active');
-                    
-                    // Sign in the user
-                    await supabaseClient.auth.signInWithPassword({
+                    const { data: authData, error: authError } = await supabaseClient.auth.signUp({
                         email: email,
-                        password: password
+                        password: tempPassword
+                    });
+
+                    if (authError && !authError.message.includes('already registered')) {
+                        throw authError;
+                    }
+
+                    console.log('🎉 Family member - free forever');
+                    showSuccess('form-message', '🎉 Welcome to the family! Check your email to set your password.');
+                    
+                    // Send password reset so they can set their own password
+                    await supabaseClient.auth.resetPasswordForEmail(email, {
+                        redirectTo: 'https://autostreampro.com/reset-password.html'
                     });
                     
-                    setTimeout(function() {
-                        window.location.href = '/admin.html';
-                    }, 2000);
+                    btn.disabled = false;
+                    btn.textContent = 'Get Started →';
                     return;
                 }
 
-                // Everyone else goes through Stripe
-                console.log('💳 Setting up Stripe checkout...');
+                // Everyone else goes straight to Stripe (no account creation yet)
+                console.log('💳 Redirecting to Stripe checkout...');
 
-                // Sign in the user to establish session before Stripe redirect
-                console.log('🔐 Establishing session...');
-                const { error: signInError } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-                
-                if (signInError) {
-                    console.error('❌ Sign-in failed:', signInError);
-                    // Continue anyway - user can sign in after Stripe
-                } else {
-                    console.log('✅ Session established');
-                }
-
-                // Store for Stripe
+                // Store email for reference
                 sessionStorage.setItem('userEmail', email);
-                sessionStorage.setItem('userId', authData.user.id);
                 sessionStorage.setItem('selectedPlan', selectedPlan);
                 sessionStorage.setItem('selectedPrice', selectedPrice);
 
-                // Store promo code if valid
-                if (promoData.valid) {
-                    sessionStorage.setItem('promoCode', promoData.code);
-                    sessionStorage.setItem('promoDiscount', promoData.discount);
-                }
+                showSuccess('form-message', 'Redirecting to secure payment...');
 
-                showSuccess('form-message', 'Account created! Setting up payment...');
-
-                // Create Stripe checkout
-                await createStripeCheckout(authData.user, promoData);
+                // Create Stripe checkout - pass email only, no userId yet
+                await createStripeCheckout(email);
                 
             } catch (error) {
                 console.error('❌ Signup failed:', error);
@@ -865,7 +794,7 @@
         }
         
         // Create Stripe checkout
-        async function createStripeCheckout(user, promoData) {
+        async function createStripeCheckout(email) {
             try {
                 console.log('💳 Creating Stripe checkout...');
                 console.log('🧪 A/B variant:', abVariant);
@@ -878,24 +807,13 @@
                         visitor_id: visitorId,
                         test_name: 'trial_card_requirement',
                         event: 'signed_up',
-                        email: user.email,
-                        user_id: user.id
+                        email: email
                     })
-                });
+                }).catch(err => console.log('A/B tracking error:', err));
                 
-                // No-card variant: skip Stripe, go straight to onboarding
+                // No-card variant: go to complete-signup without Stripe
                 if (abVariant === 'no_card') {
                     console.log('🆓 No-card trial - skipping Stripe');
-                    
-                    // Update user profile with trial info
-                    await supabaseClient
-                        .from('user_profiles')
-                        .update({
-                            subscription_status: 'trial',
-                            subscription_plan: selectedPlan,
-                            trial_ends_at: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString()
-                        })
-                        .eq('user_id', user.id);
                     
                     // Track trial started
                     await fetch('https://autostreampro-backend-production.up.railway.app/api/ab-test/convert', {
@@ -906,27 +824,22 @@
                             test_name: 'trial_card_requirement',
                             event: 'trial_started'
                         })
-                    });
+                    }).catch(err => console.log('A/B tracking error:', err));
                     
-                    window.location.href = '/onboarding-wizard.html';
+                    // Store email and redirect to complete-signup with no_card flag
+                    sessionStorage.setItem('noCardTrial', 'true');
+                    sessionStorage.setItem('userEmail', email);
+                    sessionStorage.setItem('selectedPlan', selectedPlan);
+                    window.location.href = '/complete-signup.html?no_card=true&email=' + encodeURIComponent(email) + '&plan=' + selectedPlan;
                     return;
                 }
                 
                 // Card-required variant: go to Stripe
                 const requestBody = {
                     plan: selectedPlan,
-                    userEmail: user.email,
-                    userId: user.id,
-                    userName: user.email.split('@')[0],
-                    trialDays: 21
+                    userEmail: email,
+                    userName: email.split('@')[0]
                 };
-                
-                // Add promo data if valid
-                if (promoData && promoData.valid) {
-                    requestBody.promoCode = promoData.code;
-                    requestBody.promoDiscount = promoData.discount;
-                    requestBody.promoId = promoData.id;
-                }
                 
                 console.log('📦 Stripe request:', requestBody);
                 
@@ -940,26 +853,15 @@
                 
                 if (data.success && data.checkoutUrl) {
                     console.log('✅ Redirecting to Stripe...');
-                    
-                    // Track trial started
-                    await fetch('https://autostreampro-backend-production.up.railway.app/api/ab-test/convert', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            visitor_id: visitorId,
-                            test_name: 'trial_card_requirement',
-                            event: 'trial_started'
-                        })
-                    });
-                    
                     window.location.href = data.checkoutUrl;
                 } else {
-                    throw new Error(data.message || 'Payment setup failed');
+                    throw new Error(data.error || 'Failed to create checkout session');
                 }
                 
             } catch (error) {
                 console.error('❌ Stripe checkout failed:', error);
                 showError('form-message', 'Payment setup failed. Please try again.');
+                throw error;
             }
         }
         
