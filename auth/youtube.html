@@ -13,7 +13,7 @@
     </div>
 
     <script>
-        const supabase = window.supabase.createClient(
+        const supabaseClient = window.supabase.createClient(
             'https://dykxhmdozgccawkbxejd.supabase.co',
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg'
         );
@@ -37,7 +37,7 @@
                 }
 
                 // Get Supabase session for auth
-                const { data: { session } } = await supabase.auth.getSession();
+                const { data: { session } } = await supabaseClient.auth.getSession();
                 
                 // Exchange code for tokens via your API
                 const response = await fetch('/api/youtube-exchange', {
