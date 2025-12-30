@@ -240,10 +240,18 @@
         
         // Check if user is already logged in
         async function checkAuth() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (session) {
-                // User is already logged in, redirect to dashboard
-                window.location.href = '/dashboard';
+            try {
+                const { data: { user }, error } = await supabaseClient.auth.getUser();
+                if (user && !error) {
+                    // User is authenticated, redirect to dashboard
+                    window.location.href = '/dashboard';
+                } else if (error) {
+                    // Invalid session - clear it
+                    await supabaseClient.auth.signOut();
+                }
+            } catch (e) {
+                // Clear any corrupted session
+                await supabaseClient.auth.signOut();
             }
         }
         

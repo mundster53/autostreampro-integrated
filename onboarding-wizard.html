@@ -404,9 +404,17 @@
     }
 
     // ---------- Auth & onboarding checks ----------
-    async function checkAuth() {
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      if (!user) window.location.href='/login.html';
+   async function checkAuth() {
+      try {
+        const { data: { user }, error } = await supabaseClient.auth.getUser();
+        if (!user || error) {
+          await supabaseClient.auth.signOut();
+          window.location.href='/login.html';
+        }
+      } catch (e) {
+        await supabaseClient.auth.signOut();
+        window.location.href='/login.html';
+      }
     }
 
     async function checkOnboardingStatus() {
