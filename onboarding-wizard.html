@@ -649,9 +649,12 @@
                 if (typeof window.updateNavigationState === 'function') window.updateNavigationState();
                 return;
               }
-              window.location.href = '/auth/youtube?return_to=' + encodeURIComponent('/onboarding-wizard.html');
+              const { data: { user } } = await supabaseClient.auth.getUser();
+              if (user) {
+                window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/youtube?userId=${user.id}&return_to=${encodeURIComponent('https://www.autostreampro.com/onboarding-wizard.html')}`;
+              }
             } catch {
-              window.location.href = '/auth/youtube?return_to=' + encodeURIComponent('/onboarding-wizard.html');
+              console.error('YouTube auth failed');
             }
           });
         }
