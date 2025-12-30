@@ -916,7 +916,7 @@
                 
                 console.log('📦 Stripe request:', requestBody);
                 
-                const response = await fetch('/.netlify/functions/stripe-checkout', {
+                const response = await fetch('https://autostreampro-backend-production.up.railway.app/api/stripe-checkout', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestBody)
