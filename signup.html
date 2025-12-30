@@ -803,6 +803,20 @@
                 // Everyone else goes through Stripe
                 console.log('💳 Setting up Stripe checkout...');
 
+                // Sign in the user to establish session before Stripe redirect
+                console.log('🔐 Establishing session...');
+                const { error: signInError } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (signInError) {
+                    console.error('❌ Sign-in failed:', signInError);
+                    // Continue anyway - user can sign in after Stripe
+                } else {
+                    console.log('✅ Session established');
+                }
+
                 // Store for Stripe
                 sessionStorage.setItem('userEmail', email);
                 sessionStorage.setItem('userId', authData.user.id);
