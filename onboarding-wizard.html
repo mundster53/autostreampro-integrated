@@ -364,31 +364,16 @@
     async function completeSetup() {
       const { data: { user } } = await supabaseClient.auth.getUser();
       if (!user) { alert('Please log in first'); window.location.href='/login.html'; return; }
-
       try {
-        // Save preferences with FIXED threshold (admin controlled)
+        // Set fixed threshold in user_profiles (admin controlled)
         const { error } = await supabaseClient
-          .from('user_preferences')
-          .upsert({
-            user_id: user.id,
-            viral_threshold: FIXED_THRESHOLD * 100, // Store as percentage (50)
-            clip_length: 30,
-            auto_clips: true,
-            auto_titles: true,
-            auto_post: true,
-            updated_at: new Date()
-          }, { onConflict: 'user_id' });
-        if (error) throw error;
-
-        // Persist decimal threshold for backend (0.50)
-        const { error: upErr } = await supabaseClient
           .from('user_profiles')
-          .upsert(
-            { user_id: user.id, virality_threshold: FIXED_THRESHOLD },
-            { onConflict: 'user_id' }
-          );
-        if (upErr) throw upErr;
-
+          .update({ 
+            virality_threshold: 0.50,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id);
+        if (error) throw error;
         // Success UI
         document.getElementById('content4').classList.remove('active');
         document.getElementById('contentSuccess').classList.add('active');
