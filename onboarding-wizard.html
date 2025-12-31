@@ -367,7 +367,7 @@
 
       try {
         // Save preferences with FIXED threshold (admin controlled)
-        const { error } = await supabase
+        const { error } = await supabaseClient
           .from('user_preferences')
           .upsert({
             user_id: user.id,
@@ -381,7 +381,7 @@
         if (error) throw error;
 
         // Persist decimal threshold for backend (0.50)
-        const { error: upErr } = await supabase
+        const { error: upErr } = await supabaseClient
           .from('user_profiles')
           .upsert(
             { user_id: user.id, virality_threshold: FIXED_THRESHOLD },
