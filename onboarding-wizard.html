@@ -150,10 +150,11 @@
           <div class="platform-option" data-publish="tiktok">
             <div class="platform-icon tiktok-icon">T</div><div class="platform-name">TikTok</div>
           </div>
+          <div class="platform-option" data-publish="instagram">
+            <div class="platform-icon" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)">IG</div><div class="platform-name">Instagram</div>
+          </div>
         </div>
-
-        <div id="publishConnections" style="margin-top:20px"></div>
-      </div>
+        <p style="color:#666;font-size:.85rem;margin-top:15px;text-align:center">Click each platform where you want clips published. You can change this later.</p>
 
       <!-- Step 4: Complete (was Step 5) -->
       <div class="step-content" id="content4">
@@ -214,16 +215,9 @@
     }
 
     function markYouTubeSelected() {
-      const ytTile = document.querySelector('.platform-option[data-publish="youtube"]');
-      if (ytTile && !ytTile.classList.contains('selected')) ytTile.classList.add('selected');
-      if (!selectedPublishPlatforms.includes('youtube')) selectedPublishPlatforms.push('youtube');
-      if (typeof updateNavigationState === 'function') updateNavigationState();
-      const box = document.getElementById('publishConnections');
-      if (box) {
-        box.innerHTML = `<div style="padding:12px;border-radius:8px;background:#ecfdf5;color:#065f46">
-          YouTube connected ✔ — we'll publish clips there.
-        </div>`;
-      }
+      // Disabled auto-selection - users must explicitly click to select publishing platforms
+      // This function is kept for backward compatibility but does nothing
+      return;
     }
 
     // ---------- Platform connections ----------
@@ -604,43 +598,55 @@
         const tiktokTile = document.querySelector('.platform-option[data-publish="tiktok"]');
         const youtubeTile = document.querySelector('.platform-option[data-publish="youtube"]');
 
-        // Start TikTok OAuth when the TikTok tile is clicked
-        if (tiktokTile) {
+        // TikTok tile: toggle selection
+        if (tiktokTile && !tiktokTile.dataset.wired) {
+          tiktokTile.dataset.wired = '1';
           tiktokTile.style.cursor = 'pointer';
           tiktokTile.addEventListener('click', async function () {
-            try {
-              const { data: { user } } = await supabaseClient.auth.getUser();
-              if (!user) { setStatus('Please log in first.', true); window.location.href='/login.html'; return; }
-              const returnTo = encodeURIComponent('/onboarding-wizard.html#tiktok');
-              sessionStorage.setItem('tiktok_return_to', '/onboarding-wizard.html#tiktok');
-              window.location.href = `/auth/tiktok?user=${encodeURIComponent(user.id)}&direct=0&return_to=${returnTo}`;
-            } catch (e) {
-              setStatus('Could not start TikTok connect. Please try again.', true);
+            tiktokTile.classList.toggle('selected');
+            if (tiktokTile.classList.contains('selected')) {
+              if (!window.selectedPublishPlatforms.includes('tiktok')) {
+                window.selectedPublishPlatforms.push('tiktok');
+              }
+            } else {
+              window.selectedPublishPlatforms = window.selectedPublishPlatforms.filter(p => p !== 'tiktok');
             }
+            if (typeof window.updateNavigationState === 'function') window.updateNavigationState();
+          });
+        }
+        // Instagram tile: toggle selection
+        const instagramTile = document.querySelector('.platform-option[data-publish="instagram"]');
+        if (instagramTile && !instagramTile.dataset.wired) {
+          instagramTile.dataset.wired = '1';
+          instagramTile.style.cursor = 'pointer';
+          instagramTile.addEventListener('click', async function () {
+            instagramTile.classList.toggle('selected');
+            if (instagramTile.classList.contains('selected')) {
+              if (!window.selectedPublishPlatforms.includes('instagram')) {
+                window.selectedPublishPlatforms.push('instagram');
+              }
+            } else {
+              window.selectedPublishPlatforms = window.selectedPublishPlatforms.filter(p => p !== 'instagram');
+            }
+            if (typeof window.updateNavigationState === 'function') window.updateNavigationState();
           });
         }
 
-        // YouTube tile: if already connected, just select; otherwise start OAuth
+        // YouTube tile: toggle selection (auth was already done in Step 2)
         if (youtubeTile && !youtubeTile.dataset.wired) {
           youtubeTile.dataset.wired = '1';
           youtubeTile.style.cursor = 'pointer';
           youtubeTile.addEventListener('click', async function () {
-            try {
-              if (window.yConnected) {
-                if (!youtubeTile.classList.contains('selected')) youtubeTile.classList.add('selected');
-                if (Array.isArray(window.selectedPublishPlatforms) && !window.selectedPublishPlatforms.includes('youtube')) {
-                  window.selectedPublishPlatforms.push('youtube');
-                }
-                if (typeof window.updateNavigationState === 'function') window.updateNavigationState();
-                return;
+            // Toggle selection
+            youtubeTile.classList.toggle('selected');
+            if (youtubeTile.classList.contains('selected')) {
+              if (!window.selectedPublishPlatforms.includes('youtube')) {
+                window.selectedPublishPlatforms.push('youtube');
               }
-              const { data: { user } } = await supabaseClient.auth.getUser();
-              if (user) {
-                window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/youtube?userId=${user.id}&return_to=${encodeURIComponent('https://www.autostreampro.com/onboarding-wizard.html')}`;
-              }
-            } catch {
-              console.error('YouTube auth failed');
+            } else {
+              window.selectedPublishPlatforms = window.selectedPublishPlatforms.filter(p => p !== 'youtube');
             }
+            if (typeof window.updateNavigationState === 'function') window.updateNavigationState();
           });
         }
 
