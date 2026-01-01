@@ -38,6 +38,7 @@
     .platform-icon{width:60px;height:60px;margin:0 auto 10px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;font-weight:700}
     .kick-icon{background:#53fc18}.twitch-icon{background:#9146ff}.youtube-icon{background:#ff0000}.tiktok-icon{background:#000}
     .platform-name{font-weight:600;color:#333;font-size:1rem}
+    .platform-status{font-size:.75rem;margin-top:5px;color:#666}.platform-status.connected{color:#059669;font-weight:600}
     .input-group{margin-bottom:20px}
     .input-group label{display:block;margin-bottom:8px;font-weight:500;color:#374151;font-size:.95rem}
     .input-field{width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;font-size:16px;transition:.3s}
@@ -140,21 +141,27 @@
 
       <!-- Step 3: Publishing Platforms -->
       <div class="step-content" id="content3">
-        <h2 class="step-title">Where should we post your clips?</h2>
-        <p class="step-description">Connect at least one platform to share your viral moments.</p>
-
+        <h2 class="step-title">Connect your publishing platforms</h2>
+        <p class="step-description">Click each platform to connect. Connect at least one to continue.</p>
         <div class="platform-selection">
-          <div class="platform-option" data-publish="youtube">
-            <div class="platform-icon youtube-icon">YT</div><div class="platform-name">YouTube</div>
+          <div class="platform-option" data-publish="youtube" id="publish-youtube">
+            <div class="platform-icon youtube-icon">YT</div>
+            <div class="platform-name">YouTube</div>
+            <div class="platform-status" id="youtube-status"></div>
           </div>
-          <div class="platform-option" data-publish="tiktok">
-            <div class="platform-icon tiktok-icon">T</div><div class="platform-name">TikTok</div>
+          <div class="platform-option" data-publish="tiktok" id="publish-tiktok">
+            <div class="platform-icon tiktok-icon">T</div>
+            <div class="platform-name">TikTok</div>
+            <div class="platform-status" id="tiktok-status"></div>
           </div>
-          <div class="platform-option" data-publish="instagram">
-            <div class="platform-icon" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)">IG</div><div class="platform-name">Instagram</div>
+          <div class="platform-option" data-publish="instagram" id="publish-instagram">
+            <div class="platform-icon" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)">IG</div>
+            <div class="platform-name">Instagram</div>
+            <div class="platform-status" id="instagram-status"></div>
           </div>
         </div>
-        <p style="color:#666;font-size:.85rem;margin-top:15px;text-align:center">Click each platform where you want clips published. You can change this later.</p>
+        <p style="color:#666;font-size:.85rem;margin-top:15px;text-align:center">Click to connect. Skip any platforms you don't use.</p>
+        <div id="publishConnections" style="margin-top:20px"></div>
       </div>
 
       <!-- Step 4: Complete (was Step 5) -->
@@ -206,13 +213,21 @@
 
     async function fetchConnections() {
       const { data: { user } } = await supabaseClient.auth.getUser();
-      if (!user) return { youtube: false };
-      const { data, error } = await supabase
+      if (!user) return { youtube: false, tiktok: false, instagram: false };
+      const { data, error } = await supabaseClient
         .from('streaming_connections')
-        .select('youtube_connected')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      return { youtube: !!(data && data.youtube_connected) };
+        .select('platform, is_active')
+        .eq('user_id', user.id);
+      
+      const connections = { youtube: false, tiktok: false, instagram: false };
+      if (data) {
+        data.forEach(conn => {
+          if (conn.is_active && connections.hasOwnProperty(conn.platform)) {
+            connections[conn.platform] = true;
+          }
+        });
+      }
+      return connections;
     }
 
     function markYouTubeSelected() {
@@ -417,9 +432,26 @@
       try {
         const conn = await fetchConnections();
         yConnected = conn.youtube;
-        if (yConnected) markYouTubeSelected();
         window.yConnected = yConnected;
-      } catch {}
+        
+        // Mark already-connected publishing platforms
+        ['youtube', 'tiktok', 'instagram'].forEach(platform => {
+          if (conn[platform]) {
+            const tile = document.getElementById('publish-' + platform);
+            if (tile) {
+              tile.classList.add('selected');
+              if (!selectedPublishPlatforms.includes(platform)) {
+                selectedPublishPlatforms.push(platform);
+              }
+            }
+            const statusEl = document.getElementById(platform + '-status');
+            if (statusEl) {
+              statusEl.textContent = '✓ Connected';
+              statusEl.classList.add('connected');
+            }
+          }
+        });
+      } catch (e) { console.error('Error loading connections:', e); }
 
       // Step 1 selections
       document.querySelectorAll('[data-platform]').forEach(el=>{
@@ -433,22 +465,74 @@
         });
       });
 
-      // Step 3 selections
+      // Step 3: Publishing platform OAuth connections
       document.querySelectorAll('[data-publish]').forEach(el=>{
-        el.addEventListener('click', ()=>{
-          el.classList.toggle('selected');
-          const p = el.getAttribute('data-publish');
+        el.addEventListener('click', async ()=>{
+          const platform = el.getAttribute('data-publish');
+          const { data: { user } } = await supabaseClient.auth.getUser();
+          if (!user) { alert('Please log in first'); window.location.href='/login.html'; return; }
+          
+          // Check if already connected
           if (el.classList.contains('selected')) {
-            if (!selectedPublishPlatforms.includes(p)) selectedPublishPlatforms.push(p);
-          } else {
-            selectedPublishPlatforms = selectedPublishPlatforms.filter(x=>x!==p);
+            // Already connected - toggle off (deselect)
+            el.classList.remove('selected');
+            selectedPublishPlatforms = selectedPublishPlatforms.filter(x=>x!==platform);
+            const statusEl = document.getElementById(platform + '-status');
+            if (statusEl) { statusEl.textContent = ''; statusEl.classList.remove('connected'); }
+            updateNavigationState();
+            return;
           }
-          updateNavigationState();
+          
+          // Not connected - start OAuth
+          const returnTo = encodeURIComponent('https://www.autostreampro.com/onboarding-wizard.html?publish_connected=' + platform);
+          
+          if (platform === 'youtube') {
+            window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/youtube?userId=${user.id}&return_to=${returnTo}`;
+          } else if (platform === 'tiktok') {
+            window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/tiktok?userId=${user.id}&return_to=${returnTo}`;
+          } else if (platform === 'instagram') {
+            window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/instagram?userId=${user.id}&return_to=${returnTo}`;
+          }
         });
       });
 
       // Handle OAuth returns
       const urlParams = new URLSearchParams(window.location.search);
+      
+      // --- Handle publishing platform OAuth returns ---
+      const publishConnected = urlParams.get('publish_connected');
+      if (publishConnected) {
+        // Go to Step 3
+        currentStep = 3;
+        document.getElementById('content1').classList.remove('active');
+        document.getElementById('content2').classList.remove('active');
+        document.getElementById('content3').classList.add('active');
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('step1').classList.add('completed');
+        document.getElementById('step1').innerHTML='✓';
+        document.getElementById('line1').classList.add('completed');
+        document.getElementById('step2').classList.remove('upcoming','active');
+        document.getElementById('step2').classList.add('completed');
+        document.getElementById('step2').innerHTML='✓';
+        document.getElementById('line2').classList.add('completed');
+        document.getElementById('step3').classList.remove('upcoming');
+        document.getElementById('step3').classList.add('active');
+        
+        // Mark the connected platform
+        const tile = document.getElementById('publish-' + publishConnected);
+        if (tile) {
+          tile.classList.add('selected');
+          if (!selectedPublishPlatforms.includes(publishConnected)) {
+            selectedPublishPlatforms.push(publishConnected);
+          }
+        }
+        const statusEl = document.getElementById(publishConnected + '-status');
+        if (statusEl) {
+          statusEl.textContent = '✓ Connected';
+          statusEl.classList.add('connected');
+        }
+        updateNavigationState();
+      }
 
       // --- YouTube: handle callback (?youtube=connected) ---
       const youtubeStatus = urlParams.get('youtube');
