@@ -599,58 +599,6 @@
         const tiktokTile = document.querySelector('.platform-option[data-publish="tiktok"]');
         const youtubeTile = document.querySelector('.platform-option[data-publish="youtube"]');
 
-        // TikTok tile: toggle selection
-        if (tiktokTile && !tiktokTile.dataset.wired) {
-          tiktokTile.dataset.wired = '1';
-          tiktokTile.style.cursor = 'pointer';
-          tiktokTile.addEventListener('click', async function () {
-            tiktokTile.classList.toggle('selected');
-            if (tiktokTile.classList.contains('selected')) {
-              if (!window.selectedPublishPlatforms.includes('tiktok')) {
-                window.selectedPublishPlatforms.push('tiktok');
-              }
-            } else {
-              window.selectedPublishPlatforms = window.selectedPublishPlatforms.filter(p => p !== 'tiktok');
-            }
-            if (typeof window.updateNavigationState === 'function') window.updateNavigationState();
-          });
-        }
-        // Instagram tile: toggle selection
-        const instagramTile = document.querySelector('.platform-option[data-publish="instagram"]');
-        if (instagramTile && !instagramTile.dataset.wired) {
-          instagramTile.dataset.wired = '1';
-          instagramTile.style.cursor = 'pointer';
-          instagramTile.addEventListener('click', async function () {
-            instagramTile.classList.toggle('selected');
-            if (instagramTile.classList.contains('selected')) {
-              if (!window.selectedPublishPlatforms.includes('instagram')) {
-                window.selectedPublishPlatforms.push('instagram');
-              }
-            } else {
-              window.selectedPublishPlatforms = window.selectedPublishPlatforms.filter(p => p !== 'instagram');
-            }
-            if (typeof window.updateNavigationState === 'function') window.updateNavigationState();
-          });
-        }
-
-        // YouTube tile: toggle selection (auth was already done in Step 2)
-        if (youtubeTile && !youtubeTile.dataset.wired) {
-          youtubeTile.dataset.wired = '1';
-          youtubeTile.style.cursor = 'pointer';
-          youtubeTile.addEventListener('click', async function () {
-            // Toggle selection
-            youtubeTile.classList.toggle('selected');
-            if (youtubeTile.classList.contains('selected')) {
-              if (!window.selectedPublishPlatforms.includes('youtube')) {
-                window.selectedPublishPlatforms.push('youtube');
-              }
-            } else {
-              window.selectedPublishPlatforms = window.selectedPublishPlatforms.filter(p => p !== 'youtube');
-            }
-            if (typeof window.updateNavigationState === 'function') window.updateNavigationState();
-          });
-        }
-
         // Handle return from TikTok: land on /onboarding-wizard.html#tiktok
         if (location.hash === '#tiktok') {
           try {
