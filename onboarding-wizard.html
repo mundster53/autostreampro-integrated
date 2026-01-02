@@ -194,11 +194,33 @@
   </div>
 
   <script>
+    // ---------- Configuration (SINGLE SOURCE OF TRUTH) ----------
+    const CONFIG = {
+      BACKEND_URL: 'https://autostreampro-backend-production.up.railway.app',
+      SITE_URL: 'https://www.autostreampro.com',
+      OAUTH: {
+        youtube: '/api/auth/youtube',
+        tiktok: '/api/tiktok-connect',
+        instagram: '/api/auth/instagram',
+        twitch: '/api/auth/twitch'
+      }
+    };
+    
     // ---------- Supabase init ----------
     const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-
+    
+    // ---------- Centralized OAuth function ----------
+    async function startOAuth(platform, returnPath) {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user) { alert('Please log in first'); window.location.href = '/login.html'; return; }
+      const returnTo = encodeURIComponent(CONFIG.SITE_URL + (returnPath || '/onboarding-wizard.html?publish_connected=' + platform));
+      const endpoint = CONFIG.OAUTH[platform];
+      if (!endpoint) { console.error('Unknown platform:', platform); return; }
+      window.location.href = `${CONFIG.BACKEND_URL}${endpoint}?userId=${user.id}&return_to=${returnTo}`;
+    }
+    
     // ---------- Wizard state ----------
     let currentStep = 1;
     const totalSteps = 4; // Changed from 5 to 4
@@ -666,7 +688,7 @@
         if (oauthUser) {
           const returnTo = encodeURIComponent('/onboarding-wizard.html#tiktok');
           sessionStorage.setItem('tiktok_return_to', '/onboarding-wizard.html#tiktok');
-          window.location.href = `/auth/tiktok?user=${encodeURIComponent(oauthUser.id)}&direct=1&return_to=${returnTo}`;
+          window.location.href = `https://autostreampro-backend-production.up.railway.app/api/tiktok-connect?userId=${oauthUser.id}&return_to=${returnTo}`;
           return;
         }
       }
