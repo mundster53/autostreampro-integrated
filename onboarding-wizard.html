@@ -472,13 +472,22 @@
           const { data: { user } } = await supabaseClient.auth.getUser();
           if (!user) { alert('Please log in first'); window.location.href='/login.html'; return; }
           
-          // Check if already connected
-          if (el.classList.contains('selected')) {
-            // Already connected - toggle off (deselect)
-            el.classList.remove('selected');
-            selectedPublishPlatforms = selectedPublishPlatforms.filter(x=>x!==platform);
-            const statusEl = document.getElementById(platform + '-status');
-            if (statusEl) { statusEl.textContent = ''; statusEl.classList.remove('connected'); }
+          // Check if actually connected in database (not just UI state)
+          const { data: connData } = await supabaseClient
+            .from('streaming_connections')
+            .select('is_active')
+            .eq('user_id', user.id)
+            .eq('platform', platform)
+            .maybeSingle();
+          
+          if (connData && connData.is_active) {
+            // Actually connected - just toggle selection for publishing preference
+            el.classList.toggle('selected');
+            if (el.classList.contains('selected')) {
+              if (!selectedPublishPlatforms.includes(platform)) selectedPublishPlatforms.push(platform);
+            } else {
+              selectedPublishPlatforms = selectedPublishPlatforms.filter(x=>x!==platform);
+            }
             updateNavigationState();
             return;
           }
