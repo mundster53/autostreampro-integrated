@@ -555,8 +555,8 @@ async function getCurrentUser() {
                 showError('Please log in first');
                 return;
             }
-            const state = encodeURIComponent(JSON.stringify({ userId: user.id }));
-            window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/instagram?state=${state}`;
+            const returnTo = encodeURIComponent('https://www.autostreampro.com/onboarding.html?instagram=connected');
+            window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/instagram?userId=${user.id}&return_to=${returnTo}`;
         });
         
         // Connect Twitch
