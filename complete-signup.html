@@ -162,6 +162,11 @@
             </div>
             
             <div class="form-group">
+                <label for="firstName">First Name</label>
+                <input type="text" id="firstName" class="form-input" placeholder="Your first name" required>
+            </div>
+            
+            <div class="form-group">
                 <label for="password">Create Password</label>
                 <input type="password" id="password" class="form-input" placeholder="Choose a secure password" required minlength="8">
                 <p class="password-requirements">Minimum 8 characters</p>
@@ -253,9 +258,16 @@
         document.getElementById('complete-signup-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const firstName = document.getElementById('firstName').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
             const submitBtn = document.getElementById('submit-btn');
+            
+            // Validate first name
+            if (!firstName) {
+                showError('Please enter your first name');
+                return;
+            }
 
             // Validate passwords match
             if (password !== confirmPassword) {
@@ -311,6 +323,7 @@
                 const { error: profileError } = await supabaseClient
                     .from('user_profiles')
                     .update({
+                        full_name: firstName,
                         subscription_status: 'trial',
                         subscription_plan: userPlan,
                         trial_ends_at: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString()
