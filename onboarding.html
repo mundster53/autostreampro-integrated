@@ -579,7 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data: { user } } = await supabaseClient.auth.getUser();
       if (!user) { alert('Please log in first'); return; }
 
-      const res = await fetch('/api/disconnect-twitch', {
+      const res = await fetch('https://autostreampro-backend-production.up.railway.app/api/disconnect-twitch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user.id })
@@ -1053,7 +1053,7 @@ async function disconnectTikTok() {
 }
     const userId = user.id ; 
 
-    const response = await fetch('/api/disconnect-tiktok', {
+    const response = await fetch('https://autostreampro-backend-production.up.railway.app/api/disconnect-tiktok', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -1325,7 +1325,7 @@ if (btn) {
        const sb = await getSb();
        const { data: { user } } = await sb.auth.getUser();
        if (!user) { alert('Please log in first'); return; }
-       const res = await fetch('/api/disconnect/youtube', {
+       const res = await fetch('https://autostreampro-backend-production.up.railway.app/api/disconnect/youtube', {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
          body: JSON.stringify({ userId: user.id })
