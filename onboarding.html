@@ -550,7 +550,7 @@ async function getCurrentUser() {
 
         // Connect Instagram
         document.getElementById('instagramBtn').addEventListener('click', async () => {
-            const { data: { user } } = await supabaseClientClient.auth.getUser();
+            const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) {
                 showError('Please log in first');
                 return;
@@ -614,7 +614,8 @@ document.getElementById('tiktokBtn').addEventListener('click', async () => {
         return;
     }
     
-    const state = btoa(JSON.stringify({ userId: user.id, timestamp: Date.now() }));
+    const return_to = 'https://www.autostreampro.com/onboarding.html?tiktok=connected';
+    const state = btoa(JSON.stringify({ userId: user.id, return_to: return_to, timestamp: Date.now() }));
     sessionStorage.setItem('tiktok_oauth_state', state);
     
     const redirectUri = 'https://api.autostreampro.com/api/tiktok-callback';
