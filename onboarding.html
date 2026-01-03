@@ -550,7 +550,7 @@ async function getCurrentUser() {
 
         // Connect Instagram
         document.getElementById('instagramBtn').addEventListener('click', async () => {
-            const { data: { user } } = await supabaseClient.auth.getUser();
+            const { data: { user } } = await supabaseClientClient.auth.getUser();
             if (!user) {
                 showError('Please log in first');
                 return;
@@ -640,7 +640,7 @@ document.getElementById('kickBtn').addEventListener('click', async () => {
             return;
         }
         
-        const response = await fetch('/api/add-kick-channel', {
+        const response = await fetch('https://autostreampro-backend-production.up.railway.app/api/connect-kick', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -806,7 +806,7 @@ async function checkConnections() {
   if (!user) return;
 
   // 1) Query active connections from DB
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('streaming_connections')
     .select('platform')
     .eq('user_id', user.id)
@@ -922,14 +922,14 @@ async function checkConnections() {
 alert('Channel URLs: ' + JSON.stringify(channelData));  // ADD THIS
             
             try {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('user_preferences')
                     .upsert(config, { onConflict: 'user_id' });
                 
                 if (error) throw error;
 
                 // ADD THIS PART - Save channel URLs to user_profiles
-    const { error: profileError } = await supabase
+    const { error: profileError } = await supabaseClient
         .from('user_profiles')
         .update(channelData)
         .eq('user_id', user.id);
@@ -1012,7 +1012,7 @@ async function connectKick() {
         
         console.log('Connecting Kick for user:', user.id);
         
-        const response = await fetch('/api/add-kick-channel', {
+        const response = await fetch('https://autostreampro-backend-production.up.railway.app/api/connect-kick', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1168,7 +1168,7 @@ async function checkKickConnection() {
         const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) return;
         
-        const { data } = await supabase
+        const { data } = await supabaseClient
             .from('streaming_connections')
             .select('*')
             .eq('user_id', user.id)
