@@ -737,15 +737,29 @@ async function savePlatformConnection(platform, data) {
             const code = urlParams.get('code');
             const state = urlParams.get('state');
 
-// ADD THIS FOR TIKTOK
+// TikTok connection handled by backend callback - just update UI
     if (urlParams.get('tiktok') === 'connected') {
-        await savePlatformConnection('tiktok', {
-            accessToken: 'demo-token',
-            refreshToken: 'demo-refresh',
-            userID: 'demo-user',
-            username: 'TikTokUser'
-        });
-        // Clean URL
+        const tiktokCard = document.querySelector('[data-platform="tiktok"]');
+        if (tiktokCard) tiktokCard.classList.add('connected');
+        if (typeof showSuccess === 'function') showSuccess('TikTok connected successfully!');
+        window.history.replaceState({}, document.title, '/onboarding.html');
+        return;
+    }
+
+// Instagram connection handled by backend callback - just update UI
+    if (urlParams.get('instagram') === 'connected') {
+        const instagramCard = document.querySelector('[data-platform="instagram"]');
+        if (instagramCard) instagramCard.classList.add('connected');
+        if (typeof showSuccess === 'function') showSuccess('Instagram connected successfully!');
+        window.history.replaceState({}, document.title, '/onboarding.html');
+        return;
+    }
+
+// YouTube connection handled by backend callback - just update UI
+    if (urlParams.get('youtube') === 'connected') {
+        const youtubeCard = document.querySelector('[data-platform="youtube"]');
+        if (youtubeCard) youtubeCard.classList.add('connected');
+        if (typeof showSuccess === 'function') showSuccess('YouTube connected successfully!');
         window.history.replaceState({}, document.title, '/onboarding.html');
         return;
     }
