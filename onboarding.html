@@ -1133,7 +1133,7 @@ async function disconnectPlatform(platform) {
     }
     const userId = user.id;
 
-    const response = await fetch(`/api/disconnect-${platform}`, {
+    const response = await fetch(`https://autostreampro-backend-production.up.railway.app/api/disconnect-${platform}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
