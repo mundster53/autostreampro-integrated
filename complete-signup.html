@@ -195,6 +195,7 @@
         
         let userEmail = '';
         let userPlan = '';
+        let userCustomerId = '';
 
         // On page load, get user details
         document.addEventListener('DOMContentLoaded', async () => {
@@ -234,15 +235,13 @@
                 // Fetch session details from backend
                 const response = await fetch(`https://autostreampro-backend-production.up.railway.app/api/stripe-session/${sessionId}`);
                 const data = await response.json();
-
                 if (!data.success) {
                     throw new Error(data.error || 'Failed to retrieve session');
                 }
-
                 userEmail = data.email;
                 userPlan = data.plan;
-
-                console.log('✅ Session retrieved:', { email: userEmail, plan: userPlan });
+                userCustomerId = data.customerId;
+                console.log('✅ Session retrieved:', { email: userEmail, plan: userPlan, customerId: userCustomerId });
 
                 // Populate email field
                 document.getElementById('email').value = userEmail;
@@ -324,6 +323,7 @@
                     .from('user_profiles')
                     .update({
                         full_name: firstName,
+                        stripe_customer_id: userCustomerId,
                         subscription_status: 'trial',
                         subscription_plan: userPlan,
                         trial_ends_at: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString()
