@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4RC9LC3Y1Z"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-4RC9LC3Y1Z');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Started - AutoStreamPro</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-deep: #0a0614;
+            --bg-card: #12091f;
+            --purple-primary: #6c2bd9;
+            --purple-light: #a78bfa;
+            --green-accent: #10b981;
+            --green-light: #34d399;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-subtle: rgba(108, 43, 217, 0.2);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            background: rgba(10, 6, 20, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-logo img { height: 32px; width: 32px; }
+        
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .main {
+            padding: 140px 24px 60px;
+            max-width: 580px;
+            margin: 0 auto;
+        }
+        
+        .copy-section {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .copy-opener {
+            font-size: 1.6rem;
+            color: var(--purple-light);
+            font-weight: 600;
+            margin-bottom: 36px;
+            font-style: italic;
+            line-height: 1.4;
+        }
+        
+        .copy-body {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            line-height: 1.9;
+            margin-bottom: 32px;
+        }
+        
+        .copy-highlight {
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            margin-bottom: 32px;
+            line-height: 1.8;
+        }
+        
+        .copy-cta {
+            font-size: 1.25rem;
+            color: var(--green-light);
+            font-weight: 600;
+        }
+        
+        .form-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 40px 36px;
+        }
+        
+        .form-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .price-badge {
+            display: inline-block;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--green-light);
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+        
+        .form-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .form-subtitle {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+        }
+        
+        .form-group { margin-bottom: 28px; }
+        
+        .form-label {
+            display: block;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 18px 20px;
+            font-size: 1.05rem;
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            transition: border-color 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--purple-primary);
+        }
+        
+        .form-input::placeholder { color: var(--text-muted); }
+        
+        .upload-hint {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            line-height: 1.7;
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--border-subtle);
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--purple-primary);
+            background: rgba(108, 43, 217, 0.05);
+        }
+        
+        .upload-area.has-file {
+            border-color: var(--green-accent);
+            background: rgba(16, 185, 129, 0.05);
+        }
+        
+        .upload-icon { font-size: 2.5rem; margin-bottom: 14px; }
+        
+        .upload-text {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .upload-subtext {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .upload-preview {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+        
+        .file-input { display: none; }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--green-accent), #059669);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 16px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(16, 185, 129, 0.4);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .terms {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 24px;
+            line-height: 1.8;
+        }
+        
+        .terms a {
+            color: var(--purple-light);
+            text-decoration: none;
+        }
+        
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+            padding: 16px 20px;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin-bottom: 24px;
+            display: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 28px;
+        }
+        
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border-subtle);
+            border-top-color: var(--green-accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 18px;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        @media (max-width: 640px) {
+            .main { padding: 110px 18px 40px; }
+            .form-card { padding: 32px 24px; }
+            .copy-opener { font-size: 1.4rem; }
+            .copy-body, .copy-highlight { font-size: 1.05rem; }
+        }
+
+        .scarcity-badge {
+            display: inline-block;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #f87171;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <img src="autostreampro-logo.png" alt="AutoStreamPro">
+                AutoStreamPro
+            </a>
+            <a href="results.html" class="nav-link">← Back to Results</a>
+        </div>
+    </nav>
+    
+    <main class="main">
+        <div class="copy-section">
+            <p class="copy-opener">You're still here. That means something.</p>
+            
+            <p class="copy-body">Maybe you're tired of tools that over-promise. Maybe you've wasted money before. Maybe you're wondering if this is just another thing that won't work.</p>
+            
+            <p class="copy-highlight">We get it. That's exactly why we're giving you 21 days to see the results for yourself.</p>
+            
+            <p class="copy-body">No hype. No pressure. Upload a screenshot of your current YouTube analytics so we can track your growth together.</p>
+            
+            <p class="copy-cta">If it works, you'll know. If it doesn't, you'll know that too.</p>
+        </div>
+        
+        <div class="form-card">
+            <div class="form-header">
+                <div class="scarcity-badge" id="scarcity-badge">🔥 Loading spots...</div>
+                <br>
+<div class="price-badge">$19.99/month after 21 days • Cancel anytime</div>
+                <h2 class="form-title">Let's See What Your Clips Can Do</h2>
+                <p class="form-subtitle">Takes about 2 minutes to get started</p>
+            </div>
+            
+            <div class="error-message" id="error-message"></div>
+            
+            <form id="signup-form">
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input type="email" id="email" class="form-input" placeholder="your@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Your Current YouTube Analytics Screenshot</label>
+                    <p class="upload-hint">Go to YouTube Studio → Analytics → Screenshot the overview. This helps us track your growth.</p>
+                    <div class="upload-area" id="upload-area">
+                        <div class="upload-icon">📊</div>
+                        <div class="upload-text">Click to upload your screenshot</div>
+                        <div class="upload-subtext">PNG, JPG up to 10MB</div>
+                        <img class="upload-preview" id="upload-preview" style="display: none;">
+                    </div>
+                    <input type="file" id="screenshot" class="file-input" accept="image/*">
+                </div>
+                
+                <button type="submit" class="submit-btn">Start My 21 Days →</button>
+            </form>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Setting up your account...</p>
+            </div>
+            
+            <p class="terms">By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. You won't be charged until day 22. Cancel anytime.</p>
+        </div>
+    </main>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://jbmfqpuqwsncwzaycxni.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWZxcHVxd3NuY3d6YXljeG5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjMwNTcxMzgsImV4cCI6MjAzODYzMzEzOH0.5pNm3SjLsQwc8xRPJT2AMqg35qMCcwwSh4h5jeyTfjc';
+        const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Load remaining spots
+async function loadSpotsRemaining() {
+    try {
+        const { count, error } = await sbClient
+            .from('user_profiles')
+            .select('*', { count: 'exact', head: true });
+        
+        if (!error) {
+            const remaining = 100 - count;
+            document.getElementById('scarcity-badge').textContent = '🔥 Only ' + remaining + ' of 100 spots remaining';
+        }
+    } catch (e) {
+        document.getElementById('scarcity-badge').textContent = '🔥 Limited spots available';
+    }
+}
+loadSpotsRemaining();
+        
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('screenshot');
+        const uploadPreview = document.getElementById('upload-preview');
+        let selectedFile = null;
+        
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                uploadArea.classList.add('has-file');
+                uploadArea.querySelector('.upload-icon').textContent = '✅';
+                uploadArea.querySelector('.upload-text').textContent = file.name;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    uploadPreview.src = e.target.result;
+                    uploadPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        const form = document.getElementById('signup-form');
+        const errorEl = document.getElementById('error-message');
+        const loadingEl = document.getElementById('loading');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            
+            if (!email) {
+                showError('Please enter your email address.');
+                return;
+            }
+            
+            if (!selectedFile) {
+                showError('Please upload a screenshot of your YouTube analytics.');
+                return;
+            }
+            
+            form.style.display = 'none';
+            loadingEl.style.display = 'block';
+            errorEl.style.display = 'none';
+            
+            try {
+                const fileName = Date.now() + '-' + email.replace('@', '_at_').replace(/\./g, '_') + '.' + selectedFile.name.split('.').pop();
+                
+                const { error: uploadError } = await sbClient.storage
+                    .from('user-screenshots')
+                    .upload(fileName, selectedFile);
+                
+                if (uploadError) throw new Error('Upload failed: ' + uploadError.message);
+                
+                const response = await fetch('https://autostreampro-backend-production.up.railway.app/api/create-trial-subscription', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, screenshotPath: fileName })
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success) throw new Error(result.error || 'Failed to create account');
+                
+                if (result.checkoutUrl) {
+                    window.location.href = result.checkoutUrl;
+                } else {
+                    window.location.href = '/onboarding.html?email=' + encodeURIComponent(email);
+                }
+                
+            } catch (error) {
+                console.error('Signup error:', error);
+                form.style.display = 'block';
+                loadingEl.style.display = 'none';
+                showError(error.message || 'Something went wrong. Please try again.');
+            }
+        });
+        
+        function showError(msg) {
+            errorEl.textContent = msg;
+            errorEl.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
