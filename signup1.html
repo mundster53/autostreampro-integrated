@@ -388,16 +388,16 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWZxcHVxd3NuY3d6YXljeG5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjMwNTcxMzgsImV4cCI6MjAzODYzMzEzOH0.5pNm3SjLsQwc8xRPJT2AMqg35qMCcwwSh4h5jeyTfjc';
         const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Load remaining spots
+        // Load remaining spots from backend
 async function loadSpotsRemaining() {
     try {
-        const { count, error } = await sbClient
-            .from('user_profiles')
-            .select('*', { count: 'exact', head: true });
+        const response = await fetch('https://autostreampro-backend-production.up.railway.app/signup-count');
+        const data = await response.json();
         
-        if (!error) {
-            const remaining = 100 - count;
-            document.getElementById('scarcity-badge').textContent = '🔥 Only ' + remaining + ' of 100 spots remaining';
+        if (data.success) {
+            document.getElementById('scarcity-badge').textContent = '🔥 Only ' + data.remaining + ' of ' + data.total + ' spots remaining';
+        } else {
+            document.getElementById('scarcity-badge').textContent = '🔥 Limited spots available';
         }
     } catch (e) {
         document.getElementById('scarcity-badge').textContent = '🔥 Limited spots available';
