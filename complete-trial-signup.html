@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Account - AutoStreamPro</title>
+    <meta name="description" content="Complete your AutoStreamPro account setup">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-deep: #0a0614;
+            --bg-card: #12091f;
+            --purple-primary: #6c2bd9;
+            --purple-light: #a78bfa;
+            --green-accent: #10b981;
+            --green-light: #34d399;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border-subtle: rgba(108, 43, 217, 0.2);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .logo img {
+            height: 40px;
+            width: 40px;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        
+        .success-banner {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--green-light);
+            padding: 16px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 24px;
+            font-weight: 600;
+        }
+        
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 28px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 1rem;
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            transition: border-color 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--purple-primary);
+        }
+        
+        .form-input:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .form-hint {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--green-accent), #059669);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+            padding: 14px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-subtle);
+            border-top-color: var(--green-accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="autostreampro-logo.png" alt="AutoStreamPro">
+            AutoStreamPro
+        </div>
+        
+        <div class="success-banner">
+            ✓ 21-Day Trial Started!
+        </div>
+        
+        <h1 class="title">Complete Your Account</h1>
+        <p class="subtitle">Set your password to access your dashboard</p>
+        
+        <div class="error-message" id="error-message"></div>
+        
+        <form id="complete-form">
+            <div class="form-group">
+                <label class="form-label" for="email">Email Address</label>
+                <input type="email" id="email" class="form-input" disabled>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="password">Create Password</label>
+                <input type="password" id="password" class="form-input" placeholder="Choose a secure password" required minlength="8">
+                <p class="form-hint">Minimum 8 characters</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" class="form-input" placeholder="Confirm your password" required>
+            </div>
+            
+            <button type="submit" class="submit-btn" id="submit-btn">Complete Setup →</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Creating your account...</p>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://dykxhmdozgccawkbxejd.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
+        const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Get params from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const userEmail = urlParams.get('email');
+        const customerId = urlParams.get('customer');
+        
+        // Validate we have required params
+        if (!userEmail || !customerId) {
+            document.getElementById('error-message').textContent = 'Invalid signup link. Please start the signup process again.';
+            document.getElementById('error-message').style.display = 'block';
+            document.getElementById('complete-form').style.display = 'none';
+        } else {
+            // Populate email field
+            document.getElementById('email').value = decodeURIComponent(userEmail);
+        }
+        
+        const form = document.getElementById('complete-form');
+        const errorEl = document.getElementById('error-message');
+        const loadingEl = document.getElementById('loading');
+        const submitBtn = document.getElementById('submit-btn');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const email = decodeURIComponent(userEmail);
+            
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                showError('Passwords do not match.');
+                return;
+            }
+            
+            if (password.length < 8) {
+                showError('Password must be at least 8 characters.');
+                return;
+            }
+            
+            // Show loading
+            form.style.display = 'none';
+            loadingEl.style.display = 'block';
+            errorEl.style.display = 'none';
+            
+            try {
+                // Create Supabase auth account
+                const { data: authData, error: authError } = await sbClient.auth.signUp({
+                    email: email,
+                    password: password
+                });
+                
+                if (authError) {
+                    if (authError.message.includes('already registered')) {
+                        throw new Error('An account with this email already exists. Please sign in instead.');
+                    }
+                    throw authError;
+                }
+                
+                console.log('Auth account created:', authData.user?.id);
+                
+                // Update user_profiles with auth user_id
+                if (authData.user) {
+                    const { error: updateError } = await sbClient
+                        .from('user_profiles')
+                        .update({ 
+                            user_id: authData.user.id,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('email', email);
+                    
+                    if (updateError) {
+                        console.error('Error updating user profile:', updateError);
+                    }
+                }
+                
+                // Sign in the user
+                const { error: signInError } = await sbClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (signInError) {
+                    console.error('Sign in error:', signInError);
+                }
+                
+                // Redirect to onboarding
+                window.location.href = '/onboarding-wizard.html';
+                
+            } catch (error) {
+                console.error('Setup error:', error);
+                form.style.display = 'block';
+                loadingEl.style.display = 'none';
+                showError(error.message || 'Something went wrong. Please try again.');
+            }
+        });
+        
+        function showError(msg) {
+            errorEl.textContent = msg;
+            errorEl.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
