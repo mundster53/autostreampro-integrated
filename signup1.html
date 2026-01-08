@@ -391,7 +391,7 @@
         // Load remaining spots from backend
 async function loadSpotsRemaining() {
     try {
-        const response = await fetch('https://autostreampro-backend-production.up.railway.app/signup-count');
+        const response = await fetch('https://autostreampro-backend-production.up.railway.app/api/signup-count');
         const data = await response.json();
         
         if (data.success) {
