@@ -471,7 +471,9 @@ loadSpotsRemaining();
                 
                 if (!result.success) throw new Error(result.error || 'Failed to create account');
                 
-                if (result.checkoutUrl) {
+                if (result.redirectUrl) {
+                    window.location.href = result.redirectUrl;
+                } else if (result.checkoutUrl) {
                     window.location.href = result.checkoutUrl;
                 } else {
                     window.location.href = '/onboarding.html?email=' + encodeURIComponent(email);
