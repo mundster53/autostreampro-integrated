@@ -563,7 +563,7 @@ async function getCurrentUser() {
         document.getElementById('twitchBtn').addEventListener('click', async () => {
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) { alert('Please log in first'); return; }
-            const redirectUri = 'https://api.autostreampro.com/api/auth/twitch/callback';
+            const redirectUri = encodeURIComponent('https://api.autostreampro.com/api/auth/twitch/callback');
             const scope = 'user:read:email+clips:edit+channel:read:stream_key';
             const state = encodeURIComponent(JSON.stringify({ userId: user.id, return_to: 'https://www.autostreampro.com/onboarding.html' }));
             const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=${state}&force_verify=true`;
