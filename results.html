@@ -11,12 +11,12 @@
 </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real Results from Real Streamers - AutoStreamPro</title>
-    <meta name="description" content="See how gaming streamers are growing their audience with automated clip promotion. Real numbers, real creators, no editing required.">
+    <title>How Duncan Got 142K Views Without Editing - AutoStreamPro</title>
+    <meta name="description" content="See how one streamer went from 2 subscribers to 24 with 142K views - without editing a single clip.">
     
     <!-- Open Graph -->
-    <meta property="og:title" content="Real Results from Real Streamers - AutoStreamPro">
-    <meta property="og:description" content="+142K views and +22 subscribers in 3.5 weeks. See how automated promotion works.">
+    <meta property="og:title" content="How Duncan Got 142K Views Without Editing - AutoStreamPro">
+    <meta property="og:description" content="From 2 subscribers to 24, with 142K views. Zero editing. See how it works.">
     <meta property="og:type" content="website">
     
     <!-- Fonts -->
@@ -48,7 +48,7 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg-deep);
             color: var(--text-primary);
-            line-height: 1.6;
+            line-height: 1.7;
             -webkit-font-smoothing: antialiased;
         }
         
@@ -89,7 +89,7 @@
         }
         
         .nav-cta {
-            background: linear-gradient(135deg, var(--purple-primary), #8b5cf6);
+            background: linear-gradient(135deg, var(--green-accent), #059669);
             color: white;
             text-decoration: none;
             padding: 10px 20px;
@@ -101,308 +101,176 @@
         
         .nav-cta:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(108, 43, 217, 0.4);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
         }
         
-        /* Hero */
+        /* Hero Section */
         .hero {
             padding: 140px 24px 80px;
             text-align: center;
-            position: relative;
-            overflow: hidden;
+            max-width: 900px;
+            margin: 0 auto;
         }
         
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 1000px;
-            height: 600px;
-            background: radial-gradient(ellipse, rgba(108, 43, 217, 0.3) 0%, transparent 70%);
-            pointer-events: none;
-        }
-        
-        .hero-badge {
+        .hero-label {
             display: inline-block;
             background: rgba(16, 185, 129, 0.15);
             border: 1px solid rgba(16, 185, 129, 0.3);
             color: var(--green-light);
             padding: 8px 16px;
-            border-radius: 50px;
+            border-radius: 20px;
             font-size: 0.85rem;
             font-weight: 600;
             margin-bottom: 24px;
         }
         
-        .hero-title {
-            font-size: clamp(2.5rem, 6vw, 4rem);
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
             font-weight: 800;
-            line-height: 1.1;
+            line-height: 1.2;
             margin-bottom: 20px;
-            position: relative;
         }
         
-        .hero-title .highlight {
+        .hero h1 .highlight {
             color: var(--green-light);
         }
         
         .hero-subtitle {
             font-size: 1.25rem;
             color: var(--text-secondary);
-            max-width: 600px;
-            margin: 0 auto 40px;
+            margin-bottom: 40px;
         }
         
-        /* Stats Banner */
-        .stats-banner {
+        /* Stats Row */
+        .stats-row {
             display: flex;
             justify-content: center;
-            gap: 48px;
+            gap: 40px;
             flex-wrap: wrap;
-            margin-bottom: 60px;
+            margin-bottom: 40px;
         }
         
         .stat-item {
             text-align: center;
         }
         
-        .stat-number {
-            font-size: 3rem;
+        .stat-before {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        
+        .stat-arrow {
+            color: var(--green-accent);
+            margin: 0 8px;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
             font-weight: 800;
             color: var(--green-light);
-            line-height: 1;
         }
         
         .stat-label {
             font-size: 0.9rem;
-            color: var(--text-muted);
-            margin-top: 8px;
+            color: var(--text-secondary);
         }
         
-        /* Case Studies */
-        .case-studies {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 24px 100px;
-        }
-        
-        .section-title {
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--purple-light);
-            margin-bottom: 40px;
-            text-align: center;
-        }
-        
-        .case-study {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: 20px;
-            padding: 40px;
-            margin-bottom: 40px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .case-study::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--green-accent), var(--purple-primary));
-        }
-        
-        .case-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        
-        .creator-info {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        
-        .creator-avatar {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-        
-        .creator-name {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-        
-        .creator-platform {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-        
-        .time-badge {
-            background: rgba(108, 43, 217, 0.2);
-            color: var(--purple-light);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-        
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 24px;
-            margin-bottom: 32px;
-        }
-        
-        .result-card {
-            background: rgba(10, 6, 20, 0.5);
-            border: 1px solid var(--border-subtle);
-            border-radius: 12px;
-            padding: 24px;
-            text-align: center;
-        }
-        
-        .result-label {
+        .stat-context {
             font-size: 0.85rem;
             color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+        
+        /* CTA Button */
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--green-accent), #059669);
+            color: white;
+            text-decoration: none;
+            padding: 18px 40px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
             margin-bottom: 12px;
         }
         
-        .result-before-after {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 8px;
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
         }
         
-        .result-before {
-            font-size: 1.25rem;
-            color: var(--text-muted);
-            text-decoration: line-through;
-        }
-        
-        .result-arrow {
-            color: var(--green-accent);
-            font-size: 1.25rem;
-        }
-        
-        .result-after {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--green-light);
-        }
-        
-        .result-change {
+        .cta-subtext {
             font-size: 0.9rem;
-            color: var(--green-accent);
-            font-weight: 600;
+            color: var(--text-muted);
         }
         
-        /* Screenshot */
-        .screenshot-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 24px;
+        /* How It Works Section */
+        .how-section {
+            padding: 80px 24px;
+            background: var(--bg-card);
         }
         
-        .screenshot {
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid var(--border-subtle);
-        }
-        
-        .screenshot img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-        
-        /* Key Insight */
-        .key-insight {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            border-radius: 12px;
-            padding: 20px 24px;
-            margin-top: 24px;
-        }
-        
-        .key-insight p {
-            color: var(--text-primary);
-            font-size: 1rem;
-            margin: 0;
-        }
-        
-        .key-insight strong {
-            color: var(--green-light);
-        }
-        
-        /* How It Works */
-        .how-it-works {
-            max-width: 800px;
+        .section-container {
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 60px 24px;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 50px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .step-card {
+            background: var(--bg-deep);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 30px;
             text-align: center;
         }
         
-        .how-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-        
-        .how-subtitle {
-            color: var(--text-secondary);
-            margin-bottom: 48px;
-            font-size: 1.1rem;
-        }
-        
-        .steps {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 32px;
-            text-align: left;
-        }
-        
-        .step {
-            position: relative;
-        }
-        
         .step-number {
-            width: 40px;
-            height: 40px;
-            background: var(--purple-primary);
-            border-radius: 50%;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--purple-primary), #8b5cf6);
+            border-radius: 50%;
+            font-size: 1.5rem;
             font-weight: 700;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
         
         .step-title {
-            font-weight: 600;
-            margin-bottom: 8px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 12px;
         }
         
         .step-desc {
@@ -410,53 +278,181 @@
             font-size: 0.95rem;
         }
         
-        /* CTA Section */
-        .cta-section {
-            background: linear-gradient(135deg, rgba(108, 43, 217, 0.2), rgba(108, 43, 217, 0.05));
-            border-top: 1px solid var(--border-subtle);
+        /* Differentiator Section */
+        .diff-section {
             padding: 80px 24px;
+        }
+        
+        .diff-box {
+            max-width: 800px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, rgba(108, 43, 217, 0.1), rgba(139, 92, 246, 0.05));
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 50px;
             text-align: center;
         }
         
-        .cta-title {
-            font-size: 2.5rem;
-            font-weight: 800;
+        .diff-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+        
+        .diff-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 600px) {
+            .diff-comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .diff-item {
+            padding: 24px;
+            border-radius: 12px;
+        }
+        
+        .diff-item.bad {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .diff-item.good {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        .diff-item h4 {
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+        
+        .diff-item.bad h4 {
+            color: #f87171;
+        }
+        
+        .diff-item.good h4 {
+            color: var(--green-light);
+        }
+        
+        .diff-item p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        
+        /* More Results Section */
+        .results-section {
+            padding: 80px 24px;
+            background: var(--bg-card);
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        @media (max-width: 700px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .result-card {
+            background: var(--bg-deep);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 30px;
+        }
+        
+        .result-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .result-platform {
+            font-size: 0.85rem;
+            color: var(--text-muted);
             margin-bottom: 16px;
         }
         
-        .cta-subtitle {
+        .result-stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .result-stat {
+            flex: 1;
+        }
+        
+        .result-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--green-light);
+        }
+        
+        .result-stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        /* Skeptic Section */
+        .skeptic-section {
+            padding: 80px 24px;
+        }
+        
+        .skeptic-box {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .skeptic-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--purple-light);
+        }
+        
+        .skeptic-text {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+        
+        .skeptic-highlight {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 30px;
+        }
+        
+        /* Final CTA Section */
+        .final-cta {
+            padding: 80px 24px;
+            background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-deep) 100%);
+            text-align: center;
+        }
+        
+        .final-cta h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        
+        .final-cta p {
             color: var(--text-secondary);
             font-size: 1.1rem;
-            margin-bottom: 32px;
-            max-width: 500px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .cta-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: linear-gradient(135deg, var(--green-accent), #059669);
-            color: white;
-            text-decoration: none;
-            padding: 18px 36px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
-        }
-        
-        .cta-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.5);
-        }
-        
-        .cta-note {
-            margin-top: 16px;
-            color: var(--text-muted);
-            font-size: 0.9rem;
+            margin-bottom: 30px;
         }
         
         /* Footer */
@@ -466,45 +462,18 @@
             border-top: 1px solid var(--border-subtle);
         }
         
-        .footer-text {
+        .footer p {
             color: var(--text-muted);
-            font-size: 0.875rem;
+            font-size: 0.85rem;
         }
         
-        .footer-link {
-            color: var(--purple-light);
+        .footer a {
+            color: var(--text-secondary);
             text-decoration: none;
         }
         
-        /* Responsive */
-        @media (max-width: 640px) {
-            .hero {
-                padding: 120px 20px 60px;
-            }
-            
-            .hero-title {
-                font-size: 2rem;
-            }
-            
-            .stats-banner {
-                gap: 32px;
-            }
-            
-            .stat-number {
-                font-size: 2.25rem;
-            }
-            
-            .case-study {
-                padding: 24px;
-            }
-            
-            .case-header {
-                flex-direction: column;
-            }
-            
-            .cta-title {
-                font-size: 1.75rem;
-            }
+        .footer a:hover {
+            color: var(--text-primary);
         }
     </style>
 </head>
@@ -512,200 +481,167 @@
     <!-- Navigation -->
     <nav class="nav">
         <div class="nav-container">
-            <a href="index.html" class="nav-logo">
+            <a href="/" class="nav-logo">
                 <img src="autostreampro-logo.png" alt="AutoStreamPro">
                 AutoStreamPro
             </a>
-            <a href="signup1.html" class="nav-cta">Connect Your Stream</a>
+            <a href="signup1.html" class="nav-cta">Start Your 21 Days</a>
         </div>
     </nav>
     
     <!-- Hero Section -->
-    <!-- Hero Section -->
     <section class="hero">
-        <p style="font-size: clamp(1.6rem, 4vw, 2.2rem); color: #a78bfa; font-weight: 700; margin-bottom: 28px; font-style: italic;">
-            You're probably thinking... not another clip tool.
-        </p>
-
-        <p style="font-size: clamp(1.1rem, 2.5vw, 1.4rem); color: #9ca3af; max-width: 750px; margin: 0 auto 28px; line-height: 1.8;">
-            You've tried them before. The clips were garbage. The "AI" was a joke. You wasted time, maybe money, and your channel didn't grow.
-        </p>
-
-        <p style="font-size: clamp(1.2rem, 2.5vw, 1.5rem); color: #f3f4f6; max-width: 750px; margin: 0 auto 28px; line-height: 1.8; font-weight: 600;">
-            So why would this be any different?
-        </p>
-
-        <p style="font-size: clamp(1.1rem, 2.5vw, 1.4rem); color: #9ca3af; max-width: 750px; margin: 0 auto 28px; line-height: 1.8;">
-            Honestly? <strong style="color: #10b981;">You shouldn't believe us.</strong> That's why we'll give you 21 days to see for yourself. No promises. No hype. Just connect your stream and watch what happens.
-        </p>
-
-        <p style="font-size: clamp(1.2rem, 2.5vw, 1.5rem); color: #f3f4f6; max-width: 750px; margin: 0 auto 48px; line-height: 1.8; font-weight: 600;">
-            If we're wrong, you'll know in 21 days. If we're right... <span style="color: #10b981;">you'll know that too.</span>
-        </p>
-
-        <div style="text-align: center;">
-            <a href="signup1.html" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 16px 36px; border-radius: 30px; font-size: 1.15rem; font-weight: 600; display: inline-block; text-decoration: none;">
-                Connect Your Stream →
-            </a>
-            <p style="color: #6b7280; font-size: 0.95rem; margin-top: 12px;">21 days of automation included</p>
-        </div>
-    </section>
-
-    <!-- Stats Section -->
-    <section style="padding: 60px 24px; text-align: center;">
-        <h2 style="font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; color: #a78bfa; margin-bottom: 40px;">Real Results From Real Streamers</h2>
-        <div class="stats-banner">
-            <div class="stat-item">
-                <div class="stat-number">+267K</div>
-                <div class="stat-label">Combined Views</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">+56</div>
-                <div class="stat-label">New Subscribers</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">0</div>
-                <div class="stat-label">Hours Editing</div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Case Studies -->
-    <section class="case-studies">
-        <h2 class="section-title">Creator Results</h2>
+        <div class="hero-label">📊 Real Results, Real Streamer</div>
         
-        <!-- Duncan -->
-        <div class="case-study">
-            <div class="case-header">
-                <div class="creator-info">
-                    <div class="creator-avatar">D</div>
-                    <div>
-                        <div class="creator-name">Duncan</div>
-                        <div class="creator-platform">@saltlordnacnud • Kick Streamer</div>
-                    </div>
-                </div>
-                <div class="time-badge">3.5 weeks</div>
+        <h1>How Duncan Got <span class="highlight">142K Views</span> Without Editing a Single Clip</h1>
+        
+        <p class="hero-subtitle">He just played the game. AutoStreamPro did the rest.</p>
+        
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="stat-before">Started with 2 subs</div>
+                <div class="stat-value">24</div>
+                <div class="stat-label">YouTube Subscribers</div>
+                <div class="stat-context">1,100% increase</div>
             </div>
-            
-            <div class="results-grid">
-                <div class="result-card">
-                    <div class="result-label">Subscribers</div>
-                    <div class="result-before-after">
-                        <span class="result-before">2</span>
-                        <span class="result-arrow">→</span>
-                        <span class="result-after">24</span>
-                    </div>
-                    <div class="result-change">+1,100%</div>
-                </div>
-                <div class="result-card">
-                    <div class="result-label">Total Views</div>
-                    <div class="result-before-after">
-                        <span class="result-before">26K</span>
-                        <span class="result-arrow">→</span>
-                        <span class="result-after">168K</span>
-                    </div>
-                    <div class="result-change">+142,000 views</div>
-                </div>
+            <div class="stat-item">
+                <div class="stat-before">In just 3.5 weeks</div>
+                <div class="stat-value">142K</div>
+                <div class="stat-label">Total Views</div>
+                <div class="stat-context">Zero manual editing</div>
             </div>
-
-            <div class="screenshot-container">
-                <div class="screenshot">
-                    <img src="assets/results/duncan-analytics.png" alt="Duncan's analytics showing subscriber and view growth">
-                </div>
-            </div>
-            
-            <div class="key-insight">
-                <p><strong>What changed:</strong> AutoStreamPro monitored every stream, captured the best moments, and posted them to YouTube Shorts automatically. Duncan focused on streaming. The system handled promotion.</p>
+            <div class="stat-item">
+                <div class="stat-before">Time spent editing</div>
+                <div class="stat-value">0</div>
+                <div class="stat-label">Hours</div>
+                <div class="stat-context">100% automated</div>
             </div>
         </div>
         
-        <!-- Seth -->
-        <div class="case-study">
-            <div class="case-header">
-                <div class="creator-info">
-                    <div class="creator-avatar">S</div>
-                    <div>
-                        <div class="creator-name">Seth</div>
-                        <div class="creator-platform">@forodin4823 • Kick Streamer</div>
-                    </div>
-                </div>
-                <div class="time-badge">28 days</div>
-            </div>
-            
-            <div class="results-grid">
-                <div class="result-card">
-                    <div class="result-label">Subscribers</div>
-                    <div class="result-before-after">
-                        <span class="result-after">+34</span>
-                    </div>
-                    <div class="result-change">750% increase</div>
-                </div>
-                <div class="result-card">
-                    <div class="result-label">Views</div>
-                    <div class="result-before-after">
-                        <span class="result-after">+124.9K</span>
-                    </div>
-                    <div class="result-change">124.9K more than usual</div>
-                </div>
-            </div>
-            
-            <div class="screenshot-container">
-                <div class="screenshot">
-                    <img src="assets/results/seth-subscribers.webp" alt="Seth's subscriber growth - +34 subscribers, 750% increase">
-                </div>
-                <div class="screenshot">
-                    <img src="assets/results/seth-views.webp" alt="Seth's view growth - 124.9K views">
-                </div>
-            </div>
-            
-            <div class="key-insight">
-                <p><strong>The pattern:</strong> Consistent automated posting created compounding visibility. More clips posted → more discovery → more subscribers → more views on future clips.</p>
-            </div>
-        </div>
+        <a href="signup1.html" class="cta-button">See If It Works For You →</a>
+        <p class="cta-subtext">21 days of automation included</p>
     </section>
     
     <!-- How It Works -->
-    <section class="how-it-works">
-        <h2 class="how-title">How they did it</h2>
-        <p class="how-subtitle">No editing skills. No posting schedule. No extra work.</p>
-        
-        <div class="steps">
-            <div class="step">
-                <div class="step-number">1</div>
-                <div class="step-title">Connected their stream</div>
-                <div class="step-desc">Linked their Kick channel to AutoStreamPro. Took about 2 minutes.</div>
-            </div>
-            <div class="step">
-                <div class="step-number">2</div>
-                <div class="step-title">Streamed normally</div>
-                <div class="step-desc">Played games, interacted with chat. Business as usual.</div>
-            </div>
-            <div class="step">
-                <div class="step-number">3</div>
-                <div class="step-title">Clips posted automatically</div>
-                <div class="step-desc">System detected highlights, created clips, posted to YouTube Shorts with optimized titles.</div>
+    <section class="how-section">
+        <div class="section-container">
+            <h2 class="section-title">Here's What Duncan Did Differently</h2>
+            <p class="section-subtitle">He stopped trying to clip manually. He let AI watch his entire stream and find the moments that actually matter.</p>
+            
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Connect Your Stream</h3>
+                    <p class="step-desc">Link your Kick, Twitch, or YouTube channel. Takes 2 minutes.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">AI Watches Everything</h3>
+                    <p class="step-desc">Our AI monitors your entire stream, scoring every moment for viral potential.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">Best Clips Post Automatically</h3>
+                    <p class="step-desc">Only your top highlights get posted to YouTube Shorts with AI-optimized titles.</p>
+                </div>
             </div>
         </div>
     </section>
     
-    <!-- CTA -->
-    <section class="cta-section">
-        <h2 class="cta-title">Your stream is already creating content.</h2>
-        <p class="cta-subtitle">AutoStreamPro makes sure it doesn't disappear when you go offline.</p>
-        <a href="signup1.html" class="cta-button">
-            Connect Your Stream
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-        </a>
-        <p class="cta-note">Automation runs for 21 days before a plan is required.</p>
+    <!-- Differentiator -->
+    <section class="diff-section">
+        <div class="diff-box">
+            <h2 class="diff-title">Why This Works When Other Tools Don't</h2>
+            
+            <div class="diff-comparison">
+                <div class="diff-item bad">
+                    <h4>❌ Other Clip Tools</h4>
+                    <p>Grab random moments based on chat spikes or loudness. Miss the actual highlights. Post mediocre clips that get ignored.</p>
+                </div>
+                <div class="diff-item good">
+                    <h4>✅ AutoStreamPro</h4>
+                    <p>Watches your ENTIRE stream start to finish. Scores every moment. Posts ONLY the clips most likely to blow up.</p>
+                </div>
+            </div>
+            
+            <p style="color: var(--text-secondary);">Not random clips. Your actual best moments.</p>
+        </div>
+    </section>
+    
+    <!-- More Results -->
+    <section class="results-section">
+        <div class="section-container">
+            <h2 class="section-title">More Streamers Seeing Results</h2>
+            <p class="section-subtitle">Duncan's not the only one. Here's what happens when you stop editing and start automating.</p>
+            
+            <div class="results-grid">
+                <div class="result-card">
+                    <div class="result-name">Duncan (saltlordnacnud)</div>
+                    <div class="result-platform">Kick → YouTube Shorts</div>
+                    <div class="result-stats">
+                        <div class="result-stat">
+                            <div class="result-stat-value">142K</div>
+                            <div class="result-stat-label">Views</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="result-stat-value">24</div>
+                            <div class="result-stat-label">Subscribers</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="result-stat-value">3.5</div>
+                            <div class="result-stat-label">Weeks</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="result-card">
+                    <div class="result-name">Seth (forodin4823)</div>
+                    <div class="result-platform">Kick → YouTube Shorts</div>
+                    <div class="result-stats">
+                        <div class="result-stat">
+                            <div class="result-stat-value">125K</div>
+                            <div class="result-stat-label">Views</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="result-stat-value">32</div>
+                            <div class="result-stat-label">Subscribers</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="result-stat-value">4</div>
+                            <div class="result-stat-label">Weeks</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Skeptic Section (Accusation Audit - Now Earned) -->
+    <section class="skeptic-section">
+        <div class="skeptic-box">
+            <h2 class="skeptic-title">Still Skeptical?</h2>
+            
+            <p class="skeptic-text">We get it. You've probably tried other tools before. They promised the world and delivered garbage clips that embarrassed your channel.</p>
+            
+            <p class="skeptic-text">That's exactly why we don't ask for your credit card upfront.</p>
+            
+            <p class="skeptic-highlight">Try it for 21 days. If it works, you'll know. If it doesn't, you'll know that too.</p>
+            
+            <a href="signup1.html" class="cta-button">Start Your 21 Days →</a>
+            <p class="cta-subtext">No credit card required</p>
+        </div>
+    </section>
+    
+    <!-- Final CTA -->
+    <section class="final-cta">
+        <h2>Ready to Stop Editing and Start Growing?</h2>
+        <p>Connect your stream. Let AI find your highlights. Watch your channel grow.</p>
+        <a href="signup1.html" class="cta-button">See If It Works For You →</a>
+        <p class="cta-subtext">$19.99/month after 21 days • Cancel anytime</p>
     </section>
     
     <!-- Footer -->
     <footer class="footer">
-        <p class="footer-text">
-            © 2025 <a href="index.html" class="footer-link">AutoStreamPro</a>. All rights reserved.
-        </p>
+        <p>© 2026 AutoStreamPro. All rights reserved. | <a href="privacy.html">Privacy Policy</a> | <a href="terms.html">Terms of Service</a></p>
     </footer>
 </body>
 </html>
