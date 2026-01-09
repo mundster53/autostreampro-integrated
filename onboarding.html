@@ -560,8 +560,8 @@ async function getCurrentUser() {
         });
         
         // Connect Twitch
-        document.getElementById('twitchBtn').addEventListener('click', () => {
-            const redirectUri = 'https://www.autostreampro.com/onboarding.html';
+        document.getElementById('twitchBtn').addEventListener('click', async () => {
+            const redirectUri = 'https://api.autostreampro.com/api/auth/twitch/callback';
             const scope = 'user:read:email+clips:edit+channel:read:stream_key';
             const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${twitchClientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=twitch&force_verify=true`;
             window.location.href = authUrl;
