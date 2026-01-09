@@ -336,7 +336,7 @@
             
             <p class="copy-highlight">We get it. That's exactly why we're giving you 21 days to see the results for yourself.</p>
             
-            <p class="copy-body">No hype. No pressure. Upload a screenshot of your current YouTube analytics so we can track your growth together.</p>
+            <p class="copy-body">No hype. No pressure. Just your email to get started.</p>
             
             <p class="copy-cta">If it works, you'll know. If it doesn't, you'll know that too.</p>
         </div>
@@ -358,6 +358,7 @@
                     <input type="email" id="email" class="form-input" placeholder="your@email.com" required>
                 </div>
                 
+                <!-- SCREENSHOT UPLOAD - COMMENTED OUT FOR NOW
                 <div class="form-group">
                     <label class="form-label">Your Current YouTube Analytics Screenshot</label>
                     <p class="upload-hint">Go to YouTube Studio → Analytics → Screenshot the overview. This helps us track your growth.</p>
@@ -369,6 +370,7 @@
                     </div>
                     <input type="file" id="screenshot" class="file-input" accept="image/*">
                 </div>
+                END SCREENSHOT UPLOAD -->
                 
                 <button type="submit" class="submit-btn">Start My 21 Days →</button>
             </form>
@@ -405,29 +407,29 @@ async function loadSpotsRemaining() {
 }
 loadSpotsRemaining();
         
-        const uploadArea = document.getElementById('upload-area');
-        const fileInput = document.getElementById('screenshot');
-        const uploadPreview = document.getElementById('upload-preview');
-        let selectedFile = null;
+        // const uploadArea = document.getElementById('upload-area');
+        // const fileInput = document.getElementById('screenshot');
+        // const uploadPreview = document.getElementById('upload-preview');
+        // let selectedFile = null;
         
-        uploadArea.addEventListener('click', () => fileInput.click());
+        // uploadArea.addEventListener('click', () => fileInput.click());
         
-        fileInput.addEventListener('change', (e) => {
+        // fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) {
-                selectedFile = file;
-                uploadArea.classList.add('has-file');
-                uploadArea.querySelector('.upload-icon').textContent = '✅';
-                uploadArea.querySelector('.upload-text').textContent = file.name;
+            // if (file) {
+                // selectedFile = file;
+                // uploadArea.classList.add('has-file');
+                // uploadArea.querySelector('.upload-icon').textContent = '✅';
+                // uploadArea.querySelector('.upload-text').textContent = file.name;
                 
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    uploadPreview.src = e.target.result;
-                    uploadPreview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+                // const reader = new FileReader();
+                // reader.onload = (e) => {
+                    // uploadPreview.src = e.target.result;
+                    // uploadPreview.style.display = 'block';
+                //};
+                // reader.readAsDataURL(file);
+            // }
+        // });
         
         const form = document.getElementById('signup-form');
         const errorEl = document.getElementById('error-message');
@@ -443,16 +445,17 @@ loadSpotsRemaining();
                 return;
             }
             
-            if (!selectedFile) {
-                showError('Please upload a screenshot of your YouTube analytics.');
-                return;
-            }
+            // if (!selectedFile) {
+                // showError('Please upload a screenshot of your YouTube analytics.');
+                // return;
+            // }
             
             form.style.display = 'none';
             loadingEl.style.display = 'block';
             errorEl.style.display = 'none';
             
             try {
+                /* SCREENSHOT UPLOAD - COMMENTED OUT FOR NOW
                 const fileName = Date.now() + '-' + email.replace('@', '_at_').replace(/\./g, '_') + '.' + selectedFile.name.split('.').pop();
                 
                 const { error: uploadError } = await sbClient.storage
@@ -460,11 +463,12 @@ loadSpotsRemaining();
                     .upload(fileName, selectedFile);
                 
                 if (uploadError) throw new Error('Upload failed: ' + uploadError.message);
+                END SCREENSHOT UPLOAD */
                 
                 const response = await fetch('https://autostreampro-backend-production.up.railway.app/api/create-trial-subscription', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, screenshotPath: fileName })
+                    body: JSON.stringify({ email, screenshotPath: null })
                 });
                 
                 const result = await response.json();
