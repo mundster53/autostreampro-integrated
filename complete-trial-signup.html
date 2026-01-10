@@ -299,12 +299,16 @@
                 
                 console.log('Auth account created:', authData.user?.id);
                 
-                // Update user_profiles with auth user_id
+                // Update user_profiles with auth user_id and timezone
                 if (authData.user) {
+                    // Auto-detect user's timezone from browser
+                    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Chicago';
+                    
                     const { error: updateError } = await sbClient
                         .from('user_profiles')
                         .update({ 
                             user_id: authData.user.id,
+                            timezone: userTimezone,
                             updated_at: new Date().toISOString()
                         })
                         .eq('email', email);
