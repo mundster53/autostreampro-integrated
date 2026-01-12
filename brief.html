@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creator Growth Brief - AutoStreamPro</title>
+    <meta name="description" content="Download the AutoStreamPro Creator Growth Brief. Learn how our automated clip system works and explore our influencer partnership program.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(180deg, #0a0a0f 0%, #12121a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .logo img {
+            height: 40px;
+        }
+
+        /* Main Content */
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 2rem 6rem;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(74, 222, 128, 0.1);
+            color: #4ade80;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.875rem;
+            }
+        }
+
+        .subtitle {
+            font-size: 1.125rem;
+            color: #a1a1aa;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Download Card */
+        .download-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .pdf-icon {
+            width: 80px;
+            height: 100px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-radius: 8px;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: white;
+            position: relative;
+        }
+
+        .pdf-icon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            background: #b91c1c;
+            border-bottom-left-radius: 8px;
+        }
+
+        .download-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .download-meta {
+            color: #71717a;
+            font-size: 0.875rem;
+            margin-bottom: 2rem;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: #000000;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(74, 222, 128, 0.3);
+        }
+
+        .download-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* What's Inside */
+        .whats-inside {
+            text-align: left;
+            margin-bottom: 3rem;
+        }
+
+        .whats-inside h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #a1a1aa;
+        }
+
+        .inside-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 640px) {
+            .inside-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .inside-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+        }
+
+        .inside-item svg {
+            width: 20px;
+            height: 20px;
+            color: #4ade80;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .inside-item span {
+            font-size: 0.9375rem;
+            color: #d4d4d8;
+        }
+
+        /* Partner Info */
+        .partner-info {
+            background: rgba(74, 222, 128, 0.05);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: left;
+        }
+
+        .partner-info h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4ade80;
+            margin-bottom: 1rem;
+        }
+
+        .partner-details {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .partner-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9375rem;
+        }
+
+        .partner-row .label {
+            color: #a1a1aa;
+        }
+
+        .partner-row .value {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #52525b;
+            font-size: 0.875rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        footer a {
+            color: #71717a;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: #a1a1aa;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">
+            <img src="autostreampro-logo.png" alt="AutoStreamPro">
+            AutoStreamPro
+        </a>
+    </header>
+
+    <main>
+        <div class="badge">📄 Influencer Resources</div>
+        
+        <h1>Creator Growth Brief</h1>
+        
+        <p class="subtitle">
+            Everything you need to know about AutoStreamPro and our influencer partnership program. No hype, just facts.
+        </p>
+
+        <div class="download-card">
+            <div class="pdf-icon">PDF</div>
+            <div class="download-title">AutoStreamPro Creator Growth Brief</div>
+            <div class="download-meta">PDF • 2 pages • Last updated January 2026</div>
+            <a href="AutoStreamPro_Creator_Growth_Brief.pdf" download class="download-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download Brief
+            </a>
+        </div>
+
+        <div class="whats-inside">
+            <h2>What's Inside</h2>
+            <div class="inside-grid">
+                <div class="inside-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>What AutoStreamPro does (and doesn't do)</span>
+                </div>
+                <div class="inside-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Who the product is best for</span>
+                </div>
+                <div class="inside-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Influencer program details</span>
+                </div>
+                <div class="inside-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Commission structure & payouts</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="partner-info">
+            <h3>💰 Partner Program at a Glance</h3>
+            <div class="partner-details">
+                <div class="partner-row">
+                    <span class="label">Commission Rate</span>
+                    <span class="value">10% of subscription revenue</span>
+                </div>
+                <div class="partner-row">
+                    <span class="label">Per Subscriber</span>
+                    <span class="value">~$2/month ($19.99 plan)</span>
+                </div>
+                <div class="partner-row">
+                    <span class="label">Duration</span>
+                    <span class="value">12 months per referral</span>
+                </div>
+                <div class="partner-row">
+                    <span class="label">Max Per Customer</span>
+                    <span class="value">~$24 total</span>
+                </div>
+                <div class="partner-row">
+                    <span class="label">Payout Schedule</span>
+                    <span class="value">Monthly via First Promoter</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 AutoStreamPro. All rights reserved. | <a href="privacy.html">Privacy Policy</a> | <a href="terms.html">Terms of Service</a></p>
+    </footer>
+</body>
+</html>
