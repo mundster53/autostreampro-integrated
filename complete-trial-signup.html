@@ -308,6 +308,10 @@
                         .from('user_profiles')
                         .update({ 
                             user_id: authData.user.id,
+                            stripe_customer_id: customerId,
+                            subscription_status: 'trialing',
+                            subscription_plan: 'creator',
+                            trial_ends_at: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
                             timezone: userTimezone,
                             updated_at: new Date().toISOString()
                         })
