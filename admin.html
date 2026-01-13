@@ -1377,7 +1377,8 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>User</th>
+                               <th>User</th>
+                                <th>Gamer Tag</th>
                                 <th>Status</th>
                                 <th>Plan</th>
                                 <th>Clips</th>
@@ -1832,20 +1833,22 @@
                                 <div class="cell-name">${u.email || 'No email'}</div>
                                 <div class="cell-id">${u.user_id?.slice(0, 8)}...</div>
                             </div>
-                        </div>
+       </div>
                     </td>
+                    <td>${u.gamer_tag || '—'}</td>
                     <td>
                         ${u.is_beta_tester ? '<span class="badge badge-royal">Beta</span> ' : ''}
-                        ${u.subscription_status === 'trial' ? '<span class="badge badge-flame">Trial</span> ' : ''}
-                        ${u.stripe_customer_id ? '<span class="badge badge-volt">Paid</span>' : ''}
-                        ${!u.is_beta_tester && !u.subscription_status && !u.stripe_customer_id ? '<span class="badge badge-muted">Free</span>' : ''}
+                        ${u.subscription_status === 'trialing' || u.subscription_status === 'trial' ? '<span class="badge badge-flame">Trial</span> ' : ''}
+                        ${u.subscription_status === 'active' && u.stripe_customer_id ? '<span class="badge badge-volt">Paid</span>' : ''}
+                        ${u.subscription_status === 'paused' ? '<span class="badge badge-muted">Paused</span>' : ''}
+                        ${!u.is_beta_tester && !u.subscription_status ? '<span class="badge badge-muted">Free</span>' : ''}
                     </td>
                     <td>${u.subscription_plan || '—'}</td>
                     <td><span class="badge badge-electric">${u.total_clips}</span></td>
                     <td>${formatDate(u.created_at)}</td>
                     <td><button class="action-btn" onclick="viewUser('${u.user_id}')">👁️</button></td>
                 </tr>
-            `).join('') || '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">No users found</td></tr>';
+            `).join('') || '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">No users found</td></tr>';
         }
 
         function searchUsers(q) {
