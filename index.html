@@ -11,8 +11,8 @@
 </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoStreamPro - Turn Your Game Time Into Real Career Potential</title>
-    <meta name="description" content="AutoStreamPro captures hype moments from your streams, turns them into clips, and automates your content pipeline across social platforms—so you can stay consistent without the grind. Automation runs for 21 days before a plan is required to continue.">
+    <title>AutoStreamPro - Consistent Content From Your Streams, Automatically</title>
+    <meta name="description" content="AutoStreamPro monitors your live streams, captures real moments, and posts them automatically. No growth promises. No hype. Just a better system for streamers who want consistency.">
     
     <!-- Favicon -->
     <link rel="icon" href="/autostreampro-logo.png">
@@ -341,6 +341,104 @@
             color: white;
             font-weight: 600;
         }
+
+        /* Audience Filter Boxes */
+        .audience-box {
+            padding: 2rem;
+            border-radius: 16px;
+        }
+
+        .audience-box.for {
+            background: rgba(74, 222, 128, 0.08);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+
+        .audience-box.not-for {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .audience-box h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .audience-box.for h3 {
+            color: #16a34a;
+        }
+
+        .audience-box.not-for h3 {
+            color: #dc2626;
+        }
+
+        .audience-box ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .audience-box li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: #475569;
+        }
+
+        .audience-box.for li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        .audience-box.not-for li::before {
+            content: "✗";
+            position: absolute;
+            left: 0;
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        /* Proof Card */
+        .proof-card {
+            background: rgba(248, 250, 252, 0.9);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        .proof-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+
+        .proof-stat {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 0.5rem;
+        }
+
+        .proof-context {
+            font-size: 1.125rem;
+            color: #334155;
+            margin-bottom: 1.5rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .proof-disclaimer {
+            font-size: 0.875rem;
+            color: #64748b;
+            font-style: italic;
+        }
     </style>
 </head>
 
@@ -364,8 +462,8 @@
                 
                 <div class="flex items-center space-x-4">
                     <a href="https://www.autostreampro.com/login" class="nav-link">Sign In</a>
-                    <a class='btn-primary' href='signup.html'>
-                        Connect Your Stream
+                    <a class='btn-primary' href='signup1.html'>
+                        Start 21-Day Evaluation
                     </a>
                 </div>
             </div>
@@ -385,26 +483,31 @@
                 <!-- Status Badge -->
                 <div class="inline-flex items-center px-6 py-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-medium mb-8">
                     <div class="w-2 h-2 bg-green-400 rounded-full mr-3 animate-pulse"></div>
-                    Built Specifically for Gaming Streamers
+                    For Streamers Who Want Consistency Without Burnout
                 </div>
                 
                 <!-- Main Headline -->
-                <h1 class="text-6xl md:text-8xl lg:text-9xl font-black leading-tight mb-8 text-white">
-                    Turn Your Game Time Into Real
+                <h1 class="text-5xl md:text-7xl lg:text-8xl font-black leading-tight mb-8 text-white">
+                    Turn Your Live Streams Into a Consistent
                     <span class="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400">
-                        Career Potential
+                        Content System
                     </span>
                 </h1>
                 
                 <!-- Subheadline -->
-                <p class="text-xl md:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed mb-12 font-medium">
-                    AutoStreamPro captures your best moments, builds your content pipeline, and automates your promotion—so you can focus on playing the game.
+                <p class="text-xl md:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed mb-6 font-medium">
+                    AutoStreamPro captures your best moments, scores them for potential, and publishes them across platforms — so your content stays consistent without extra work.
+                </p>
+
+                <!-- Disclaimer -->
+                <p class="text-white/60 text-sm mb-12 max-w-2xl mx-auto">
+                    No growth promises. No income guarantees. Just a better system for streamers who care about consistency.
                 </p>
                 
                 <!-- CTA Buttons -->
                 <div class="flex flex-col sm:flex-row gap-6 justify-center mb-6">
-                    <a class='btn-primary text-lg' href='signup.html'>
-                        Connect Your Stream
+                    <a class='btn-primary text-lg' href='signup1.html'>
+                        Start Your 21-Day Evaluation
                         <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                         </svg>
@@ -416,7 +519,7 @@
                 
                 <!-- Trial Note -->
                 <p class="text-white/70 text-sm mb-20">
-                    Includes 21 days of automated monitoring, highlight capture, and promotion.
+                    See how automation fits your streaming workflow — $19.99/month after evaluation
                 </p>
                 
                 <!-- Social Proof Stats -->
@@ -427,16 +530,69 @@
                     </div>
                     <div class="text-center">
                         <div class="text-4xl md:text-5xl font-bold text-white mb-2">AUTO</div>
-                        <div class="text-white/80 text-sm uppercase tracking-wide">Clips Posted Automatically</div>
+                        <div class="text-white/80 text-sm uppercase tracking-wide">Clips Posted For You</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-4xl md:text-5xl font-bold text-white mb-2">DAILY</div>
-                        <div class="text-white/80 text-sm uppercase tracking-wide">Consistent Posting</div>
+                        <div class="text-4xl md:text-5xl font-bold text-white mb-2">~12hr</div>
+                        <div class="text-white/80 text-sm uppercase tracking-wide">Post-Stream Publishing</div>
                     </div>
                     <div class="text-center">
                         <div class="text-4xl md:text-5xl font-bold text-white mb-2">5+</div>
-                        <div class="text-white/80 text-sm uppercase tracking-wide">Multi-Platform Reach</div>
+                        <div class="text-white/80 text-sm uppercase tracking-wide">Platforms Supported</div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Documented Example Section (Early Proof) -->
+    <section class="section-padding bg-white">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="proof-card fade-in">
+                <p class="proof-label">Documented Example — Not a Promise</p>
+                <p class="proof-stat">26K → 198K</p>
+                <p class="proof-context">
+                    In 4 weeks, one YouTube channel using AutoStreamPro increased total views by consistently publishing high-quality clips captured from live streams.
+                </p>
+                <p class="proof-disclaimer">
+                    Results vary. This is not a guarantee — it's an example of what consistent content distribution can look like when the system is working.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Who This Is For / Not For Section -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="text-center mb-12 fade-in">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    Is This <span class="text-gradient">Right For You?</span>
+                </h2>
+                <p class="text-xl text-gray-600">
+                    AutoStreamPro isn't for everyone. Here's how to know if it fits.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 fade-in">
+                <div class="audience-box for">
+                    <h3>AutoStreamPro Is For:</h3>
+                    <ul>
+                        <li>Streamers who already enjoy streaming</li>
+                        <li>Creators with a primary income elsewhere</li>
+                        <li>People who want a repeatable content system</li>
+                        <li>Gamers who value leverage over hype</li>
+                        <li>Streamers tired of clipping and editing manually</li>
+                    </ul>
+                </div>
+                <div class="audience-box not-for">
+                    <h3>AutoStreamPro Is NOT For:</h3>
+                    <ul>
+                        <li>Anyone needing immediate income replacement</li>
+                        <li>People expecting guaranteed growth or virality</li>
+                        <li>"Magic bullet" seekers</li>
+                        <li>Streamers who don't stream consistently</li>
+                        <li>Anyone looking for overnight success</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -489,9 +645,9 @@
                             <span class="text-purple-600 font-bold text-sm">2</span>
                         </div>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">AI Detects Highlights</h3>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">AI Detects Real Moments</h3>
                     <p class="text-gray-600 leading-relaxed">
-                        Kills, clutches, fails, reactions—AutoStreamPro finds the moments viewers actually share.
+                        Kills, clutches, fails, reactions — AutoStreamPro captures genuine highlights as they happen. No manufactured clips.
                     </p>
                 </div>
                 
@@ -507,27 +663,27 @@
                             <span class="text-green-600 font-bold text-sm">3</span>
                         </div>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">Auto-Post Everywhere</h3>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Clips Post Automatically</h3>
                     <p class="text-gray-600 leading-relaxed">
-                        We batch and publish clips to TikTok, YouTube Shorts, Instagram Reels, and more—typically within 12 hours after your stream ends.
+                        Formatted for Shorts, TikTok, and Reels. Published within ~12 hours after your stream. No editing required.
                     </p>
                 </div>
                 
-                <!-- Step 4: Grow & Earn -->
+                <!-- Step 4: Stay Consistent -->
                 <div class="text-center fade-in" style="animation-delay: 0.6s;">
                     <div class="relative mb-8">
                         <div class="w-20 h-20 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto shadow-lg">
                             <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                             </svg>
                         </div>
                         <div class="absolute -top-3 -right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-yellow-500">
                             <span class="text-yellow-600 font-bold text-sm">4</span>
                         </div>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">Build Your Audience & Monetize</h3>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Stay Consistent</h3>
                     <p class="text-gray-600 leading-relaxed">
-                        Consistency drives growth. AutoStreamPro helps you show up everywhere without doing everything manually.
+                        Show up on every platform without the grind. Consistency builds audience over time — AutoStreamPro removes the friction.
                     </p>
                 </div>
             </div>
@@ -536,7 +692,7 @@
             <div class="bg-gray-50 rounded-3xl p-12 fade-in">
                 <div class="text-center mb-12">
                     <h3 class="text-2xl font-bold text-gray-900 mb-4">The Complete Automation Process</h3>
-                    <p class="text-gray-600 max-w-2xl mx-auto">See how AutoStreamPro turns every gaming session into content that grows your audience</p>
+                    <p class="text-gray-600 max-w-2xl mx-auto">Stream → AI detects moments → Clips post automatically</p>
                 </div>
                 
                 <div class="grid md:grid-cols-3 gap-8">
@@ -548,7 +704,7 @@
                             </svg>
                         </div>
                         <h4 class="font-semibold text-gray-900 mb-2">Your Stream</h4>
-                        <p class="text-sm text-gray-600">Stream on Kick, Twitch or YouTube</p>
+                        <p class="text-sm text-gray-600">Kick, Twitch, or YouTube</p>
                     </div>
                     
                     <!-- Processing -->
@@ -559,19 +715,19 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
                         </div>
-                        <h4 class="font-semibold text-gray-900 mb-2">AI Highlights</h4>
-                        <p class="text-sm text-gray-600">Clip detection, editing & optimization</p>
+                        <h4 class="font-semibold text-gray-900 mb-2">AI Captures Moments</h4>
+                        <p class="text-sm text-gray-600">Real highlights, not random clips</p>
                     </div>
                     
                     <!-- Output -->
                     <div class="text-center">
                         <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                         </div>
-                        <h4 class="font-semibold text-gray-900 mb-2">Scheduled Posting</h4>
-                        <p class="text-sm text-gray-600">Multi-platform content distribution</p>
+                        <h4 class="font-semibold text-gray-900 mb-2">Auto-Published</h4>
+                        <p class="text-sm text-gray-600">Shorts, TikTok, Reels & more</p>
                     </div>
                 </div>
             </div>
@@ -585,7 +741,7 @@
             <!-- Section Header -->
             <div class="text-center mb-20 fade-in">
                 <h2 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-                    Everything gaming streamers need to <span class="text-gradient">grow</span>
+                    What You <span class="text-gradient">Get</span>
                 </h2>
                 <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
                     A simple automation stack that turns streams into consistent content.
@@ -604,74 +760,74 @@
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-4">AI Clip Engine</h3>
                     <p class="text-gray-600 mb-8 text-lg leading-relaxed">
-                        Our AI watches your stream and automatically identifies the moments worth sharing—so you never miss a highlight.
+                        Watches your stream and captures genuine moments — no manufactured or fake clips.
                     </p>
                     <ul class="space-y-4">
                         <li class="flex items-center space-x-3">
                             <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            <span class="text-gray-700 font-medium">Detects hype moments automatically</span>
+                            <span class="text-gray-700 font-medium">Detects real hype moments</span>
                         </li>
                         <li class="flex items-center space-x-3">
                             <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            <span class="text-gray-700 font-medium">Generates clip-ready highlights</span>
+                            <span class="text-gray-700 font-medium">Scores clips for potential</span>
                         </li>
                         <li class="flex items-center space-x-3">
                             <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            <span class="text-gray-700 font-medium">Creates titles, tags, and descriptions</span>
+                            <span class="text-gray-700 font-medium">Generates titles, tags, descriptions</span>
                         </li>
                     </ul>
                 </div>
                 
-                <!-- Growth Automation -->
+                <!-- Multi-Platform Publishing -->
                 <div class="feature-card fade-in">
                     <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-8 shadow-lg">
                         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
                         </svg>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-4">Multi-Platform Publishing</h3>
                     <p class="text-gray-600 mb-8 text-lg leading-relaxed">
-                        Your clips go everywhere your audience is—automatically posted and optimized for each platform.
+                        Clips go where your audience is — automatically posted within ~12 hours.
                     </p>
                     <ul class="space-y-4">
                         <li class="flex items-center space-x-3">
                             <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span class="text-gray-700 font-medium">Posts to Shorts, Reels, TikTok & more</span>
+                            <span class="text-gray-700 font-medium">YouTube Shorts, TikTok, Reels</span>
                         </li>
                         <li class="flex items-center space-x-3">
                             <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span class="text-gray-700 font-medium">Batches uploads to save API usage</span>
+                            <span class="text-gray-700 font-medium">Batched uploads (smart scheduling)</span>
                         </li>
                         <li class="flex items-center space-x-3">
                             <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span class="text-gray-700 font-medium">Schedules for consistent reach</span>
+                            <span class="text-gray-700 font-medium">Optimized for each platform</span>
                         </li>
                     </ul>
                 </div>
                 
-                <!-- Revenue Intelligence -->
+                <!-- Consistency Without Burnout -->
                 <div class="feature-card fade-in">
                     <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-8 shadow-lg">
                         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                         </svg>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Growth Without Burnout</h3>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Consistency Without Burnout</h3>
                     <p class="text-gray-600 mb-8 text-lg leading-relaxed">
-                        Stay consistent without the grind. AutoStreamPro handles the repetitive work so you can focus on streaming.
+                        Stay consistent without the grind. Focus on streaming, not editing.
                     </p>
                     <ul class="space-y-4">
                         <li class="flex items-center space-x-3">
                             <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-                            <span class="text-gray-700 font-medium">Stay consistent without extra work</span>
+                            <span class="text-gray-700 font-medium">No manual clipping required</span>
                         </li>
                         <li class="flex items-center space-x-3">
                             <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-                            <span class="text-gray-700 font-medium">Learn what performs over time</span>
+                            <span class="text-gray-700 font-medium">No editing software needed</span>
                         </li>
                         <li class="flex items-center space-x-3">
                             <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-                            <span class="text-gray-700 font-medium">Build momentum faster than manual posting</span>
+                            <span class="text-gray-700 font-medium">Content posts while you sleep</span>
                         </li>
                     </ul>
                 </div>
@@ -686,10 +842,10 @@
             <!-- Section Header -->
             <div class="text-center mb-20 fade-in">
                 <h2 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-                    Pricing that <span class="text-gradient">grows with you</span>
+                    Simple <span class="text-gradient">Pricing</span>
                 </h2>
                 <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                    Automation runs for 21 days before a plan is required to continue. Credit card required to reserve resources.
+                    21-day evaluation included. See how it works before you commit.
                 </p>
             </div>
             
@@ -701,10 +857,10 @@
                     <div class="mb-8">
                         <h3 class="text-xl font-semibold text-gray-900 mb-2">Creator</h3>
                         <div class="flex items-baseline">
-                            <span class="text-5xl font-bold text-gray-900">$25</span>
+                            <span class="text-5xl font-bold text-gray-900">$19.99</span>
                             <span class="text-gray-500 ml-2">/month</span>
                         </div>
-                        <p class="text-gray-600 mt-2">Fully automated content promotion for gaming streamers</p>
+                        <p class="text-gray-600 mt-2">Everything you need for consistent content</p>
                     </div>
                     
                     <ul class="space-y-4 mb-10">
@@ -712,49 +868,46 @@
                             <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                             </svg>
-                            <span class="text-gray-700">Automated monitoring of every stream</span>
+                            <span class="text-gray-700">Automated stream monitoring</span>
                         </li>
                         <li class="flex items-center space-x-3">
                             <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                             </svg>
-                            <span class="text-gray-700">Automatic detection of strongest moments</span>
+                            <span class="text-gray-700">AI moment detection</span>
                         </li>
                         <li class="flex items-center space-x-3">
                             <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                             </svg>
-                            <span class="text-gray-700">Automatic clip creation optimized for social</span>
+                            <span class="text-gray-700">Auto clip creation</span>
                         </li>
                         <li class="flex items-center space-x-3">
                             <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                             </svg>
-                            <span class="text-gray-700">Automatic posting to all supported platforms</span>
+                            <span class="text-gray-700">Multi-platform publishing</span>
                         </li>
-
                         <li class="flex items-center space-x-3">
                             <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                             </svg>
-                            <span class="text-gray-700">AI-generated titles, tags, and descriptions</span>
+                            <span class="text-gray-700">AI-generated titles & tags</span>
                         </li>
-
                         <li class="flex items-center space-x-3">
                             <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                             </svg>
-                            <span class="text-gray-700">No manual clipping, editing, or posting required</span>
+                            <span class="text-gray-700">Discord support</span>
                         </li>
                     </ul>
 
-
-                    <a class='btn-primary w-full text-center' href='signup.html?plan=creator'>
-                        Connect Your Stream
+                    <a class='btn-primary w-full text-center' href='signup1.html'>
+                        Start 21-Day Evaluation
                     </a>
                 </div>
 
-                <!-- Pro Plan (Featured) -->
+                <!-- Pro Plan (Coming Soon) -->
                 <div class="pricing-card fade-in opacity-50" style="animation-delay: 0.2s; filter: blur(2px);">
                     <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
                         <span class="bg-blue-500 text-white px-6 py-2 rounded-full text-sm font-semibold shadow-lg">Coming Soon</span>
@@ -780,12 +933,6 @@
                             <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                             </svg>
-                            <span class="text-gray-700">Automatic detection of strongest moments</span>
-                        </li>
-                        <li class="flex items-center space-x-3">
-                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                            </svg>
                             <span class="text-gray-700">Advanced analytics</span>
                         </li>
                         <li class="flex items-center space-x-3">
@@ -805,10 +952,9 @@
                     <span class='w-full text-center block bg-gray-300 text-gray-500 py-3 rounded-lg cursor-not-allowed'>
                         Coming Soon
                     </span>
-                    </a>
                 </div>
 
-                <!-- Enterprise Plan -->
+                <!-- Enterprise Plan (Coming Soon) -->
                 <div class="pricing-card fade-in opacity-50" style="animation-delay: 0.4s; filter: blur(2px);">
                     <div class="mb-8">
                         <h3 class="text-xl font-semibold text-gray-900 mb-2">Enterprise</h3>
@@ -844,16 +990,10 @@
                             </svg>
                             <span class="text-gray-700">Dedicated support</span>
                         </li>
-                        <li class="flex items-center space-x-3">
-                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                            <span class="text-gray-700">Custom integrations</span>
-                        </li>
                     </ul>
                     
                     <span class='w-full text-center block bg-gray-300 text-gray-500 py-3 rounded-lg cursor-not-allowed'>
-                    Coming Soon
+                        Coming Soon
                     </span>
                 </div>
             </div>
@@ -867,10 +1007,10 @@
             <!-- Section Header -->
             <div class="text-center mb-16 fade-in">
                 <h2 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-                    Frequently asked <span class="text-gradient">questions</span>
+                    Questions <span class="text-gradient">Answered</span>
                 </h2>
                 <p class="text-xl text-gray-600">
-                    Everything you need to know about AutoStreamPro for gaming streamers.
+                    Straight answers about what AutoStreamPro does and doesn't do.
                 </p>
             </div>
             
@@ -880,76 +1020,38 @@
                 <!-- FAQ 1 -->
                 <div class="faq-item fade-in">
                     <h3>What games does AutoStreamPro support?</h3>
-                    <p>AutoStreamPro supports ALL games that can be streamed on Twitch, Kick and YouTube other platforms coming soon. Whether you play AAA titles, indie games, retro games, or anything in between - our AI understands your content and generates relevant suggestions.</p>
+                    <p>All games. AutoStreamPro monitors your stream regardless of what you're playing — Twitch, Kick, or YouTube.</p>
                 </div>
                 
                 <!-- FAQ 2 -->
                 <div class="faq-item fade-in" style="animation-delay: 0.1s;">
-                    <h3>Do I need technical skills to use AutoStreamPro?</h3>
-                    <p>Not at all! AutoStreamPro is designed for beginners. Just connect your streaming accounts. AutoStreamPro monitors your streams, captures highlights, and promotes your content automatically. No coding, no complex setup.</p>
+                    <h3>Do I need technical skills?</h3>
+                    <p>No. Connect your streaming account, and AutoStreamPro handles everything else. No coding, no editing software, no complex setup.</p>
                 </div>
                 
                 <!-- FAQ 3 -->
                 <div class="faq-item fade-in" style="animation-delay: 0.2s;">
-                    <h3>How quickly will I see results?</h3>
-                    <p>We believe in transparency: there's no guaranteed timeline for growth. What AutoStreamPro does is help you stay consistent by automating clips and posting, so you can publish more often and learn what resonates. Results vary based on content quality, consistency, and audience.</p>
+                    <h3>Will this guarantee growth?</h3>
+                    <p><strong>No.</strong> We believe in honesty: there's no guaranteed timeline for growth. AutoStreamPro helps you stay consistent by automating clips and posting. Consistency matters, but results depend on your content, your audience, and factors outside anyone's control.</p>
                 </div>
                 
                 <!-- FAQ 4 -->
                 <div class="faq-item fade-in" style="animation-delay: 0.3s;">
-                    <h3>How much does AutoStreamPro cost?</h3>
-                    <p>We offer flexible pricing to match your streaming goals:</p>
-                    
-                    <table class="pricing-table">
-                        <thead>
-                            <tr>
-                                <th>Plan</th>
-                                <th>Price</th>
-                                <th>Best For</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Creator</td>
-                                <td>$25/month</td>
-                                <td>Fully automated content promotion</td>
-                            </tr>
-                            <tr style="opacity: 0.5;">
-                                <td>Pro - Coming Soon</td>
-                                <td>$45/month</td>
-                                <td>Coming soon</td>
-                            </tr>
-                            <tr style="opacity: 0.5;">
-                                <td>Enterprise - Coming Soon</td>
-                                <td>$70/month</td>
-                                <td>Coming soon</td>    
-                            </tr>
-                        </tbody>
-                    </table>
-                    
-                    <p style="margin-top: 16px;">Automation runs for 21 days before a plan is required to continue. Credit card required to reserve resources.</p>
-                    
-                    <a href="#pricing" style="display: inline-block; background: #3b82f6; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; margin-top: 12px; font-weight: 500;">View Pricing Details</a>
+                    <h3>What does the 21-day evaluation include?</h3>
+                    <p>Full access to everything — stream monitoring, AI clip detection, multi-platform publishing. See how automation fits your workflow before you pay.</p>
                 </div>
                 
                 <!-- FAQ 5 -->
                 <div class="faq-item fade-in" style="animation-delay: 0.4s;">
                     <h3>Can I cancel anytime?</h3>
-                    <p>Yes! All plans are month-to-month with no long-term contracts. Cancel anytime from your dashboard, and you'll keep access until the end of your billing period. No cancellation fees or hidden charges.</p>
+                    <p>Yes. Month-to-month, no contracts. Cancel from your dashboard and keep access until the end of your billing period.</p>
                 </div>
                 
                 <!-- FAQ 6 -->
                 <div class="faq-item fade-in" style="animation-delay: 0.5s;">
-                    <h3>What platforms does AutoStreamPro work with?</h3>
-                    <p>Currently we support Twitch, YouTube, Twitter, Instagram, and TikTok. We're constantly adding new platforms based on user feedback. All plans include multi-platform automation designed to help build consistent social media presence.</p>
+                    <h3>Where do clips get posted?</h3>
+                    <p>YouTube Shorts, TikTok, Instagram Reels, and more. We batch and schedule uploads within ~12 hours after your stream ends.</p>
                 </div>
-            </div>
-        </div>
-    </section>
-
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-                    </svg>
-                </a>
             </div>
         </div>
     </section>
@@ -963,15 +1065,18 @@
         </div>
         
         <div class="max-w-4xl mx-auto px-6 text-center fade-in relative z-10">
-            <h2 class="text-5xl md:text-6xl font-bold mb-8">
-                Ready to automate your content pipeline?
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                Ready to Try a Better System?
             </h2>
-            <p class="text-xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
-                Automation runs for 21 days before a plan is required to continue. Credit card required to reserve resources.
+            <p class="text-xl text-gray-300 mb-4 max-w-2xl mx-auto leading-relaxed">
+                21-day evaluation. See how automation fits your streaming workflow.
+            </p>
+            <p class="text-gray-500 text-sm mb-10">
+                No growth promises. No income guarantees. Just consistency without the grind.
             </p>
             <div class="flex flex-col sm:flex-row gap-6 justify-center">
-                <a class='btn-primary text-lg' href='signup.html'>
-                    Connect Your Stream
+                <a class='btn-primary text-lg' href='signup1.html'>
+                    Start Your Evaluation
                 </a>
                 <button onclick="scrollToFeatures()" class="btn-secondary text-lg">
                     See How It Works
@@ -990,7 +1095,7 @@
                         <span class="text-xl font-bold">AutoStreamPro</span>
                     </div>
                     <p class="text-gray-600 max-w-md mb-8 text-lg leading-relaxed">
-                        Stream more. Clip less. Post consistently.
+                        Stream more. Clip less. Stay consistent.
                     </p>
                 </div>
                 
@@ -1000,23 +1105,24 @@
                         <li><a href="#how-it-works" class="text-gray-600 hover:text-gray-900 transition-colors">How it Works</a></li>
                         <li><a href="#features" class="text-gray-600 hover:text-gray-900 transition-colors">Features</a></li>
                         <li><a href="#pricing" class="text-gray-600 hover:text-gray-900 transition-colors">Pricing</a></li>
-                        <li><a href="dashboard.html" class="text-gray-600 hover:text-gray-900 transition-colors">Login</a></li>
+                        <li><a href="login.html" class="text-gray-600 hover:text-gray-900 transition-colors">Login</a></li>
                     </ul>
                 </div>
                 
                 <div>
                     <h4 class="font-semibold text-gray-900 mb-6 text-lg">Support</h4>
                     <ul class="space-y-4">
-                        <li><a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">Help Center</a></li>
-                        <li><a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">Contact</a></li>
-                        <li><a href="https://www.autostreampro.com/privacy-policy" class="text-gray-600 hover:text-gray-900 transition-colors">Privacy</a></li>
+                        <li><a href="https://discord.gg/fVdP2GGF" class="text-gray-600 hover:text-gray-900 transition-colors">Discord</a></li>
+                        <li><a href="mailto:bret@autostreampro.com" class="text-gray-600 hover:text-gray-900 transition-colors">Contact</a></li>
+                        <li><a href="privacy-policy.html" class="text-gray-600 hover:text-gray-900 transition-colors">Privacy</a></li>
+                        <li><a href="terms-of-use.html" class="text-gray-600 hover:text-gray-900 transition-colors">Terms</a></li>
                     </ul>
                 </div>
             </div>
             
             <div class="border-t border-gray-200 pt-8">
                 <p class="text-center text-gray-500">
-                    © 2025 AutoStreamPro. All rights reserved. Individual results may vary. No guarantee of income or specific results.
+                    © 2026 AutoStreamPro. All rights reserved. Results vary. No guarantee of growth or income.
                 </p>
             </div>
         </div>
@@ -1057,53 +1163,13 @@
             });
         }, observerOptions);
         
-        // Counter animation
-        function animateCounter(element) {
-            const target = parseInt(element.getAttribute('data-target'));
-            let current = 0;
-            const increment = target / 50;
-            const isPercentage = target === 95;
-            
-            const updateCounter = () => {
-                if (current < target) {
-                    current += increment;
-                    element.textContent = Math.floor(current) + (isPercentage ? '%' : '');
-                    requestAnimationFrame(updateCounter);
-                } else {
-                    element.textContent = target + (isPercentage ? '%' : '');
-                }
-            };
-            
-            updateCounter();
-        }
-        
         // Initialize when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             // Observe fade-in elements
             const fadeElements = document.querySelectorAll('.fade-in');
             fadeElements.forEach(el => observer.observe(el));
-            
-            // Observe and animate counters
-            const counters = document.querySelectorAll('.counter');
-            const counterObserver = new IntersectionObserver(function(entries) {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        animateCounter(entry.target);
-                        counterObserver.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: 0.5 });
-            
-            counters.forEach(counter => {
-                counterObserver.observe(counter);
-            });
         });
     </script>
-    <div style="text-align: center; margin: 40px 0; padding: 20px;">
-        <a href="/terms-of-use.html" style="color: #4CAF50; text-decoration: none; font-size: 16px;">Terms of Service * * *</a>
-
-        <a href="/privacy-policy.html" style="color: #4CAF50; text-decoration: none; font-size: 16px;">Privacy Policy</a>
-    </div>
 
 </body>
 </html>
