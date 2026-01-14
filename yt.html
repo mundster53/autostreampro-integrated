@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>21-Day Evaluation - AutoStreamPro</title>
+    <meta name="description" content="Turn your live streams into a consistent content system. 21-day evaluation - no growth promises, no income guarantees.">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(180deg, #0a0a0f 0%, #12121a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Minimal Header */
+        header {
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .logo img {
+            height: 40px;
+        }
+
+        /* Hero Section */
+        .hero {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 3rem 2rem 4rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.25;
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.75rem;
+            }
+        }
+
+        .subheadline {
+            font-size: 1.125rem;
+            color: #a1a1aa;
+            margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+
+        .disclaimer {
+            font-size: 0.875rem;
+            color: #71717a;
+            margin-bottom: 2.5rem;
+            font-style: italic;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: #000000;
+            padding: 1rem 2.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.125rem;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(74, 222, 128, 0.3);
+        }
+
+        .cta-note {
+            font-size: 0.8125rem;
+            color: #52525b;
+            margin-top: 1rem;
+        }
+
+        /* How It Works - Simple */
+        .how-it-works {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 2rem 4rem;
+        }
+
+        .how-it-works h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #a1a1aa;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.25rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: rgba(74, 222, 128, 0.15);
+            color: #4ade80;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .step-content h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .step-content p {
+            font-size: 0.9375rem;
+            color: #a1a1aa;
+        }
+
+        /* Proof Section - Careful */
+        .proof {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 2rem 4rem;
+        }
+
+        .proof-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .proof-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #71717a;
+            margin-bottom: 1rem;
+        }
+
+        .proof-stat {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4ade80;
+            margin-bottom: 0.5rem;
+        }
+
+        .proof-context {
+            font-size: 1rem;
+            color: #d4d4d8;
+            margin-bottom: 1.5rem;
+        }
+
+        .proof-disclaimer {
+            font-size: 0.8125rem;
+            color: #52525b;
+            font-style: italic;
+        }
+
+        /* Who This Is For */
+        .audience {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 2rem 4rem;
+        }
+
+        .audience-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 640px) {
+            .audience-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .audience-box {
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+        .audience-box.for {
+            background: rgba(74, 222, 128, 0.05);
+            border: 1px solid rgba(74, 222, 128, 0.15);
+        }
+
+        .audience-box.not-for {
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+        }
+
+        .audience-box h3 {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .audience-box.for h3 {
+            color: #4ade80;
+        }
+
+        .audience-box.not-for h3 {
+            color: #f87171;
+        }
+
+        .audience-box ul {
+            list-style: none;
+        }
+
+        .audience-box li {
+            font-size: 0.875rem;
+            color: #a1a1aa;
+            padding: 0.375rem 0;
+            padding-left: 1.25rem;
+            position: relative;
+        }
+
+        .audience-box.for li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4ade80;
+        }
+
+        .audience-box.not-for li::before {
+            content: "✗";
+            position: absolute;
+            left: 0;
+            color: #f87171;
+        }
+
+        /* Final CTA */
+        .final-cta {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 2rem 5rem;
+            text-align: center;
+        }
+
+        .final-cta h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .final-cta p {
+            color: #71717a;
+            margin-bottom: 2rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #3f3f46;
+            font-size: 0.8125rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        footer a {
+            color: #52525b;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: #71717a;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">
+            <img src="autostreampro-logo.png" alt="AutoStreamPro">
+            AutoStreamPro
+        </a>
+    </header>
+
+    <section class="hero">
+        <h1>Turn Your Live Streams Into a Consistent Content System — Automatically</h1>
+        
+        <p class="subheadline">
+            AutoStreamPro captures your best moments, scores them for potential, and publishes them across platforms — so your content stays consistent without extra work.
+        </p>
+        
+        <p class="disclaimer">
+            No growth promises. No income guarantees. Just a better system for streamers who care about consistency.
+        </p>
+        
+        <a href="signup1.html" class="cta-btn">Start Your 21-Day Evaluation</a>
+        
+        <p class="cta-note">See how automation fits your streaming workflow</p>
+    </section>
+
+    <section class="how-it-works">
+        <h2>How It Works</h2>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>You stream like you always have</h3>
+                    <p>Nothing changes about how you play or what you do.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>The system clips your best moments</h3>
+                    <p>AI watches your stream and captures genuine highlights — no manufactured clips.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Clips post automatically</h3>
+                    <p>Formatted for Shorts, TikTok, and Reels. Published within ~12 hours. No editing required.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="proof">
+        <div class="proof-card">
+            <p class="proof-label">Documented Example — Not a Promise</p>
+            <p class="proof-stat">26K → 198K</p>
+            <p class="proof-context">
+                One YouTube channel increased total views in 4 weeks by consistently publishing high-quality clips captured from live streams.
+            </p>
+            <p class="proof-disclaimer">
+                Results vary. This is not a guarantee — it's an example of what consistent content distribution can look like when the system is working.
+            </p>
+        </div>
+    </section>
+
+    <section class="audience">
+        <div class="audience-grid">
+            <div class="audience-box for">
+                <h3>This Is For You If:</h3>
+                <ul>
+                    <li>You already enjoy streaming</li>
+                    <li>You have income from elsewhere</li>
+                    <li>You want a repeatable content system</li>
+                    <li>You value leverage over hype</li>
+                </ul>
+            </div>
+            <div class="audience-box not-for">
+                <h3>This Is NOT For You If:</h3>
+                <ul>
+                    <li>You need immediate income replacement</li>
+                    <li>You expect guaranteed growth</li>
+                    <li>You're looking for a magic bullet</li>
+                    <li>You don't stream consistently</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="final-cta">
+        <h2>21-Day Evaluation</h2>
+        <p>See how automation fits your streaming workflow — without guesswork or promises.</p>
+        <a href="signup1.html" class="cta-btn">Start Your Evaluation</a>
+        <p class="cta-note">$19.99/month after evaluation • Cancel anytime</p>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 AutoStreamPro. All rights reserved. | <a href="privacy.html">Privacy</a> | <a href="terms.html">Terms</a></p>
+    </footer>
+</body>
+</html>
