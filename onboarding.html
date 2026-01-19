@@ -1336,8 +1336,7 @@ if (btn) {
       // prevent double clicks while processing
       btn.disabled = true;
 
-       const sb = await getSb();
-       const { data: { user } } = await sb.auth.getUser();
+       const { data: { user } } = await supabaseClient.auth.getUser();
        if (!user) { alert('Please log in first'); return; }
        const res = await fetch('https://autostreampro-backend-production.up.railway.app/api/disconnect/youtube', {
          method: 'POST',
