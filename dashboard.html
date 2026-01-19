@@ -1257,6 +1257,7 @@ function displayClips(clips) {
                     <button onclick="publishToTikTok('${clip.id}')" style="background: #000000; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
                         🎵 TikTok
                     </button>
+                    <button onclick="publishToInstagram('${clip.id}')" style="background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">📸 Instagram</button>
                 </div>
                 <div style="margin-top: 8px;">
                     <label style="font-size: 12px;">
@@ -1473,6 +1474,53 @@ function toggleCommercialOptions() {
 function closeTikTokModal() {
     document.getElementById('tiktokModal').style.display = 'none';
     currentTikTokClipId = null;
+}
+
+// Instagram Publishing
+async function publishToInstagram(clipId) {
+    if (!confirm('Post this clip to Instagram Reels?')) return;
+    
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) {
+            showToast('Please log in first', 'error');
+            return;
+        }
+        
+        // Check if Instagram is connected
+        const { data: connection } = await supabaseClient
+            .from('streaming_connections')
+            .select('platform_username')
+            .eq('user_id', user.id)
+            .eq('platform', 'instagram')
+            .eq('is_active', true)
+            .single();
+        
+        if (!connection) {
+            showToast('Please connect Instagram first', 'error');
+            return;
+        }
+        
+        showToast('Adding to Instagram queue...', 'success');
+        
+        // Add to publishing queue
+        const response = await fetch('https://api.autostreampro.com/api/queue-instagram-publish', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clipId, userId: user.id })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('Clip queued for Instagram! Publishing shortly...', 'success');
+        } else {
+            showToast('Failed to queue: ' + (result.error || 'Unknown error'), 'error');
+        }
+    } catch (error) {
+        console.error('Instagram publish error:', error);
+        showToast('Failed to publish to Instagram', 'error');
+    }
 }
 
 async function publishToTikTok(clipId) {
