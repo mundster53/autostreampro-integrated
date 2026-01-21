@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect YouTube - AutoStreamPro</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .verification-status {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .verification-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .verification-text h3 {
+            color: #10b981;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .verification-text p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .proof-section {
+            margin-top: 20px;
+        }
+
+        .proof-section h4 {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .proof-image {
+            background: #fff;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .proof-image img {
+            max-width: 100%;
+            border-radius: 4px;
+        }
+
+        .issue-explanation {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .issue-explanation h3 {
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .issue-explanation p {
+            color: #e2e8f0;
+            margin-bottom: 12px;
+        }
+
+        .issue-explanation p:last-child {
+            margin-bottom: 0;
+        }
+
+        .what-youll-see {
+            margin-top: 30px;
+        }
+
+        .what-youll-see h3 {
+            color: #fff;
+            margin-bottom: 16px;
+            font-size: 1.2rem;
+        }
+
+        .warning-preview {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .warning-preview img {
+            max-width: 100%;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .steps {
+            margin-top: 20px;
+        }
+
+        .step {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            color: #fff;
+        }
+
+        .step-content h4 {
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .step-content p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        .step-content code {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .cta-section {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 16px 40px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-primary svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .btn-secondary {
+            display: inline-block;
+            color: #94a3b8;
+            text-decoration: none;
+            margin-top: 16px;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .btn-secondary:hover {
+            color: #fff;
+        }
+
+        .reassurance {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .reassurance-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .reassurance-item svg {
+            color: #10b981;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px 16px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .verification-status {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .reassurance {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">AutoStreamPro</div>
+            <h1>Connect Your YouTube Channel</h1>
+        </div>
+
+        <!-- Verification Status -->
+        <div class="card">
+            <div class="verification-status">
+                <div class="verification-icon">✓</div>
+                <div class="verification-text">
+                    <h3>AutoStreamPro is Verified by Google</h3>
+                    <p>Our app has passed Google's security review and is approved for YouTube access.</p>
+                </div>
+            </div>
+
+            <div class="proof-section">
+                <h4>Our Google Verification Status</h4>
+                <div class="proof-image">
+                    <!-- This shows the Google verification center screenshot -->
+                    <img src="/images/google-verification-proof.png" alt="Google Verification Center showing AutoStreamPro is verified - Branding status verified, Data access verified">
+                </div>
+            </div>
+        </div>
+
+        <!-- Issue Explanation -->
+        <div class="card">
+            <div class="issue-explanation">
+                <h3>
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    Temporary Google Display Issue
+                </h3>
+                <p>
+                    Due to a glitch in Google's system, you may see a warning screen that says "Google hasn't verified this app" — even though we ARE verified (as shown above).
+                </p>
+                <p>
+                    <strong>We're actively working with Google to resolve this display issue.</strong> In the meantime, you can safely proceed by following the simple steps below.
+                </p>
+            </div>
+        </div>
+
+        <!-- What You'll See -->
+        <div class="card">
+            <div class="what-youll-see">
+                <h3>What You'll See & How to Proceed</h3>
+                
+                <div class="warning-preview">
+                    <img src="/images/google-warning-screen.png" alt="Google warning screen showing 'Google hasn't verified this app'">
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Click "Advanced"</h4>
+                            <p>Located in the bottom-left corner of the warning screen</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Click "Go to AutoStreamPro (unsafe)"</h4>
+                            <p>Don't worry — this is safe. Google just hasn't updated their display yet.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Grant YouTube Access</h4>
+                            <p>Allow AutoStreamPro to upload videos to your channel</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-section">
+            <a href="#" id="connectYouTubeBtn" class="btn-primary">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+                Continue to YouTube
+            </a>
+            <br>
+            <a href="/onboarding.html" class="btn-secondary">← Back to Setup</a>
+        </div>
+
+        <!-- Reassurance -->
+        <div class="reassurance">
+            <div class="reassurance-item">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                Secure OAuth 2.0
+            </div>
+            <div class="reassurance-item">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Google Verified
+            </div>
+            <div class="reassurance-item">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                Your Data Protected
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get userId from URL or session
+        document.getElementById('connectYouTubeBtn').addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            // Try to get userId from URL params first
+            const urlParams = new URLSearchParams(window.location.search);
+            let userId = urlParams.get('userId');
+            
+            // If not in URL, try to get from Supabase session
+            if (!userId) {
+                try {
+                    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+                    const supabase = createClient(
+                        'https://jvuyvtgrshfmqmhpesmd.supabase.co',
+                        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXl2dGdyc2hmbXFtaHBlc21kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTc0NDMzODQsImV4cCI6MjAzMzAxOTM4NH0.Ej8aoGSmOtDKNqivMjLbvgkF4AEi1sxdoLM4KpHwq8I'
+                    );
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) {
+                        userId = user.id;
+                    }
+                } catch (err) {
+                    console.error('Could not get user session:', err);
+                }
+            }
+            
+            if (!userId) {
+                alert('Please log in first to connect your YouTube account.');
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // Redirect to YouTube OAuth with return URL
+            const returnTo = encodeURIComponent('https://www.autostreampro.com/onboarding.html?yt_connected=1');
+            window.location.href = `https://api.autostreampro.com/api/auth/youtube?userId=${userId}&return_to=${returnTo}`;
+        });
+    </script>
+</body>
+</html>

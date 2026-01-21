@@ -1314,13 +1314,7 @@ if (btn) {
       return;
     }
 
-    const returnTo = new URL('https://www.autostreampro.com/onboarding');
-    returnTo.searchParams.set('yt_connected', '1');
-
-    const start = new URL('https://www.autostreampro.com/api/auth/youtube');
-    start.searchParams.set('userId', user.id);
-    start.searchParams.set('return_to', returnTo.toString());
-    window.location.href = start.toString();
+    window.location.href = `/connect-youtube.html?userId=${user.id}`;
   });
 }
 }
