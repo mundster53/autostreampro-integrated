@@ -483,10 +483,13 @@
         
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <button class="btn-primary" id="saveBtn">
+            <button class="btn-primary" id="saveBtn" disabled>
                 Complete Setup
             </button>
         </div>
+        <p id="publishingHelp" style="text-align: center; color: #92400e; font-size: 14px; margin-top: 10px;">
+            Connect YouTube or TikTok to continue
+        </p>
     </div>
     
     <script>
@@ -899,10 +902,28 @@ async function checkConnections() {
     const connectedCount = (data || []).length;
     statusElement.textContent = `${connectedCount} of 4 platforms connected`;
   }
+
+  // 5) Enable Complete Setup only if YouTube or TikTok connected
+  const hasPublishing = Array.isArray(data) && data.some(c => c.platform === 'youtube' || c.platform === 'tiktok');
+  document.getElementById('saveBtn').disabled = !hasPublishing;
+  document.getElementById('publishingHelp').style.display = hasPublishing ? 'none' : 'block';
 }
         document.getElementById('saveBtn').addEventListener('click', async () => {
     const user = await getCurrentUser();
     if (!user) return;
+    
+    // Final guard - verify publishing platform exists
+    const { data: pubs } = await supabaseClient
+        .from('streaming_connections')
+        .select('platform')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .in('platform', ['youtube', 'tiktok']);
+    
+    if (!pubs || pubs.length === 0) {
+        showError('Please connect YouTube or TikTok first.');
+        return;
+    }
     
  // DEBUG: Check if inputs have values
     console.log('YouTube input:', document.getElementById('youtube_channel_url').value);
