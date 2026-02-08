@@ -1316,6 +1316,10 @@
                     <span class="nav-icon">📋</span>
                     <span>Activity Log</span>
                 </div>
+                <div class="nav-item" data-section="streams">
+                    <span class="nav-icon">📡</span>
+                    <span>Streams</span>
+                </div>
                 <div class="nav-item" data-section="admins">
                     <span class="nav-icon">🔐</span>
                     <span>Admin Users</span>
@@ -1569,6 +1573,52 @@
                     </table>
                 </div>
             </section>
+
+            <!-- Streams Section -->
+            <section class="section" id="section-streams">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Streaming Activity</h1>
+                        <p class="page-subtitle">Who streamed recently</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-ghost" onclick="loadStreams()">🔄 Refresh</button>
+                    </div>
+                </div>
+                <div class="content-card" style="margin-bottom:24px;">
+                    <h3 style="margin-bottom:16px;color:var(--accent-electric);">Last 24 Hours</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Date</th>
+                                <th>Clips Captured</th>
+                                <th>Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody id="streams-24h-table">
+                            <tr><td colspan="4"><div class="loading"><div class="spinner"></div></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="content-card">
+                    <h3 style="margin-bottom:16px;color:var(--accent-volt);">Last 5 Days</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Date</th>
+                                <th>Clips Captured</th>
+                                <th>Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody id="streams-5d-table">
+                            <tr><td colspan="4"><div class="loading"><div class="spinner"></div></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
         </main>
     </div>
 
@@ -1724,6 +1774,7 @@
                         case 'health': loadHealth(); break;
                         case 'activity': loadActivityLog(); break;
                         case 'admins': loadAdmins(); break;
+                        case 'streams': loadStreams(); break;
                     }
                 });
             });
@@ -2309,7 +2360,30 @@
                 </tr>
             `).join('') || '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted)">No admins found</td></tr>';
         }
-
+        async function loadStreams() {
+            const data = await api('/api/admin/streams');
+            if (!data) return;
+            
+            const formatDuration = (first, last) => {
+                const mins = Math.round((new Date(last) - new Date(first)) / 60000);
+                if (mins < 60) return `${mins}m`;
+                const hrs = Math.floor(mins / 60);
+                const m = mins % 60;
+                return `${hrs}h ${m}m`;
+            };
+            
+            const renderTable = (streams) => streams.map(s => `
+                <tr>
+                    <td style="font-weight:500;">${s.email}</td>
+                    <td>${new Date(s.stream_date).toLocaleDateString()}</td>
+                    <td><span style="color:var(--accent-volt);font-weight:600;">${s.clips_captured}</span> clips</td>
+                    <td style="font-size:0.85rem;">${formatDuration(s.first_clip, s.last_clip)}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted)">No streams found</td></tr>';
+            
+            document.getElementById('streams-24h-table').innerHTML = renderTable(data.last24h || []);
+            document.getElementById('streams-5d-table').innerHTML = renderTable(data.last5d || []);
+        }
         function showInviteModal() {
             document.getElementById('invite-modal').classList.add('active');
             document.getElementById('invite-email').value = '';
