@@ -147,7 +147,7 @@
         </div>
         
         <div class="success-badge">
-            <span>✓</span> Payment Successful - 21-Day Trial Started!
+            <span>✓</span> Payment Successful - 10-Day Trial Started!
         </div>
         
         <h2>Complete Your Account</h2>
@@ -217,7 +217,7 @@
                 console.log('✅ No-card trial:', { email: userEmail, plan: userPlan });
                 
                 // Update the success badge for no-card
-                document.querySelector('.success-badge').innerHTML = '<span>✓</span> 21-Day Free Trial - No Card Required!';
+                document.querySelector('.success-badge').innerHTML = '<span>✓</span> 10-Day Free Trial - No Card Required!';
                 
                 // Populate email field
                 document.getElementById('email').value = userEmail;
@@ -326,7 +326,7 @@
                         stripe_customer_id: userCustomerId,
                         subscription_status: 'trial',
                         subscription_plan: userPlan,
-                        trial_ends_at: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString()
+                        trial_ends_at: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString()
                     })
                     .eq('user_id', authData.user.id);
 

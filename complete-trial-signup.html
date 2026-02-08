@@ -200,7 +200,7 @@
         </div>
         
         <div class="success-banner">
-            ✓ 21-Day Trial Started!
+            ✓ 10-Day Trial Started!
         </div>
         
         <h1 class="title">Complete Your Account</h1>
@@ -311,7 +311,7 @@
                             stripe_customer_id: customerId,
                             subscription_status: 'trialing',
                             subscription_plan: 'creator',
-                            trial_ends_at: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
+                            trial_ends_at: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
                             timezone: userTimezone,
                             updated_at: new Date().toISOString()
                         })
