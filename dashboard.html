@@ -835,6 +835,11 @@
             </div>
         </header>
 
+        <!-- Subscription Status Banner -->
+        <div id="subscriptionBanner" style="display: none; background: linear-gradient(135deg, #ff6b6b, #ee5a5a); color: white; padding: 1rem 1.5rem; margin: 0 0 1rem 0; border-radius: 8px; text-align: center;">
+            <strong>⚠️ Your trial has expired!</strong> Stream monitoring is paused. 
+            <a href="/complete-signup.html" style="color: white; text-decoration: underline; font-weight: bold;">Add payment method</a> to continue automating your clips.
+        </div>
         <div class="dashboard-layout">
             <!-- Main Content Area -->
             <div class="main-content">
@@ -1607,6 +1612,34 @@ async function toggleAutoPublish(clipId, enabled) {
 }
 
 // Check authentication and load dashboard
+async function checkSubscriptionStatus() {
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return;
+        
+        const { data, error } = await supabaseClient
+            .from("user_profiles")
+            .select("subscription_status, trial_ends_at, is_beta_tester")
+            .eq("user_id", user.id)
+            .single();
+        
+        if (error || !data) return;
+        
+        if (data.is_beta_tester) return;
+        
+        if (data.subscription_status === "active") return;
+        
+        if (data.subscription_status === "trialing" || data.subscription_status === "trial") {
+            const trialEnd = new Date(data.trial_ends_at);
+            if (new Date() < trialEnd) return;
+        }
+        
+        document.getElementById("subscriptionBanner").style.display = "block";
+    } catch (e) {
+        console.error("Subscription check error:", e);
+    }
+}
+
 async function loadDashboard() {
     try {
         const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
@@ -1619,6 +1652,7 @@ async function loadDashboard() {
 
         document.getElementById('userEmail').textContent = user.email;
 
+        await checkSubscriptionStatus();
         await loadUserStats();
         await loadPlatformConnections();
         await loadClips();
