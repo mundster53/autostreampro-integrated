@@ -1619,13 +1619,13 @@ async function checkSubscriptionStatus() {
         
         const { data, error } = await supabaseClient
             .from("user_profiles")
-            .select("subscription_status, trial_ends_at, is_beta_tester")
+            .select("subscription_status, trial_ends_at, is_beta_tester, is_family_member")
             .eq("user_id", user.id)
             .single();
         
         if (error || !data) return;
         
-        if (data.is_beta_tester) return;
+        if (data.is_beta_tester || data.is_family_member) return;
         
         if (data.subscription_status === "active") return;
         
