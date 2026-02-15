@@ -10,6 +10,10 @@
   ],
   "rewrites": [
     {
+      "source": "/free-trial",
+      "destination": "/signup1"
+    },
+    {
       "source": "/api/clips/:path*",
       "destination": "https://api.autostreampro.com/api/clips/:path*"
     },
@@ -34,9 +38,18 @@
     {
       "source": "/api/:path*",
       "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET,POST,OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
       ]
     }
   ]
