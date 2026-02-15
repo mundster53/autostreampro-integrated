@@ -3,6 +3,14 @@ cat > demo-features.html << 'EOF'
 <!DOCTYPE html>
 <html>
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4RC9LC3Y1Z"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4RC9LC3Y1Z');
+</script>
     <link rel="stylesheet" href="demo-features.css">
 </head>
 <body>
