@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoStreamPro Blog - Guides for Streamers Who Want YouTube Growth</title>
+    <meta name="description" content="Comparisons, guides, and insights for gaming streamers looking to grow their YouTube channel with AI-powered clip automation. Eklipse alternatives, Kick streaming tools, and more.">
+    <meta name="keywords" content="AI clip tools, Eklipse alternative, Kick streamer tools, automated YouTube publishing, gaming clip automation, stream highlights AI">
+    <link rel="canonical" href="https://www.autostreampro.com/blog">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="AutoStreamPro Blog - Guides for Streamers">
+    <meta property="og:description" content="Comparisons, guides, and insights for gaming streamers looking to grow their YouTube channel with AI-powered clip automation.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.autostreampro.com/blog">
+    <meta property="og:site_name" content="AutoStreamPro">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AutoStreamPro Blog - Guides for Streamers">
+    <meta name="twitter:description" content="Comparisons, guides, and insights for gaming streamers looking to grow their YouTube channel.">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Blog",
+        "name": "AutoStreamPro Blog",
+        "description": "Comparisons, guides, and insights for gaming streamers looking to grow their YouTube channel with AI-powered clip automation.",
+        "url": "https://www.autostreampro.com/blog",
+        "publisher": {
+            "@type": "Organization",
+            "name": "AutoStreamPro",
+            "url": "https://www.autostreampro.com"
+        }
+    }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0f;
+            color: #e2e8f0;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Nav */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 0 2rem;
+        }
+        .nav-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: space-between;
+            height: 64px;
+        }
+        .nav-logo {
+            font-weight: 800; font-size: 1.1rem; color: #fff;
+            text-decoration: none; display: flex; align-items: center; gap: 8px;
+        }
+        .nav-logo span { color: #818cf8; }
+        .nav-links { display: flex; gap: 2rem; align-items: center; }
+        .nav-links a {
+            color: #94a3b8; text-decoration: none; font-size: 0.9rem; font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: #fff; }
+        .nav-cta {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff !important; padding: 8px 20px; border-radius: 8px;
+            font-weight: 600; font-size: 0.85rem;
+        }
+        .nav-cta:hover { opacity: 0.9; }
+
+        /* Hero */
+        .blog-hero {
+            padding: 140px 2rem 80px;
+            text-align: center;
+            background:
+                radial-gradient(ellipse at 30% 0%, rgba(99, 102, 241, 0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 0%, rgba(139, 92, 246, 0.08) 0%, transparent 60%);
+        }
+        .blog-hero h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800; color: #fff;
+            margin-bottom: 1rem; letter-spacing: -0.03em;
+        }
+        .blog-hero p {
+            font-size: 1.1rem; color: #94a3b8;
+            max-width: 600px; margin: 0 auto;
+        }
+
+        /* Categories */
+        .categories {
+            display: flex; justify-content: center; gap: 12px;
+            padding: 0 2rem; margin-bottom: 3rem; flex-wrap: wrap;
+        }
+        .cat-btn {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            color: #94a3b8; padding: 8px 20px; border-radius: 100px;
+            font-size: 0.85rem; font-weight: 500; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .cat-btn:hover, .cat-btn.active {
+            background: rgba(99, 102, 241, 0.15); border-color: rgba(99, 102, 241, 0.4);
+            color: #c7d2fe;
+        }
+
+        /* Articles Grid */
+        .articles-container {
+            max-width: 1200px; margin: 0 auto; padding: 0 2rem 6rem;
+        }
+
+        /* Featured Article */
+        .featured-article {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px; overflow: hidden;
+            margin-bottom: 3rem;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+        .featured-article:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-2px);
+        }
+        .featured-img {
+            background: linear-gradient(135deg, #1e1b4b, #312e81, #4338ca);
+            display: flex; align-items: center; justify-content: center;
+            min-height: 300px; position: relative; overflow: hidden;
+        }
+        .featured-img::after {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at 30% 70%, rgba(99,102,241,0.3), transparent 60%);
+        }
+        .featured-icon {
+            font-size: 5rem; z-index: 1; filter: drop-shadow(0 0 40px rgba(99,102,241,0.5));
+        }
+        .featured-content { padding: 3rem; display: flex; flex-direction: column; justify-content: center; }
+        .featured-badge {
+            display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff; padding: 4px 14px; border-radius: 100px;
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.05em; margin-bottom: 1rem; width: fit-content;
+        }
+        .featured-content h2 {
+            font-size: 1.6rem; font-weight: 700; color: #fff;
+            margin-bottom: 0.75rem; letter-spacing: -0.02em; line-height: 1.3;
+        }
+        .featured-content h2 a { color: inherit; text-decoration: none; }
+        .featured-content h2 a:hover { color: #a5b4fc; }
+        .featured-content p { color: #94a3b8; font-size: 0.95rem; margin-bottom: 1.5rem; }
+        .featured-meta { display: flex; gap: 1.5rem; color: #64748b; font-size: 0.8rem; }
+
+        /* Article Cards */
+        .articles-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 1.5rem;
+        }
+        .article-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px; overflow: hidden;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+        .article-card:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-3px);
+        }
+        .card-img {
+            height: 180px; display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+        }
+        .card-img::after {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(99,102,241,0.15), transparent 70%);
+        }
+        .card-icon { font-size: 3rem; z-index: 1; }
+        .card-body { padding: 1.5rem; }
+        .card-tag {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2);
+            color: #a5b4fc; padding: 3px 10px; border-radius: 100px;
+            font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.04em; margin-bottom: 0.75rem;
+        }
+        .card-body h3 {
+            font-size: 1.15rem; font-weight: 700; color: #fff;
+            margin-bottom: 0.5rem; line-height: 1.4; letter-spacing: -0.01em;
+        }
+        .card-body h3 a { color: inherit; text-decoration: none; }
+        .card-body h3 a:hover { color: #a5b4fc; }
+        .card-body p { color: #94a3b8; font-size: 0.88rem; margin-bottom: 1rem; line-height: 1.6; }
+        .card-meta { display: flex; justify-content: space-between; color: #64748b; font-size: 0.78rem; }
+
+        /* Color presets for card images */
+        .bg-indigo { background: linear-gradient(135deg, #1e1b4b, #312e81); }
+        .bg-violet { background: linear-gradient(135deg, #2e1065, #4c1d95); }
+        .bg-blue { background: linear-gradient(135deg, #172554, #1e3a5f); }
+        .bg-emerald { background: linear-gradient(135deg, #022c22, #064e3b); }
+        .bg-rose { background: linear-gradient(135deg, #4c0519, #881337); }
+        .bg-amber { background: linear-gradient(135deg, #451a03, #78350f); }
+        .bg-cyan { background: linear-gradient(135deg, #083344, #155e75); }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding: 3rem 2rem; text-align: center;
+        }
+        footer p { color: #475569; font-size: 0.85rem; }
+        footer a { color: #818cf8; text-decoration: none; }
+        footer a:hover { color: #a5b4fc; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .featured-article { grid-template-columns: 1fr; }
+            .featured-img { min-height: 200px; }
+            .featured-content { padding: 2rem; }
+            .articles-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav>
+    <div class="nav-inner">
+        <a href="/" class="nav-logo">⚡ Auto<span>Stream</span>Pro</a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/blog" style="color:#fff;">Blog</a>
+            <a href="/beta">Beta</a>
+            <a href="https://app.autostreampro.com" class="nav-cta">Get Started Free</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Blog Hero -->
+<section class="blog-hero">
+    <h1>The AutoStreamPro Blog</h1>
+    <p>Comparisons, guides, and insights for gaming streamers who want their YouTube channel growing on autopilot.</p>
+</section>
+
+<!-- Category Filters -->
+<div class="categories">
+    <button class="cat-btn active" onclick="filterArticles('all')">All Posts</button>
+    <button class="cat-btn" onclick="filterArticles('comparison')">Comparisons</button>
+    <button class="cat-btn" onclick="filterArticles('guide')">Guides</button>
+    <button class="cat-btn" onclick="filterArticles('kick')">Kick Streaming</button>
+</div>
+
+<!-- Articles -->
+<div class="articles-container">
+
+    <!-- Featured Article -->
+    <a href="/blog/best-eklipse-alternatives" style="text-decoration:none; color:inherit;">
+        <article class="featured-article" data-category="comparison">
+            <div class="featured-img">
+                <div class="featured-icon">🏆</div>
+            </div>
+            <div class="featured-content">
+                <div class="featured-badge">Featured</div>
+                <h2><span>Best Eklipse Alternatives for Streamers in 2026</span></h2>
+                <p>A complete comparison of every AI clip tool available — and which one actually grows your YouTube channel instead of just creating clips you'll never upload.</p>
+                <div class="featured-meta">
+                    <span>📅 February 2026</span>
+                    <span>⏱ 12 min read</span>
+                    <span>🏷 Comparison</span>
+                </div>
+            </div>
+        </article>
+    </a>
+
+    <!-- Article Grid -->
+    <div class="articles-grid">
+
+        <!-- AutoStreamPro vs Eklipse -->
+        <article class="article-card" data-category="comparison">
+            <div class="card-img bg-indigo">
+                <div class="card-icon">⚔️</div>
+            </div>
+            <div class="card-body">
+                <div class="card-tag">Comparison</div>
+                <h3><a href="/blog/autostreampro-vs-eklipse">AutoStreamPro vs Eklipse: Which AI Clip Tool Actually Grows Your YouTube?</a></h3>
+                <p>Eklipse creates clips. AutoStreamPro creates a growing YouTube channel. Here's exactly how they differ.</p>
+                <div class="card-meta">
+                    <span>February 2026</span>
+                    <span>10 min read</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- AutoStreamPro vs OpusClip -->
+        <article class="article-card" data-category="comparison">
+            <div class="card-img bg-violet">
+                <div class="card-icon">🎙️</div>
+            </div>
+            <div class="card-body">
+                <div class="card-tag">Comparison</div>
+                <h3><a href="/blog/autostreampro-vs-opusclip">AutoStreamPro vs OpusClip: Gaming Automation vs General Clipping</a></h3>
+                <p>OpusClip is built for podcasters. AutoStreamPro is built for gaming streamers. Here's why that matters.</p>
+                <div class="card-meta">
+                    <span>February 2026</span>
+                    <span>9 min read</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- AutoStreamPro vs StreamLadder -->
+        <article class="article-card" data-category="comparison">
+            <div class="card-img bg-blue">
+                <div class="card-icon">🪜</div>
+            </div>
+            <div class="card-body">
+                <div class="card-tag">Comparison</div>
+                <h3><a href="/blog/autostreampro-vs-streamladder">AutoStreamPro vs StreamLadder: Automated Publishing vs Manual Editing</a></h3>
+                <p>StreamLadder makes your clips look great. AutoStreamPro makes your YouTube channel grow. Different tools, different goals.</p>
+                <div class="card-meta">
+                    <span>February 2026</span>
+                    <span>8 min read</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- AutoStreamPro vs Powder -->
+        <article class="article-card" data-category="comparison">
+            <div class="card-img bg-rose">
+                <div class="card-icon">💨</div>
+            </div>
+            <div class="card-body">
+                <div class="card-tag">Comparison</div>
+                <h3><a href="/blog/autostreampro-vs-powder">Powder.gg Is Shutting Down — Here's Your Upgrade Path</a></h3>
+                <p>After 7 years, Powder is done. If you need a new home for your gaming clips, AutoStreamPro isn't just a replacement — it's a generation ahead.</p>
+                <div class="card-meta">
+                    <span>February 2026</span>
+                    <span>7 min read</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- AutoStreamPro vs Medal -->
+        <article class="article-card" data-category="comparison">
+            <div class="card-img bg-amber">
+                <div class="card-icon">🎖️</div>
+            </div>
+            <div class="card-body">
+                <div class="card-tag">Comparison</div>
+                <h3><a href="/blog/autostreampro-vs-medal">AutoStreamPro vs Medal.tv: Clip Recording vs YouTube Growth</a></h3>
+                <p>Medal records your highlights. AutoStreamPro publishes them to YouTube with SEO optimization. They solve different problems.</p>
+                <div class="card-meta">
+                    <span>February 2026</span>
+                    <span>8 min read</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- AutoStreamPro vs Outplayed -->
+        <article class="article-card" data-category="comparison">
+            <div class="card-img bg-emerald">
+                <div class="card-icon">🎮</div>
+            </div>
+            <div class="card-body">
+                <div class="card-tag">Comparison</div>
+                <h3><a href="/blog/autostreampro-vs-outplayed">AutoStreamPro vs Outplayed: Desktop Capture vs Automated Growth</a></h3>
+                <p>Outplayed records clips to your hard drive for free. AutoStreamPro turns your streams into a growing YouTube channel automatically.</p>
+                <div class="card-meta">
+                    <span>February 2026</span>
+                    <span>7 min read</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- Best AI Clip Tools for Kick -->
+        <article class="article-card" data-category="guide kick">
+            <div class="card-img bg-cyan">
+                <div class="card-icon">🟢</div>
+            </div>
+            <div class="card-body">
+                <div class="card-tag">Kick Streaming</div>
+                <h3><a href="/blog/best-ai-clip-tools-kick-streamers">Best AI Clip Tools for Kick Streamers in 2026</a></h3>
+                <p>Most clip tools don't actually support Kick. Here's an honest breakdown of which ones work and which ones are faking it.</p>
+                <div class="card-meta">
+                    <span>February 2026</span>
+                    <span>8 min read</span>
+                </div>
+            </div>
+        </article>
+
+    </div>
+</div>
+
+<!-- Footer -->
+<footer>
+    <p>
+        <a href="/">AutoStreamPro</a> · 
+        <a href="/blog">Blog</a> · 
+        <a href="/beta">Beta Program</a> · 
+        <a href="https://app.autostreampro.com">Get Started</a>
+    </p>
+    <p style="margin-top: 1rem;">© 2026 AutoStreamPro. Built by streamers who got tired of editing clips at 2am.</p>
+</footer>
+
+<script>
+function filterArticles(category) {
+    // Update active button
+    document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    // Filter articles
+    const articles = document.querySelectorAll('[data-category]');
+    articles.forEach(article => {
+        if (category === 'all' || article.dataset.category.includes(category)) {
+            article.style.display = '';
+        } else {
+            article.style.display = 'none';
+        }
+    });
+}
+</script>
+
+</body>
+</html>
