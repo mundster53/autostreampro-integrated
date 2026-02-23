@@ -29,7 +29,7 @@ exports.handler = async (event) => {
         platform_user_id: platformUserId || platform,
         access_token: accessToken || '',
         refresh_token: refreshToken || '',
-        username: username || platform,
+        platform_username: username || platform,
         is_active: true,
         monitor: true,                           
         status: 'offline',                        

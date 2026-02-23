@@ -496,6 +496,9 @@
                 Complete Setup
             </button>
         </div>
+        <p id="sourceHelp" style="text-align: center; color: #dc2626; font-size: 14px; margin-top: 10px;">
+            ⚠️ Connect Kick or Twitch first — that's where we monitor your streams
+        </p>
         <p id="publishingHelp" style="text-align: center; color: #92400e; font-size: 14px; margin-top: 10px;">
             Connect YouTube or TikTok to continue
         </p>
@@ -912,10 +915,20 @@ async function checkConnections() {
     statusElement.textContent = `${connectedCount} of 4 platforms connected`;
   }
 
-  // 5) Enable Complete Setup only if YouTube or TikTok connected
+  // 5) Require Kick or Twitch before social platforms
+  const hasSourcePlatform = Array.isArray(data) && data.some(c => c.platform === 'kick' || c.platform === 'twitch');
   const hasPublishing = Array.isArray(data) && data.some(c => c.platform === 'youtube' || c.platform === 'tiktok');
-  document.getElementById('saveBtn').disabled = !hasPublishing;
-  document.getElementById('publishingHelp').style.display = hasPublishing ? 'none' : 'block';
+
+  // Lock YouTube and TikTok buttons until source platform connected
+  const ytBtn = document.getElementById('youtubeConnectBtn');
+  const ttBtn = document.getElementById('tiktokBtn');
+  if (ytBtn) { ytBtn.disabled = !hasSourcePlatform; ytBtn.title = hasSourcePlatform ? '' : 'Connect Kick or Twitch first'; }
+  if (ttBtn) { ttBtn.disabled = !hasSourcePlatform; ttBtn.title = hasSourcePlatform ? '' : 'Connect Kick or Twitch first'; }
+
+  // Show appropriate help text
+  document.getElementById('sourceHelp').style.display = hasSourcePlatform ? 'none' : 'block';
+  document.getElementById('publishingHelp').style.display = (hasSourcePlatform && !hasPublishing) ? 'block' : 'none';
+  document.getElementById('saveBtn').disabled = !(hasSourcePlatform && hasPublishing);
 }
         document.getElementById('saveBtn').addEventListener('click', async () => {
     const user = await getCurrentUser();
