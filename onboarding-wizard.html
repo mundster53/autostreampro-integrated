@@ -111,9 +111,6 @@
           <div class="platform-option" data-platform="twitch">
             <div class="platform-icon twitch-icon">T</div><div class="platform-name">Twitch</div>
           </div>
-          <div class="platform-option" data-platform="youtube">
-            <div class="platform-icon youtube-icon">YT</div><div class="platform-name">YouTube</div>
-          </div>
         </div>
       </div>
 
@@ -136,16 +133,6 @@
           <p style="color:#666;font-size:.9rem;text-align:center;margin-top:15px">You'll be redirected to Twitch to authorize the connection</p>
         </div>
 
-        <div id="youtubeConnection" style="display:none">
-          <button
-            class="yt-connect-btn"
-            id="youtubeConnectBtn"
-            type="button">
-            <svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg"><path d="M27.97 3.12C27.64 1.89 26.68.93 25.45.6 23.22 0 14.29 0 14.29 0S5.35 0 3.12.6C1.89.93.93 1.89.6 3.12 0 5.35 0 10 0 10s0 4.65.6 6.88c.33 1.23 1.29 2.19 2.52 2.52 2.23.6 11.17.6 11.17.6s8.93 0 11.16-.6c1.23-.33 2.19-1.29 2.52-2.52.6-2.23.6-6.88.6-6.88s0-4.65-.6-6.88z" fill="#FF0033"/><path d="M11.43 14.29l7.42-4.29-7.42-4.29v8.58z" fill="#fff"/></svg>
-            Sign in with YouTube
-          </button>
-          <p style="color:#666;font-size:.9rem;text-align:center;margin-top:15px">You'll be redirected to YouTube to authorize the connection</p>
-        </div>
       </div>
 
       <!-- Step 3: Publishing Platforms -->
@@ -205,7 +192,7 @@
   <script>
     // ---------- Configuration (SINGLE SOURCE OF TRUTH) ----------
     const CONFIG = {
-      BACKEND_URL: 'https://autostreampro-backend-production.up.railway.app',
+      BACKEND_URL: 'https://api.autostreampro.com',
       SITE_URL: 'https://www.autostreampro.com',
       OAUTH: {
         youtube: '/api/auth/youtube',
@@ -286,7 +273,7 @@
       try {
         console.log('[Kick Connect] Attempting connection for user:', user.id, 'username:', username);
         
-        const resp = await fetch('https://autostreampro-backend-production.up.railway.app/api/connect-kick', {
+        const resp = await fetch('https://api.autostreampro.com/api/connect-kick', {
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ userId: user.id, kickUsername: username })
@@ -331,7 +318,7 @@
       }
       
       const returnTo = encodeURIComponent('https://www.autostreampro.com/onboarding-wizard.html');
-      window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/twitch?userId=${user.id}&return_to=${returnTo}`;
+      window.location.href = `https://api.autostreampro.com/api/auth/twitch?userId=${user.id}&return_to=${returnTo}`;
     }
 
     // ---------- UI helpers ----------
@@ -341,11 +328,9 @@
 
       document.getElementById('kickConnection').style.display = 'none';
       document.getElementById('twitchConnection').style.display = 'none';
-      document.getElementById('youtubeConnection').style.display = 'none';
 
       if (selectedPlatform === 'kick') document.getElementById('kickConnection').style.display = 'block';
       if (selectedPlatform === 'twitch') document.getElementById('twitchConnection').style.display = 'block';
-      if (selectedPlatform === 'youtube') document.getElementById('youtubeConnection').style.display = 'block';
 
       if (currentStep === 2) document.getElementById('nextBtn').disabled = true;
     }
@@ -527,11 +512,11 @@
           const returnTo = encodeURIComponent('https://www.autostreampro.com/onboarding-wizard.html?publish_connected=' + platform);
           
           if (platform === 'youtube') {
-            window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/youtube?userId=${user.id}&return_to=${returnTo}`;
+            window.location.href = `https://api.autostreampro.com/api/auth/youtube?userId=${user.id}&return_to=${returnTo}`;
           } else if (platform === 'tiktok') {
-            window.location.href = `https://autostreampro-backend-production.up.railway.app/api/tiktok-connect?userId=${user.id}&return_to=${returnTo}`;
+            window.location.href = `https://api.autostreampro.com/api/tiktok-connect?userId=${user.id}&return_to=${returnTo}`;
           } else if (platform === 'instagram') {
-            window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/instagram?userId=${user.id}&return_to=${returnTo}`;
+            window.location.href = `https://api.autostreampro.com/api/auth/instagram?userId=${user.id}&return_to=${returnTo}`;
           }
         });
       });
@@ -641,7 +626,7 @@
           }
           
           const returnTo = encodeURIComponent('https://www.autostreampro.com/onboarding-wizard.html');
-          window.location.href = `https://autostreampro-backend-production.up.railway.app/api/auth/youtube?userId=${user.id}&return_to=${returnTo}`;
+          window.location.href = `https://api.autostreampro.com/api/auth/youtube?userId=${user.id}&return_to=${returnTo}`;
         });
       }
 
@@ -652,7 +637,7 @@
       // Handle Twitch OAuth return
       const code = urlParams.get('code');
       const state = urlParams.get('state');
-      if (code && state === 'twitch') {
+      if ((code && state === 'twitch') || urlParams.get('twitch') === 'connected') {
         selectedPlatform = 'twitch';
         document.getElementById('step1').classList.remove('active');
         document.getElementById('step1').classList.add('completed');
@@ -697,7 +682,7 @@
         if (oauthUser) {
           const returnTo = encodeURIComponent('/onboarding-wizard.html#tiktok');
           sessionStorage.setItem('tiktok_return_to', '/onboarding-wizard.html#tiktok');
-          window.location.href = `https://autostreampro-backend-production.up.railway.app/api/tiktok-connect?userId=${oauthUser.id}&return_to=${returnTo}`;
+          window.location.href = `https://api.autostreampro.com/api/tiktok-connect?userId=${oauthUser.id}&return_to=${returnTo}`;
           return;
         }
       }
