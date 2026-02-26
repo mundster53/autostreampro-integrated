@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stream Analysis — AutoStreamPro</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #080c14;
+    --surface: #0d1420;
+    --surface2: #111a2e;
+    --border: rgba(255,255,255,0.07);
+    --accent: #3b82f6;
+    --accent2: #6366f1;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --text: #f1f5f9;
+    --text-muted: #64748b;
+    --text-dim: #334155;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Background grid */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+        linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.page {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+}
+
+.logo {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    text-decoration: none;
+}
+
+.logo span { color: var(--text-muted); font-weight: 400; }
+
+.back-link {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s;
+}
+.back-link:hover { color: var(--text); }
+
+/* Loading state */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 16px;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading p {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-family: 'DM Mono', monospace;
+}
+
+/* No session state */
+.no-session {
+    display: none;
+    text-align: center;
+    padding: 80px 24px;
+}
+
+.no-session h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+}
+
+.no-session p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 32px;
+}
+
+/* Report */
+.report { display: none; }
+
+/* Session meta */
+.session-meta {
+    margin-bottom: 40px;
+    animation: fadeUp 0.5s ease both;
+}
+
+.session-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.session-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 6px;
+}
+
+.session-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+}
+
+/* Score hero */
+.score-hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 40px;
+    align-items: center;
+    animation: fadeUp 0.5s ease 0.1s both;
+}
+
+.score-display {
+    text-align: center;
+    position: relative;
+}
+
+.score-ring {
+    width: 120px;
+    height: 120px;
+    position: relative;
+}
+
+.score-ring svg {
+    transform: rotate(-90deg);
+}
+
+.score-ring-bg {
+    fill: none;
+    stroke: var(--surface2);
+    stroke-width: 8;
+}
+
+.score-ring-fill {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 314;
+    stroke-dashoffset: 314;
+    transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.score-number {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+}
+
+.score-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 8px;
+}
+
+.score-interpretation {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    color: var(--text);
+}
+
+.score-description {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.score-stats {
+    display: flex;
+    gap: 24px;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--text);
+}
+
+.stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* Component scores */
+.components {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.5s ease 0.2s both;
+}
+
+.component-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.component-card.bottleneck {
+    border-color: rgba(239,68,68,0.3);
+    background: rgba(239,68,68,0.05);
+}
+
+.component-card.bottleneck::before {
+    content: 'PRIMARY BOTTLENECK';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--red);
+    letter-spacing: 0.08em;
+    background: rgba(239,68,68,0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.component-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.component-score {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    margin-bottom: 4px;
+}
+
+.component-max {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+}
+
+.component-bar {
+    margin-top: 12px;
+    height: 3px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.component-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    width: 0%;
+    transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Energy graph */
+.graph-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.5s ease 0.3s both;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 0.75rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.section-subtitle {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+
+.graph-legend {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.legend-line {
+    width: 20px;
+    height: 2px;
+    border-radius: 1px;
+}
+
+.graph-container {
+    position: relative;
+    height: 200px;
+}
+
+canvas#energyGraph {
+    width: 100%;
+    height: 100%;
+}
+
+.graph-threshold-label {
+    position: absolute;
+    right: 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+}
+
+.graph-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-family: 'DM Mono', monospace;
+}
+
+/* Analysis section */
+.analysis-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.5s ease 0.4s both;
+}
+
+.analysis-items {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.analysis-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.analysis-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.analysis-icon.positive { background: rgba(16,185,129,0.15); color: var(--green); }
+.analysis-icon.neutral { background: rgba(245,158,11,0.15); color: var(--yellow); }
+.analysis-icon.negative { background: rgba(239,68,68,0.15); color: var(--red); }
+
+.analysis-text {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.analysis-text strong {
+    color: var(--text);
+    font-weight: 500;
+}
+
+/* CTA */
+.cta-section {
+    background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(99,102,241,0.1));
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    animation: fadeUp 0.5s ease 0.5s both;
+}
+
+.cta-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.cta-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 10px;
+    color: var(--text);
+}
+
+.cta-body {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 480px;
+    margin: 0 auto 24px;
+}
+
+.cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 14px 28px;
+    border-radius: 10px;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+    transition: opacity 0.2s, transform 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.cta-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* Animations */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .score-hero { grid-template-columns: 1fr; text-align: center; }
+    .score-stats { justify-content: center; }
+    .components { grid-template-columns: 1fr; }
+    .session-title { font-size: 1.4rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+    <header class="header">
+        <a href="/" class="logo">AutoStream<span>Pro</span></a>
+        <a href="/dashboard.html" class="back-link">
+            ← Dashboard
+        </a>
+    </header>
+
+    <!-- Loading -->
+    <div class="loading" id="loadingState">
+        <div class="spinner"></div>
+        <p>Analyzing stream data...</p>
+    </div>
+
+    <!-- No session -->
+    <div class="no-session" id="noSessionState">
+        <h2>No analysis available</h2>
+        <p>Stream analysis is generated automatically after each monitored session ends.</p>
+        <a href="/dashboard.html" class="cta-btn">Go to Dashboard</a>
+    </div>
+
+    <!-- Report -->
+    <div class="report" id="reportState">
+
+        <div class="session-meta">
+            <div class="session-label">Stream Analysis Report</div>
+            <div class="session-title" id="reportTitle">Session Analysis</div>
+            <div class="session-subtitle" id="reportSubtitle"></div>
+        </div>
+
+        <!-- Score Hero -->
+        <div class="score-hero">
+            <div class="score-display">
+                <div class="score-ring">
+                    <svg viewBox="0 0 120 120" width="120" height="120">
+                        <circle class="score-ring-bg" cx="60" cy="60" r="50"/>
+                        <circle class="score-ring-fill" id="scoreRingFill" cx="60" cy="60" r="50"/>
+                    </svg>
+                    <div class="score-number" id="scoreBig">—</div>
+                </div>
+                <div class="score-label">Growth Score</div>
+            </div>
+            <div>
+                <div class="score-interpretation" id="scoreInterpretation">—</div>
+                <div class="score-description" id="scoreDescription"></div>
+                <div class="score-stats">
+                    <div class="stat">
+                        <div class="stat-value" id="statDuration">—</div>
+                        <div class="stat-label">Duration</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="statSpikes">—</div>
+                        <div class="stat-label">High-Impact Moments</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="statDensity">—</div>
+                        <div class="stat-label">Moments / Hour</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="statQuality">—</div>
+                        <div class="stat-label">Avg Quality</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Component Scores -->
+        <div class="components">
+            <div class="component-card" id="cardDensity">
+                <div class="component-name">Highlight Density</div>
+                <div class="component-score" id="scoreDensity">—</div>
+                <div class="component-max">/ 40 pts</div>
+                <div class="component-bar">
+                    <div class="component-bar-fill" id="barDensity"></div>
+                </div>
+            </div>
+            <div class="component-card" id="cardDistribution">
+                <div class="component-name">Spike Distribution</div>
+                <div class="component-score" id="scoreDistribution">—</div>
+                <div class="component-max">/ 30 pts</div>
+                <div class="component-bar">
+                    <div class="component-bar-fill" id="barDistribution"></div>
+                </div>
+            </div>
+            <div class="component-card" id="cardQuality">
+                <div class="component-name">Spike Quality</div>
+                <div class="component-score" id="scoreQuality">—</div>
+                <div class="component-max">/ 30 pts</div>
+                <div class="component-bar">
+                    <div class="component-bar-fill" id="barQuality"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Energy Graph -->
+        <div class="graph-section">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Stream Energy</div>
+                    <div class="section-subtitle">Moment intensity over time</div>
+                </div>
+                <div class="graph-legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#3b82f6"></div>
+                        <span>Spike</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line" style="background:rgba(59,130,246,0.4)"></div>
+                        <span>Publish threshold</span>
+                    </div>
+                </div>
+            </div>
+            <div class="graph-container">
+                <canvas id="energyGraph"></canvas>
+                <div class="graph-empty" id="graphEmpty" style="display:none">No spike data available</div>
+            </div>
+        </div>
+
+        <!-- Structural Analysis -->
+        <div class="analysis-section">
+            <div class="section-title">Structural Analysis</div>
+            <div class="section-subtitle" style="margin-top:4px">What the data reveals</div>
+            <div class="analysis-items" id="analysisItems"></div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-section">
+            <div class="cta-eyebrow">Growth Assets Identified</div>
+            <div class="cta-title" id="ctaTitle">Don't leave these moments on the table</div>
+            <div class="cta-body" id="ctaBody"></div>
+            <a href="/dashboard.html" class="cta-btn">Enable AutoStreamPro Automation →</a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://dykxhmdozgccawkbxejd.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdj' +
+'Y2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjM1OTQxNDIsImV4cCI6MjAzOTE3MDE0Mn0.' +
+'OonjAMaE55ZDPTz7cTkm0r_TBIHOuFDNwpTSgptgKUU';
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const BACKEND_URL = 'https://api.autostreampro.com';
+
+function show(id) { document.getElementById(id).style.display = 'block'; }
+function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+function getScoreColor(score, max) {
+    const pct = score / max;
+    if (pct >= 0.75) return '#10b981';
+    if (pct >= 0.5) return '#f59e0b';
+    return '#ef4444';
+}
+
+function getInterpretationDescription(interp) {
+    switch (interp) {
+        case 'Strong Growth Foundation':
+            return 'Your stream demonstrates consistent high-energy output with strong moment density. This structural profile supports sustained audience growth.';
+        case 'Moderate Growth Efficiency':
+            return 'Your stream shows solid fundamentals with room for improvement. Addressing the primary bottleneck will meaningfully increase your growth leverage.';
+        case 'Limited Growth Leverage':
+            return 'Structural inefficiencies are limiting your content output. Your stream is generating moments, but not at the frequency or consistency needed for compound growth.';
+        default:
+            return 'Significant structural gaps are limiting your growth potential. This analysis identifies exactly where to focus to change that.';
+    }
+}
+
+function buildAnalysis(snapshot) {
+    const items = [];
+    const { total_spikes, stream_duration_minutes, highlight_density_score, distribution_score, quality_score, avg_spike_quality, primary_bottleneck } = snapshot;
+    const hours = stream_duration_minutes / 60;
+    const density = hours > 0 ? (total_spikes / hours).toFixed(1) : 0;
+
+    // Density analysis
+    if (highlight_density_score >= 35) {
+        items.push({ type: 'positive', icon: '↑', text: `<strong>High moment frequency.</strong> ${density} high-impact moments per hour is a strong content generation rate. You are consistently producing publishable material.` });
+    } else if (highlight_density_score >= 25) {
+        items.push({ type: 'neutral', icon: '→', text: `<strong>Moderate moment frequency.</strong> ${density} moments per hour provides a workable content base, but increasing this rate will compound your publishing output significantly.` });
+    } else {
+        items.push({ type: 'negative', icon: '↓', text: `<strong>Low moment frequency.</strong> ${density} moments per hour is below the threshold for sustainable content output. Focus on increasing in-stream engagement density.` });
+    }
+
+    // Distribution analysis
+    if (distribution_score >= 25) {
+        items.push({ type: 'positive', icon: '◈', text: `<strong>Consistent energy distribution.</strong> High-impact moments were spread across your stream. This signals sustained engagement rather than isolated peaks.` });
+    } else if (distribution_score >= 15) {
+        items.push({ type: 'neutral', icon: '◈', text: `<strong>Uneven energy distribution.</strong> Your moments are clustered in specific windows. Viewers who join mid-stream encounter lower-energy content, reducing retention leverage.` });
+    } else {
+        items.push({ type: 'negative', icon: '◈', text: `<strong>Highly clustered energy.</strong> High-impact moments occurred in very limited time windows. The majority of your stream offers low viral content leverage.` });
+    }
+
+    // Quality analysis
+    const qualityPct = (avg_spike_quality * 100).toFixed(0);
+    if (quality_score >= 25) {
+        items.push({ type: 'positive', icon: '★', text: `<strong>High spike quality.</strong> Your moments averaged ${qualityPct}% viral potential. These are strong content assets with meaningful publishing value.` });
+    } else if (quality_score >= 15) {
+        items.push({ type: 'neutral', icon: '★', text: `<strong>Moderate spike quality.</strong> Your moments averaged ${qualityPct}% viral potential. Quality improvements here directly increase the value of each content asset generated.` });
+    } else {
+        items.push({ type: 'negative', icon: '★', text: `<strong>Low spike quality.</strong> Your moments averaged ${qualityPct}% viral potential. While moments are occurring, they are not reaching high-impact intensity thresholds.` });
+    }
+
+    return items;
+}
+
+function drawEnergyGraph(spikeData, durationMinutes) {
+    const canvas = document.getElementById('energyGraph');
+    const container = canvas.parentElement;
+
+    if (!spikeData || spikeData.length === 0) {
+        canvas.style.display = 'none';
+        show('graphEmpty');
+        return;
+    }
+
+    canvas.width = container.offsetWidth;
+    canvas.height = container.offsetHeight;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+    const PAD = { top: 16, right: 16, bottom: 32, left: 40 };
+    const plotW = W - PAD.left - PAD.right;
+    const plotH = H - PAD.top - PAD.bottom;
+
+    // Sort by time
+    const sorted = [...spikeData].sort((a, b) => a.seconds_from_start - b.seconds_from_start);
+    const maxSeconds = Math.max(...sorted.map(s => s.seconds_from_start), durationMinutes * 60);
+
+    function xPos(seconds) { return PAD.left + (seconds / maxSeconds) * plotW; }
+    function yPos(score) { return PAD.top + plotH - (score * plotH); }
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+        const y = PAD.top + (i / 4) * plotH;
+        ctx.beginPath();
+        ctx.moveTo(PAD.left, y);
+        ctx.lineTo(PAD.left + plotW, y);
+        ctx.stroke();
+    }
+
+    // Y axis labels
+    ctx.fillStyle = 'rgba(100,116,139,0.8)';
+    ctx.font = '10px DM Mono, monospace';
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) {
+        const score = 1 - (i / 4);
+        const y = PAD.top + (i / 4) * plotH;
+        ctx.fillText((score * 100).toFixed(0), PAD.left - 6, y + 3);
+    }
+
+    // X axis time labels
+    ctx.textAlign = 'center';
+    const totalMinutes = maxSeconds / 60;
+    const labelCount = Math.min(6, Math.floor(totalMinutes / 10));
+    for (let i = 0; i <= labelCount; i++) {
+        const secs = (i / labelCount) * maxSeconds;
+        const mins = Math.round(secs / 60);
+        const x = xPos(secs);
+        ctx.fillStyle = 'rgba(100,116,139,0.6)';
+        ctx.fillText(mins + 'm', x, H - 6);
+    }
+
+    // Threshold line at 0.50
+    const thresholdY = yPos(0.50);
+    ctx.strokeStyle = 'rgba(59,130,246,0.3)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(PAD.left, thresholdY);
+    ctx.lineTo(PAD.left + plotW, thresholdY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Threshold label
+    ctx.fillStyle = 'rgba(59,130,246,0.6)';
+    ctx.font = '9px DM Mono, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('0.50', PAD.left + plotW + 4, thresholdY + 3);
+
+    // Spike area fill
+    if (sorted.length > 1) {
+        const gradient = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + plotH);
+        gradient.addColorStop(0, 'rgba(59,130,246,0.15)');
+        gradient.addColorStop(1, 'rgba(59,130,246,0)');
+
+        ctx.beginPath();
+        ctx.moveTo(xPos(sorted[0].seconds_from_start), yPos(sorted[0].ai_score));
+        for (let i = 1; i < sorted.length; i++) {
+            const px = xPos(sorted[i - 1].seconds_from_start);
+            const py = yPos(sorted[i - 1].ai_score);
+            const cx = xPos(sorted[i].seconds_from_start);
+            const cy = yPos(sorted[i].ai_score);
+            const cpx = (px + cx) / 2;
+            ctx.bezierCurveTo(cpx, py, cpx, cy, cx, cy);
+        }
+        ctx.lineTo(xPos(sorted[sorted.length - 1].seconds_from_start), PAD.top + plotH);
+        ctx.lineTo(xPos(sorted[0].seconds_from_start), PAD.top + plotH);
+        ctx.closePath();
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        // Spike line
+        ctx.beginPath();
+        ctx.moveTo(xPos(sorted[0].seconds_from_start), yPos(sorted[0].ai_score));
+        for (let i = 1; i < sorted.length; i++) {
+            const px = xPos(sorted[i - 1].seconds_from_start);
+            const py = yPos(sorted[i - 1].ai_score);
+            const cx = xPos(sorted[i].seconds_from_start);
+            const cy = yPos(sorted[i].ai_score);
+            const cpx = (px + cx) / 2;
+            ctx.bezierCurveTo(cpx, py, cpx, cy, cx, cy);
+        }
+        ctx.strokeStyle = 'rgba(59,130,246,0.8)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+
+    // Spike dots
+    for (const spike of sorted) {
+        const x = xPos(spike.seconds_from_start);
+        const y = yPos(spike.ai_score);
+        const isHigh = spike.ai_score >= 0.75;
+
+        ctx.beginPath();
+        ctx.arc(x, y, isHigh ? 5 : 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = isHigh ? '#10b981' : '#3b82f6';
+        ctx.fill();
+
+        if (isHigh) {
+            ctx.beginPath();
+            ctx.arc(x, y, 8, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(16,185,129,0.3)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+    }
+}
+
+function animateScore(total) {
+    const ring = document.getElementById('scoreRingFill');
+    const circumference = 314;
+    const offset = circumference - (total / 100) * circumference;
+    const color = total >= 80 ? '#10b981' : total >= 60 ? '#f59e0b' : total >= 40 ? '#f59e0b' : '#ef4444';
+    ring.style.stroke = color;
+    setTimeout(() => { ring.style.strokeDashoffset = offset; }, 100);
+
+    // Count up number
+    const el = document.getElementById('scoreBig');
+    el.style.color = color;
+    let current = 0;
+    const interval = setInterval(() => {
+        current += Math.ceil(total / 40);
+        if (current >= total) { current = total; clearInterval(interval); }
+        el.textContent = current;
+    }, 30);
+}
+
+function renderReport(snapshot) {
+    const { 
+        total_growth_score, score_interpretation, total_spikes,
+        stream_duration_minutes, avg_spike_quality,
+        highlight_density_score, distribution_score, quality_score,
+        primary_bottleneck, spike_data
+    } = snapshot;
+
+    const hours = (stream_duration_minutes / 60).toFixed(1);
+    const density = hours > 0 ? (total_spikes / hours).toFixed(1) : '0';
+    const qualityPct = ((avg_spike_quality || 0) * 100).toFixed(0);
+
+    // Session meta
+    document.getElementById('reportTitle').textContent = 'Stream Performance Analysis';
+    document.getElementById('reportSubtitle').textContent = 
+        `${stream_duration_minutes} min session · ${total_spikes} high-impact moments detected`;
+
+    // Score hero
+    animateScore(total_growth_score);
+    document.getElementById('scoreInterpretation').textContent = score_interpretation;
+    document.getElementById('scoreDescription').textContent = getInterpretationDescription(score_interpretation);
+    document.getElementById('statDuration').textContent = hours + 'h';
+    document.getElementById('statSpikes').textContent = total_spikes;
+    document.getElementById('statDensity').textContent = density;
+    document.getElementById('statQuality').textContent = qualityPct + '%';
+
+    // Component scores
+    const components = [
+        { id: 'Density', score: highlight_density_score, max: 40, name: 'density' },
+        { id: 'Distribution', score: distribution_score, max: 30, name: 'distribution' },
+        { id: 'Quality', score: quality_score, max: 30, name: 'quality' }
+    ];
+
+    for (const c of components) {
+        const el = document.getElementById('score' + c.id);
+        const bar = document.getElementById('bar' + c.id);
+        const card = document.getElementById('card' + c.id);
+        const color = getScoreColor(c.score, c.max);
+
+        el.textContent = c.score;
+        el.style.color = color;
+        bar.style.background = color;
+        setTimeout(() => { bar.style.width = ((c.score / c.max) * 100) + '%'; }, 300);
+
+        if (c.name === primary_bottleneck) {
+            card.classList.add('bottleneck');
+        }
+    }
+
+    // Energy graph
+    drawEnergyGraph(spike_data, stream_duration_minutes);
+
+    // Analysis
+    const analysisItems = buildAnalysis(snapshot);
+    const container = document.getElementById('analysisItems');
+    container.innerHTML = '';
+    for (const item of analysisItems) {
+        const div = document.createElement('div');
+        div.className = 'analysis-item';
+        div.innerHTML = `
+            <div class="analysis-icon ${item.type}">${item.icon}</div>
+            <div class="analysis-text">${item.text}</div>
+        `;
+        container.appendChild(div);
+    }
+
+    // CTA
+    document.getElementById('ctaTitle').textContent = 
+        `This session generated ${total_spikes} publishable content asset${total_spikes !== 1 ? 's' : ''}`;
+    document.getElementById('ctaBody').textContent = 
+        `AutoStreamPro automatically captures these moments during your stream, generates SEO-optimized titles and descriptions, and publishes them to YouTube and TikTok — while you focus on streaming.`;
+}
+
+async function init() {
+    // Check auth
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+        window.location.href = '/login.html';
+        return;
+    }
+
+    const userId = session.user.id;
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session');
+
+    try {
+        let snapshot = null;
+
+        if (sessionId) {
+            // Load specific session
+            const res = await fetch(`${BACKEND_URL}/api/growth-snapshot/session/${encodeURIComponent(sessionId)}`, {
+                headers: { 'Authorization': 'Bearer ' + session.access_token }
+            });
+            const data = await res.json();
+            if (data.success && data.snapshot) snapshot = data.snapshot;
+        } else {
+            // Load most recent snapshot for user
+            const res = await fetch(`${BACKEND_URL}/api/growth-snapshot/${userId}`, {
+                headers: { 'Authorization': 'Bearer ' + session.access_token }
+            });
+            const data = await res.json();
+            if (data.success && data.snapshots && data.snapshots.length > 0) {
+                snapshot = data.snapshots[0];
+            }
+        }
+
+        hide('loadingState');
+
+        if (!snapshot) {
+            document.getElementById('noSessionState').style.display = 'block';
+            return;
+        }
+
+        document.getElementById('reportState').style.display = 'block';
+        renderReport(snapshot);
+
+    } catch (err) {
+        console.error('Stream analysis error:', err);
+        hide('loadingState');
+        document.getElementById('noSessionState').style.display = 'block';
+    }
+}
+
+init();
+</script>
+</body>
+</html>
