@@ -1820,7 +1820,7 @@ async function startMonitoring(userId, accessToken, connections) {
             ? conn.platform_username 
             : conn.channel;
         
-        return fetch('https://autostreampro-backend-production.up.railway.app/api/activate-monitoring', {
+        return fetch('https://api.autostreampro.com/api/activate-monitoring', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
