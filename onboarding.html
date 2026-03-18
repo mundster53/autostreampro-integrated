@@ -1210,7 +1210,10 @@ async function disconnectPlatform(platform) {
       btn.innerHTML = `Connect ${platform.charAt(0).toUpperCase() + platform.slice(1)}`;
       btn.disabled = false;
       btn.style.display = 'block';
-      
+
+      const disconnectBtn = card.querySelector('.disconnect-btn');
+      if (disconnectBtn) disconnectBtn.style.display = 'none';
+
       alert(`${platform} disconnected successfully`);
     } else {
       alert(`Failed to disconnect ${platform}`);
