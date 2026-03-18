@@ -1132,6 +1132,9 @@
                         <a href="/admin.html" class="action-btn secondary">
                             ⚙️ Admin Panel
                         </a>
+                        <button id="offDayPublishBtn" class="action-btn secondary" onclick="triggerOffDayPublishing()" style="display:none;">
+                            📅 Publish Best Clips
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1142,6 +1145,37 @@
     <div id="toast" class="toast"></div>
 
    <script>
+    async function triggerOffDayPublishing() {
+    const btn = document.getElementById('offDayPublishBtn');
+    const originalText = btn.innerHTML;
+    
+    try {
+        btn.innerHTML = '⏳ Finding best clips...';
+        btn.disabled = true;
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
+        const response = await fetch(`${API_BASE}/api/off-day-publish`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id })
+        });
+
+        const result = await response.json();
+
+        if (!result.success) throw new Error(result.error || 'Failed to queue clips');
+
+        showToast(`✅ ${result.clipsQueued} clips queued for publishing tomorrow starting 7am!`, 'success');
+
+    } catch (error) {
+        console.error('Off-day publishing error:', error);
+        showToast(`❌ Error: ${error.message}`, 'error');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
 // Initialize Supabase with your actual credentials
 const supabaseUrl = 'https://dykxhmdozgccawkbxejd.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5a3hobWRvemdjY2F3a2J4ZWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwNTY2NTUsImV4cCI6MjA2NTYzMjY1NX0.SFxWx_Gk2ReRZCNpmAhKJ0jEeANjqeDLtQuU_MnGTlg';
@@ -1634,6 +1668,11 @@ async function checkSubscriptionStatus() {
         
         if (error || !data) return;
         
+        if (data.is_beta_tester || data.is_family_member) {
+                    const offDayBtn = document.getElementById('offDayPublishBtn');
+                    if (offDayBtn) offDayBtn.style.display = 'block';
+                }
+
         if (data.is_beta_tester || data.is_family_member) return;
         
         if (data.subscription_status === "active") return;
