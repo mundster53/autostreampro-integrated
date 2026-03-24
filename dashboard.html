@@ -916,124 +916,9 @@
                         </div>
                     </div>
 
-                    <!-- Clips Table -->
-                    <div class="clips-table-container">
-                        <table class="clips-table">
-                            <thead>
-                                <tr>
-                                    <th>Clip</th>
-                                    <th>AI Title & Tags</th>
-                                    <th>AutoStreamPro Score</th>
-                                    <th>Status</th>
-                                    <th>Posted To</th>
-                                </tr>
-                            </thead>
-                            <tbody id="clipsTableBody">
-                                <tr>
-                                    <td colspan="5" style="text-align: center; padding: 2rem; color: #9ca3af;">
-                                        No clips yet. Start streaming to see your clips here.
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                    
 
-                
-                <!-- Clips By Session Section -->
-                <div class="clips-section" id="clipsBySessionSection">
-                    <div class="clips-header">
-                        <h2 class="section-title">Clips Captured by Stream</h2>
-                    </div>
-                    <div id="clipsBySessionContainer">
-                        <p style="text-align:center; color:#9ca3af; padding:2rem;">Loading clips...</p>
-                    </div>
-                </div>
-
-                <style>
-                .session-day-header {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    margin-bottom: 10px;
-                    padding-bottom: 8px;
-                    border-bottom: 1px solid #e5e7eb;
-                    flex-wrap: wrap;
-                }
-                .session-day-label {
-                    font-size: 15px;
-                    font-weight: 600;
-                    color: #1f2937;
-                }
-                .session-stat-pill {
-                    font-size: 12px;
-                    font-weight: 500;
-                    padding: 3px 9px;
-                    border-radius: 20px;
-                }
-                .pill-total { background:#f3f4f6; color:#6b7280; }
-                .pill-pub { background:#dcfce7; color:#166534; }
-                .pill-pend { background:#fef3c7; color:#92400e; }
-                .pill-fail { background:#fee2e2; color:#991b1b; }
-                .pill-below { background:#f3f4f6; color:#9ca3af; }
-                .session-clip-card {
-                    background: #fff;
-                    border: 1px solid #e5e7eb;
-                    border-radius: 12px;
-                    padding: 12px 16px;
-                    margin-bottom: 8px;
-                    display: grid;
-                    grid-template-columns: 56px 1fr auto;
-                    gap: 14px;
-                    align-items: start;
-                }
-                .session-clip-card:hover { border-color: #d1d5db; }
-                .session-clip-card.card-failed { border-color: #fca5a5; }
-                .score-circle {
-                    width: 48px;
-                    height: 48px;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 15px;
-                    font-weight: 600;
-                    flex-shrink: 0;
-                    margin-top: 2px;
-                }
-                .score-high { background:#dcfce7; color:#166534; }
-                .score-mid { background:#fef3c7; color:#92400e; }
-                .score-low { background:#fee2e2; color:#991b1b; }
-                .clip-time-label { font-size:12px; color:#9ca3af; margin-bottom:3px; }
-                .clip-viral-title { font-size:14px; font-weight:600; color:#1f2937; margin-bottom:8px; line-height:1.4; }
-                .clip-platform-links { display:flex; gap:6px; flex-wrap:wrap; }
-                .plat-link {
-                    display:inline-flex; align-items:center; gap:4px;
-                    font-size:12px; font-weight:500; padding:4px 10px;
-                    border-radius:20px; text-decoration:none; border:1px solid;
-                }
-                .plat-link:hover { opacity:0.8; }
-                .yt-plat { background:#fee2e2; color:#991b1b; border-color:#fca5a5; }
-                .tt-plat { background:#ede9fe; color:#5b21b6; border-color:#c4b5fd; }
-                .clip-right-col { display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0; padding-top:2px; }
-                .clip-badge { font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px; white-space:nowrap; }
-                .badge-published { background:#dcfce7; color:#166534; }
-                .badge-pending { background:#fef3c7; color:#92400e; }
-                .badge-failed { background:#fee2e2; color:#991b1b; }
-                .badge-below { background:#f3f4f6; color:#6b7280; }
-                .clip-sched-time { font-size:11px; color:#92400e; }
-                .clip-duration { font-size:12px; color:#9ca3af; }
-                .fail-reason { font-size:11px; color:#991b1b; text-align:right; line-height:1.3; max-width:160px; }
-                .retry-btn {
-                    font-size:11px; font-weight:600; padding:4px 10px;
-                    border-radius:20px; border:1px solid #fca5a5;
-                    background:transparent; color:#991b1b; cursor:pointer;
-                    white-space:nowrap;
-                }
-                .retry-btn:hover { background:#fee2e2; }
-                .session-block { margin-bottom:2rem; }
-                </style>
-<!-- Discord Announcement Setup Section -->
+                <!-- Discord Announcement Setup Section -->
                 <div class="discord-setup-section">
                     <div class="discord-header">
                         <div class="discord-title">
@@ -2428,6 +2313,9 @@ async function saveCurrentGame() {
 <script>
 const API_BASE = 'https://api.autostreampro.com';
 
+const YT_SVG =  + yt_svg + ;
+const TT_SVG =  + tt_svg + ;
+
 async function loadClipsBySession() {
     try {
         const { data: { user } } = await supabaseClient.auth.getUser();
@@ -2460,19 +2348,16 @@ async function loadClipsBySession() {
             const clipsHtml = session.clips.map(clip => {
                 const score = clip.score || 0;
                 const scoreClass = score >= 70 ? 'score-high' : score >= 40 ? 'score-mid' : 'score-low';
-
                 const capturedAt = new Date(clip.created_at).toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true });
 
                 const ytQueue = clip.youtube_queue;
                 const ttQueue = clip.tiktok_queue;
 
-                // Determine overall status
                 const isFailed = ytQueue?.status === 'failed' || ttQueue?.status === 'failed';
                 const isPending = !isFailed && (ytQueue?.status === 'pending' || ttQueue?.status === 'pending');
                 const isPublished = clip.status === 'published';
                 const isBelow = score < 40;
 
-                // Badge
                 let badge = '';
                 let schedTime = '';
                 let failReason = '';
@@ -2499,17 +2384,19 @@ async function loadClipsBySession() {
                     badge = '<span class="clip-badge badge-below">Processing</span>';
                 }
 
-                // Platform links
-                let links = '';
+                let ytBtn = '';
+                let ttBtn = '';
+
                 if (clip.youtube_url) {
-                    links += `<a class="plat-link yt-plat" href="${clip.youtube_url}" target="_blank">▶ YouTube ↗</a>`;
+                    ytBtn = `<a class="icon-btn yt" href="${clip.youtube_url}" target="_blank">${YT_SVG} YouTube</a>`;
                 } else if (isPending || isFailed) {
-                    links += `<span class="plat-link yt-plat" style="opacity:0.4;pointer-events:none;">▶ YouTube</span>`;
+                    ytBtn = `<span class="icon-btn-disabled yt">${YT_SVG} YouTube</span>`;
                 }
+
                 if (clip.tiktok_url) {
-                    links += `<a class="plat-link tt-plat" href="${clip.tiktok_url}" target="_blank">♪ TikTok ↗</a>`;
+                    ttBtn = `<a class="icon-btn tt" href="${clip.tiktok_url}" target="_blank">${TT_SVG} TikTok</a>`;
                 } else if (isPending || isFailed) {
-                    links += `<span class="plat-link tt-plat" style="opacity:0.4;pointer-events:none;">♪ TikTok</span>`;
+                    ttBtn = `<span class="icon-btn-disabled tt">${TT_SVG} TikTok</span>`;
                 }
 
                 const duration = clip.duration ? `<div class="clip-duration">${Math.floor(clip.duration/60)}:${String(clip.duration%60).padStart(2,'0')}</div>` : '';
@@ -2520,7 +2407,7 @@ async function loadClipsBySession() {
                         <div>
                             <div class="clip-time-label">Captured at ${capturedAt}</div>
                             <div class="clip-viral-title">${clip.display_title || 'Untitled Clip'}</div>
-                            <div class="clip-platform-links">${links}</div>
+                            <div class="clip-platform-links">${ytBtn}${ttBtn}</div>
                         </div>
                         <div class="clip-right-col">
                             ${badge}
@@ -2579,6 +2466,7 @@ async function retryClip(clipId, btn) {
     }
 }
 </script>
+
 
 </body>
 </html>
