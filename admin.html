@@ -2490,5 +2490,63 @@
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
         document.getElementById('user-modal').addEventListener('click', e => { if (e.target.classList.contains('modal-overlay')) closeModal(); });
     </script>
+    <!-- Broadcast Email Section -->
+<div style="max-width:900px;margin:40px auto;padding:0 20px;">
+  <div style="background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);border-radius:15px;padding:30px;border:1px solid rgba(255,255,255,0.2);">
+    <h2 style="margin-bottom:8px;font-size:1.4rem;">📧 Broadcast Email</h2>
+    <p style="opacity:0.7;margin-bottom:24px;font-size:0.9rem;">Send an email to all AutoStreamPro users.</p>
+    <div style="margin-bottom:16px;">
+      <label style="display:block;margin-bottom:6px;font-size:0.85rem;opacity:0.8;">Subject</label>
+      <input id="broadcast-subject" type="text" placeholder="Email subject..." style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:white;font-size:0.95rem;outline:none;">
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="display:block;margin-bottom:6px;font-size:0.85rem;opacity:0.8;">Message</label>
+      <textarea id="broadcast-body" rows="8" placeholder="Email body..." style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:white;font-size:0.95rem;outline:none;resize:vertical;font-family:inherit;"></textarea>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button id="broadcast-btn" onclick="sendBroadcast()" style="background:linear-gradient(45deg,#ff6b35,#f7931e);border:none;color:white;padding:12px 28px;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;">Send to All Users</button>
+      <span id="broadcast-status" style="font-size:0.9rem;opacity:0.8;"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+async function sendBroadcast() {
+  const subject = document.getElementById('broadcast-subject').value.trim();
+  const body = document.getElementById('broadcast-body').value.trim();
+  const status = document.getElementById('broadcast-status');
+  const btn = document.getElementById('broadcast-btn');
+
+  if (!subject || !body) {
+    status.textContent = '⚠️ Subject and message are required.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  status.textContent = '';
+
+  try {
+    const res = await fetch('https://api.autostreampro.com/api/admin/broadcast-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ secret: 'Blcdjj1989$5389-15', subject, body })
+    });
+    const data = await res.json();
+    if (data.success) {
+      status.textContent = `✅ Sent: ${data.sent} | Failed: ${data.failed}`;
+      document.getElementById('broadcast-subject').value = '';
+      document.getElementById('broadcast-body').value = '';
+    } else {
+      status.textContent = `❌ Error: ${data.error}`;
+    }
+  } catch (err) {
+    status.textContent = `❌ Request failed: ${err.message}`;
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Send to All Users';
+}
+</script>
 </body>
 </html>
