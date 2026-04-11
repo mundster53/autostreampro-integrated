@@ -1771,8 +1771,8 @@ async function loadPlatformConnections() {
 }
 
 // Sign out function
-async async function startSubscription() {
-    const user = supabase.auth.getUser ? (await supabase.auth.getUser()).data.user : null;
+async function startSubscription() {
+    const user = supabaseClient.auth.getUser ? (await supabaseClient.auth.getUser()).data.user : null;
     if (!user) { alert('Please sign in again.'); return; }
 
     const plan = 'starter'; // default plan — can be upgraded later
