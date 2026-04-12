@@ -1227,7 +1227,7 @@ function updateMonitoringButton(isActive, connectionData) {
     }
 }
 
-function getTimeAgo(date) {
+async function getTimeAgo(date) {
     const seconds = Math.floor((new Date() - date) / 1000);
     if (seconds < 60) return `${seconds}s ago`;
     const minutes = Math.floor(seconds / 60);
@@ -1327,7 +1327,7 @@ function getStatusColor(status) {
     }
 }
 
-function formatStatus(status) {
+async function formatStatus(status) {
     return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
 
@@ -1504,12 +1504,12 @@ async function showTikTokPublishModal(clipId, title) {
     }
 }
 
-function toggleCommercialOptions() {
+async function toggleCommercialOptions() {
     const isChecked = document.getElementById('tiktokCommercialContent').checked;
     document.getElementById('tiktokCommercialOptions').style.display = isChecked ? 'block' : 'none';
 }
 
-function closeTikTokModal() {
+async function closeTikTokModal() {
     document.getElementById('tiktokModal').style.display = 'none';
     currentTikTokClipId = null;
 }
@@ -1802,7 +1802,7 @@ async function startSubscription() {
     }
 }
 
-function signOut() {
+async function signOut() {
     try {
         const { error } = await supabaseClient.auth.signOut();
         if (error) throw error;
@@ -2165,7 +2165,7 @@ async function updatePrivacyDefault(select) {
 }
 
 // Close modal function
-function closeMonitoringModal() {
+async function closeMonitoringModal() {
     document.getElementById('monitoringModal').style.display = 'none';
 }
 
