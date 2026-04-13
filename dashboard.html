@@ -1790,13 +1790,13 @@ async function startSubscription() {
         if (data.checkoutUrl) {
             window.location.href = data.checkoutUrl;
         } else {
-            alert('Something went wrong. Please contact support.');
+            alert('Subscription error: ' + (data.error || data.message || 'Unknown error. Please contact support.'));
             btn.textContent = 'Choose a Plan to Continue';
             btn.disabled = false;
         }
     } catch (err) {
         console.error('Subscription error:', err);
-        alert('Something went wrong. Please try again.');
+        alert('Connection error: ' + err.message + '. Please try again.');
         btn.textContent = 'Choose a Plan to Continue';
         btn.disabled = false;
     }
