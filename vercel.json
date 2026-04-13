@@ -32,10 +32,6 @@
     {
       "source": "/api/upload-to-tiktok",
       "destination": "https://autostreampro.com/api/upload-to-tiktok"
-    },
-    {
-      "source": "/api/create-subscription-checkout",
-      "destination": "https://autostreampro.com/api/create-subscription-checkout"
     }
   ],
   "headers": [
