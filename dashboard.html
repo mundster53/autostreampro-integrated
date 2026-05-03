@@ -888,7 +888,8 @@
         <!-- Subscription Status Banner -->
         <div id="subscriptionBanner" style="display: none; background: linear-gradient(135deg, #ff6b6b, #ee5a5a); color: white; padding: 1rem 1.5rem; margin: 0 0 1rem 0; border-radius: 8px; text-align: center;">
             <strong>⚠️ Your automation period has ended.</strong> Stream monitoring is paused.
-            <button onclick="startSubscription()" style="margin-left: 1rem; background: white; color: #ee5a5a; border: none; padding: 0.4rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer;">Choose a Plan to Continue</button>
+            <button id="btnSubscribeLite" onclick="startSubscription('lite', this)" style="margin-left: 1rem; background: white; color: #ee5a5a; border: none; padding: 0.4rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer;">Lite — $9.99/mo</button>
+            <button id="btnSubscribeCreator" onclick="startSubscription('creator', this)" style="margin-left: 0.5rem; background: white; color: #ee5a5a; border: none; padding: 0.4rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer;">Creator — $19.99/mo</button>
         </div>
         <div class="dashboard-layout">
             <!-- Main Content Area -->
@@ -1885,12 +1886,11 @@ async function switchPlatform(newPlatform) {
 }
 
 // Sign out function
-async function startSubscription() {
+async function startSubscription(plan, btn) {
     const user = supabaseClient.auth.getUser ? (await supabaseClient.auth.getUser()).data.user : null;
     if (!user) { alert('Please sign in again.'); return; }
 
-    const plan = 'starter'; // default plan — can be upgraded later
-    const btn = document.querySelector('#subscriptionBanner button');
+    const originalText = btn.textContent;
     btn.textContent = 'Redirecting...';
     btn.disabled = true;
 
@@ -1905,14 +1905,38 @@ async function startSubscription() {
             window.location.href = data.checkoutUrl;
         } else {
             alert('Subscription error: ' + (data.error || data.message || 'Unknown error. Please contact support.'));
-            btn.textContent = 'Choose a Plan to Continue';
+            btn.textContent = originalText;
             btn.disabled = false;
         }
     } catch (err) {
         console.error('Subscription error:', err);
         alert('Connection error: ' + err.message + '. Please try again.');
-        btn.textContent = 'Choose a Plan to Continue';
+        btn.textContent = originalText;
         btn.disabled = false;
+    }
+}
+
+async function completeSubscription(sessionId) {
+    const user = supabaseClient.auth.getUser ? (await supabaseClient.auth.getUser()).data.user : null;
+    if (!user) return;
+    try {
+        const res = await fetch('https://api.autostreampro.com/api/complete-subscription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId, userId: user.id })
+        });
+        const data = await res.json();
+        if (data.success) {
+            console.log('[Subscription] Tier set to', data.tier);
+            const url = new URL(window.location.href);
+            url.searchParams.delete('session_id');
+            url.searchParams.delete('subscribed');
+            window.history.replaceState({}, '', url.toString());
+        } else {
+            console.error('[Subscription] complete-subscription error:', data.error);
+        }
+    } catch (err) {
+        console.error('[Subscription] completeSubscription error:', err);
     }
 }
 
@@ -2058,7 +2082,11 @@ document.addEventListener('DOMContentLoaded', () => {
     loadMonitoringStatus();
     loadCurrentGame();
     loadClipsBySession();
-    
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session_id');
+    if (sessionId) completeSubscription(sessionId);
+
     if (window.dashboardInterval) {
         clearInterval(window.dashboardInterval);
     }
