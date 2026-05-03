@@ -407,7 +407,16 @@ async function loadSpotsRemaining() {
     }
 }
 loadSpotsRemaining();
-        
+
+        const urlPlan = new URLSearchParams(window.location.search).get('plan');
+        if (urlPlan === 'lite') {
+            document.querySelector('.price-badge').textContent = '$9.99/month • Cancel anytime';
+            document.querySelector('.form-title').textContent = 'Start Your Lite Plan';
+            document.querySelector('.form-subtitle').textContent = 'Full access. Up to 5 highlights per day.';
+            document.querySelector('.submit-btn').textContent = 'Start My Lite Plan →';
+            document.querySelector('.terms').innerHTML = 'By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. Cancel anytime.';
+        }
+
         // const uploadArea = document.getElementById('upload-area');
         // const fileInput = document.getElementById('screenshot');
         // const uploadPreview = document.getElementById('upload-preview');
