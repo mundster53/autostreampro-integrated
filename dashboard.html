@@ -327,6 +327,44 @@
         .connected { color: #059669; }
         .disconnected { color: #dc2626; }
         .coming-soon { color: #d97706; }
+        .monitoring-active { color: #059669; font-weight: 600; }
+        .monitoring-badge {
+            display: inline-block;
+            background: #059669;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .switch-platform-btn {
+            font-size: 0.65rem;
+            color: #6366f1;
+            background: none;
+            border: 1px solid #6366f1;
+            border-radius: 4px;
+            padding: 2px 6px;
+            cursor: pointer;
+            margin-top: 2px;
+            display: none;
+        }
+        .switch-platform-btn:hover {
+            background: #6366f1;
+            color: white;
+        }
+        .platform-item.is-monitoring {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+        .platform-item.is-inactive {
+            background: #f8fafc;
+        }
+        .platform-item.is-disconnected {
+            opacity: 0.6;
+        }
 
         /* Quick Actions */
         .actions-card {
@@ -1045,11 +1083,12 @@
                         Connected Platforms (<span id="connectedPlatforms">0</span>)
                     </h3>
                     <div class="platforms-grid">
-                        <div class="platform-item">
+                        <div class="platform-item" id="twitch-platform-item">
                             <div class="platform-icon twitch">T</div>
                             <div class="platform-info">
                                 <div class="platform-name">Twitch</div>
                                 <div class="connection-status disconnected" id="twitch-status">Not Connected</div>
+                                <button class="switch-platform-btn" id="twitch-switch-btn" onclick="switchPlatform('twitch')">Switch to Twitch</button>
                             </div>
                         </div>
                         <div class="platform-item">
@@ -1080,11 +1119,12 @@
                                 <div class="connection-status coming-soon" id="twitter-status">Coming Soon</div>
                             </div>
                         </div>
-                        <div class="platform-item">
-                        <div class="platform-icon kick">K</div>
-                                <div class="platform-info">
+                        <div class="platform-item" id="kick-platform-item">
+                            <div class="platform-icon kick">K</div>
+                            <div class="platform-info">
                                 <div class="platform-name">Kick</div>
                                 <div class="connection-status disconnected" id="kick-status">Not Connected</div>
+                                <button class="switch-platform-btn" id="kick-switch-btn" onclick="switchPlatform('kick')">Switch to Kick</button>
                             </div>
                         </div>
                     </div>
@@ -1721,29 +1761,30 @@ async function loadUserStats() {
 // Load platform connections
 async function loadPlatformConnections() {
     console.log('Loading platform connections...');
-    
+
     try {
         const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-        
+
         if (!user) {
             console.log('No user logged in');
             return;
         }
-        
+
         const { data, error } = await supabaseClient
             .from('streaming_connections')
             .select('*')
             .eq('user_id', user.id);
-        
+
         console.log('Platform query result:', { data, error });
-        
+
         if (!error && data && data.length > 0) {
             console.log('Found platform connections:', data);
-            
+
             let connectedCount = 0;
-            
-            const platforms = ['twitch', 'youtube', 'tiktok', 'kick', 'instagram'];
-            platforms.forEach(platform => {
+            const streamingPlatforms = ['kick', 'twitch'];
+
+            // Handle non-streaming platforms (youtube, tiktok, instagram) as before
+            ['youtube', 'tiktok', 'instagram'].forEach(platform => {
                 const connected = data.some(conn => conn.platform === platform && conn.is_active);
                 if (connected) {
                     document.getElementById(`${platform}-status`).textContent = 'Connected';
@@ -1754,9 +1795,50 @@ async function loadPlatformConnections() {
                     document.getElementById(`${platform}-status`).className = 'connection-status disconnected';
                 }
             });
-            
+
+            // Handle streaming platforms (kick, twitch) with monitoring state
+            let activeMonitoringPlatform = null;
+            streamingPlatforms.forEach(platform => {
+                const conn = data.find(c => c.platform === platform && c.is_active);
+                if (conn && conn.monitoring_active) activeMonitoringPlatform = platform;
+            });
+
+            streamingPlatforms.forEach(platform => {
+                const conn = data.find(c => c.platform === platform && c.is_active);
+                const statusEl = document.getElementById(`${platform}-status`);
+                const itemEl = document.getElementById(`${platform}-platform-item`);
+                const switchBtn = document.getElementById(`${platform}-switch-btn`);
+
+                if (!conn) {
+                    // Not connected
+                    statusEl.innerHTML = 'Not Connected';
+                    statusEl.className = 'connection-status disconnected';
+                    itemEl.className = 'platform-item is-disconnected';
+                    switchBtn.style.display = 'none';
+                } else if (conn.monitoring_active) {
+                    // This platform is actively being monitored
+                    statusEl.innerHTML = 'Connected <span class="monitoring-badge">● Monitoring</span>';
+                    statusEl.className = 'connection-status connected';
+                    itemEl.className = 'platform-item is-monitoring';
+                    switchBtn.style.display = 'none';
+                    connectedCount++;
+                } else {
+                    // Connected but not monitoring
+                    statusEl.innerHTML = 'Connected';
+                    statusEl.className = 'connection-status connected';
+                    itemEl.className = 'platform-item is-inactive';
+                    // Show switch button only if another platform is actively monitoring
+                    if (activeMonitoringPlatform && activeMonitoringPlatform !== platform) {
+                        switchBtn.style.display = 'block';
+                    } else {
+                        switchBtn.style.display = 'none';
+                    }
+                    connectedCount++;
+                }
+            });
+
             document.getElementById('connectedPlatforms').textContent = connectedCount;
-            
+
         } else {
             console.log('No platform connections found');
             ['twitch', 'youtube', 'tiktok', 'kick', 'instagram'].forEach(platform => {
@@ -1767,6 +1849,38 @@ async function loadPlatformConnections() {
         }
     } catch (error) {
         console.error('Error loading platform connections:', error);
+    }
+}
+
+// Switch active monitoring platform
+async function switchPlatform(newPlatform) {
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return;
+
+        const btn = document.getElementById(`${newPlatform}-switch-btn`);
+        btn.textContent = 'Switching...';
+        btn.disabled = true;
+
+        const response = await fetch('https://api.autostreampro.com/api/switch-streaming-platform', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id, newPlatform })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showToast(`Monitoring switched to ${newPlatform.charAt(0).toUpperCase() + newPlatform.slice(1)}`, 'success');
+            await loadPlatformConnections();
+        } else {
+            showToast(`Failed to switch: ${result.error}`, 'error');
+            btn.textContent = `Switch to ${newPlatform.charAt(0).toUpperCase() + newPlatform.slice(1)}`;
+            btn.disabled = false;
+        }
+    } catch (error) {
+        console.error('[switchPlatform] Error:', error);
+        showToast('Failed to switch platform', 'error');
     }
 }
 
