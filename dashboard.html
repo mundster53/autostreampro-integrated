@@ -958,7 +958,47 @@
                         </div>
                     </div>
 
-                    
+                    <!-- Publishing Schedule — Creator+ only, shown/populated by loadPublishingSchedule() -->
+                    <div id="publishingSchedulePanel" style="display:none; background: #f0fdf4; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #22c55e;">
+                        <h3 style="color: #1f2937; margin-bottom: 5px;">📅 Publishing Schedule</h3>
+                        <p style="color: #6b7280; font-size: 13px; margin-bottom: 15px;">Automatically publish reserve clips on days you don't stream.</p>
+
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 15px;">
+                            <input type="checkbox" id="scheduleEnabled" style="width: 20px; height: 20px; cursor: pointer;" onchange="onScheduleEnabledChange(this)">
+                            <span style="font-size: 15px; font-weight: 500;">Enable publishing on non-streaming days</span>
+                        </label>
+
+                        <div id="scheduleOptions" style="display:none;">
+                            <div style="margin-bottom: 12px;">
+                                <label style="font-weight: 500; color: #374151; display: block; margin-bottom: 6px;">Clips per day</label>
+                                <select id="scheduleClipsPerDay" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                                    <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option>
+                                    <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                                    <option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>
+                                </select>
+                            </div>
+
+                            <div style="margin-bottom: 12px;">
+                                <label style="font-weight: 500; color: #374151; display: block; margin-bottom: 8px;">Publish on these days</label>
+                                <div style="display: flex; flex-wrap: wrap; gap: 8px;" id="scheduleDaysContainer"></div>
+                            </div>
+
+                            <div style="margin-bottom: 15px;">
+                                <label style="font-weight: 500; color: #374151; display: block; margin-bottom: 6px;">Start publishing at</label>
+                                <select id="scheduleStartHour" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;"></select>
+                            </div>
+
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 15px;">
+                                <input type="checkbox" id="scheduleContinuous" style="width: 18px; height: 18px; cursor: pointer;" checked>
+                                <span style="font-size: 14px; color: #374151;">Continuously publish on all eligible days</span>
+                            </label>
+
+                            <button onclick="savePublishingSchedule()" style="background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                                Save Schedule
+                            </button>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- Clips Captured by Stream Section -->
@@ -1736,6 +1776,7 @@ async function loadDashboard() {
         await loadPlatformConnections();
         await loadClips();
         await loadAutoPublishSettings();
+        await loadPublishingSchedule();
 
     } catch (error) {
         console.error('Dashboard loading error:', error);
@@ -2243,6 +2284,84 @@ async function loadAutoPublishSettings() {
         }
     } catch (error) {
         console.error('Load settings error:', error);
+    }
+}
+
+async function loadPublishingSchedule() {
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return;
+
+        const { data: profile } = await supabaseClient
+            .from('user_profiles').select('tier').eq('user_id', user.id).single();
+        if (!profile || profile.tier === 'lite') return;
+
+        document.getElementById('publishingSchedulePanel').style.display = 'block';
+
+        const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+        document.getElementById('scheduleDaysContainer').innerHTML = days.map(d => `
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:#fff;padding:6px 10px;border-radius:8px;border:1px solid #d1d5db;">
+                <input type="checkbox" class="schedule-day-cb" value="${d}" style="width:16px;height:16px;cursor:pointer;">
+                <span style="font-size:13px;text-transform:capitalize;">${d}</span>
+            </label>`).join('');
+
+        const hourSelect = document.getElementById('scheduleStartHour');
+        hourSelect.innerHTML = '';
+        for (let h = 6; h <= 23; h++) {
+            const label = h < 12 ? `${h}:00 AM` : h === 12 ? '12:00 PM' : `${h - 12}:00 PM`;
+            const opt = document.createElement('option');
+            opt.value = h; opt.textContent = label;
+            if (h === 7) opt.selected = true;
+            hourSelect.appendChild(opt);
+        }
+
+        const res = await fetch(`https://api.autostreampro.com/api/publishing-schedule?userId=${user.id}`);
+        const data = await res.json();
+        const sched = data.publishing_schedule;
+        if (sched && sched.enabled) {
+            document.getElementById('scheduleEnabled').checked = true;
+            document.getElementById('scheduleOptions').style.display = 'block';
+            document.getElementById('scheduleClipsPerDay').value = sched.clips_per_day || 3;
+            document.getElementById('scheduleStartHour').value = sched.publish_start_hour || 7;
+            document.getElementById('scheduleContinuous').checked = sched.continuous_publishing !== false;
+            const savedDays = sched.publish_days || [];
+            document.querySelectorAll('.schedule-day-cb').forEach(cb => { cb.checked = savedDays.includes(cb.value); });
+        }
+    } catch (err) {
+        console.error('[Publishing Schedule] Load error:', err);
+    }
+}
+
+function onScheduleEnabledChange(checkbox) {
+    document.getElementById('scheduleOptions').style.display = checkbox.checked ? 'block' : 'none';
+    if (!checkbox.checked) savePublishingSchedule();
+}
+
+async function savePublishingSchedule() {
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return;
+        const enabled = document.getElementById('scheduleEnabled').checked;
+        const body = { userId: user.id, enabled };
+        if (enabled) {
+            const publish_days = Array.from(document.querySelectorAll('.schedule-day-cb:checked')).map(cb => cb.value);
+            if (publish_days.length === 0) { showToast('Select at least one day', 'error'); return; }
+            body.clips_per_day = parseInt(document.getElementById('scheduleClipsPerDay').value, 10);
+            body.publish_days = publish_days;
+            body.publish_start_hour = parseInt(document.getElementById('scheduleStartHour').value, 10);
+            body.continuous_publishing = document.getElementById('scheduleContinuous').checked;
+        }
+        const res = await fetch('https://api.autostreampro.com/api/publishing-schedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        showToast(enabled ? '✅ Publishing schedule saved' : '⏸️ Publishing schedule disabled', 'success');
+    } catch (err) {
+        console.error('[Publishing Schedule] Save error:', err);
+        showToast('Failed to save publishing schedule', 'error');
     }
 }
 
