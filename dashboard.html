@@ -961,7 +961,7 @@
                     <!-- Publishing Schedule — Creator+ only, shown/populated by loadPublishingSchedule() -->
                     <div id="publishingSchedulePanel" style="display:none; background: #f0fdf4; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #22c55e;">
                         <h3 style="color: #1f2937; margin-bottom: 5px;">📅 Publishing Schedule</h3>
-                        <p style="color: #6b7280; font-size: 13px; margin-bottom: 15px;">Automatically publish reserve clips on days you don't stream.</p>
+                        <p style="color: #6b7280; font-size: 13px; margin-bottom: 15px;">Set how many clips publish per day and which days. On days you stream, your fresh clips publish automatically. On days you don't stream, we pull from your reserve clips to keep your channel active.</p>
 
                         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 15px;">
                             <input type="checkbox" id="scheduleEnabled" style="width: 20px; height: 20px; cursor: pointer;" onchange="onScheduleEnabledChange(this)">
@@ -970,7 +970,7 @@
 
                         <div id="scheduleOptions" style="display:none;">
                             <div style="margin-bottom: 12px;">
-                                <label style="font-weight: 500; color: #374151; display: block; margin-bottom: 6px;">Clips per day</label>
+                                <label style="font-weight: 500; color: #374151; display: block; margin-bottom: 6px;">Max clips to publish per day</label>
                                 <select id="scheduleClipsPerDay" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
                                     <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option>
                                     <option value="4">4</option><option value="5">5</option><option value="6">6</option>
@@ -979,7 +979,7 @@
                             </div>
 
                             <div style="margin-bottom: 12px;">
-                                <label style="font-weight: 500; color: #374151; display: block; margin-bottom: 8px;">Publish on these days</label>
+                                <label style="font-weight: 500; color: #374151; display: block; margin-bottom: 8px;">Days to publish clips (streaming or not)</label>
                                 <div style="display: flex; flex-wrap: wrap; gap: 8px;" id="scheduleDaysContainer"></div>
                             </div>
 
@@ -990,7 +990,7 @@
 
                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 15px;">
                                 <input type="checkbox" id="scheduleContinuous" style="width: 18px; height: 18px; cursor: pointer;" checked>
-                                <span style="font-size: 14px; color: #374151;">Continuously publish on all eligible days</span>
+                                <span style="font-size: 14px; color: #374151;">Publish reserve clips on my selected days even when I'm not streaming</span>
                             </label>
 
                             <button onclick="savePublishingSchedule()" style="background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
