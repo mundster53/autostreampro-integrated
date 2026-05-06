@@ -246,6 +246,8 @@
         const urlParams = new URLSearchParams(window.location.search);
         const userEmail = urlParams.get('email');
         const customerId = urlParams.get('customer');
+        const gamerTag = urlParams.get('gamerTag');
+        const platform = urlParams.get('platform');
         
         // Validate we have required params
         if (!userEmail || !customerId) {
@@ -322,8 +324,26 @@
                     if (updateError) {
                         console.error('Error updating user profile:', updateError);
                     }
+
+                    // Pre-seed streaming_connections with channel name collected at signup
+                    if (gamerTag && platform) {
+                        const { error: connError } = await sbClient
+                            .from('streaming_connections')
+                            .upsert({
+                                user_id: authData.user.id,
+                                platform: platform,
+                                platform_username: gamerTag,
+                                is_active: false,
+                                monitoring_active: false,
+                                created_at: new Date().toISOString()
+                            }, { onConflict: 'user_id,platform' });
+
+                        if (connError) {
+                            console.error('Error pre-seeding streaming connection:', connError);
+                        }
+                    }
                 }
-                
+
                 // Sign in the user
                 const { error: signInError } = await sbClient.auth.signInWithPassword({
                     email: email,

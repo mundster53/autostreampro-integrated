@@ -358,7 +358,21 @@
                     <label class="form-label" for="email">Email Address</label>
                     <input type="email" id="email" class="form-input" placeholder="your@email.com" required>
                 </div>
-                
+
+                <div class="form-group">
+                    <label class="form-label" for="gamerTag">Your Streaming Channel Name</label>
+                    <input type="text" id="gamerTag" class="form-input" placeholder="e.g. xqc, pokimane" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="platform">Streaming Platform</label>
+                    <select id="platform" class="form-input" required>
+                        <option value="">Select your platform...</option>
+                        <option value="kick">Kick</option>
+                        <option value="twitch">Twitch</option>
+                    </select>
+                </div>
+
                 <!-- SCREENSHOT UPLOAD - COMMENTED OUT FOR NOW
                 <div class="form-group">
                     <label class="form-label">Your Current YouTube Analytics Screenshot</label>
@@ -449,9 +463,21 @@ loadSpotsRemaining();
             e.preventDefault();
             
             const email = document.getElementById('email').value.trim();
-            
+            const gamerTag = document.getElementById('gamerTag').value.trim();
+            const platform = document.getElementById('platform').value;
+
             if (!email) {
                 showError('Please enter your email address.');
+                return;
+            }
+
+            if (!gamerTag) {
+                showError('Please enter your streaming channel name.');
+                return;
+            }
+
+            if (!platform) {
+                showError('Please select your streaming platform.');
                 return;
             }
             
@@ -486,11 +512,11 @@ loadSpotsRemaining();
                 if (!result.success) throw new Error(result.error || 'Failed to create account');
                 
                 if (result.redirectUrl) {
-                    window.location.href = result.redirectUrl;
+                    window.location.href = result.redirectUrl + '&gamerTag=' + encodeURIComponent(gamerTag) + '&platform=' + encodeURIComponent(platform);
                 } else if (result.checkoutUrl) {
-                    window.location.href = result.checkoutUrl;
+                    window.location.href = result.checkoutUrl + '&gamerTag=' + encodeURIComponent(gamerTag) + '&platform=' + encodeURIComponent(platform);
                 } else {
-                    window.location.href = '/onboarding.html?email=' + encodeURIComponent(email);
+                    window.location.href = '/onboarding.html?email=' + encodeURIComponent(email) + '&gamerTag=' + encodeURIComponent(gamerTag) + '&platform=' + encodeURIComponent(platform);
                 }
                 
             } catch (error) {
