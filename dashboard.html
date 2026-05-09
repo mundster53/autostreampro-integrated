@@ -999,6 +999,15 @@
                         </div>
                     </div>
 
+                    <!-- Weekly Highlight Reel — Creator+ only, shown/populated by loadWeeklyHighlight() -->
+                    <div id="weeklyHighlightPanel" style="display:none; background: #f0fdf4; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #22c55e;">
+                        <h3 style="color: #1f2937; margin-bottom: 5px;">🎬 Weekly Highlight Reel</h3>
+                        <p style="color: #6b7280; font-size: 13px; margin-bottom: 15px;">Your top clips from the week, compiled into a highlight reel and published to YouTube every Sunday morning.</p>
+                        <div id="weeklyHighlightStatus">
+                            <p style="color: #6b7280; font-size: 14px;">Loading status...</p>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- Clips Captured by Stream Section -->
@@ -1777,6 +1786,7 @@ async function loadDashboard() {
         await loadClips();
         await loadAutoPublishSettings();
         await loadPublishingSchedule();
+        await loadWeeklyHighlight();
 
     } catch (error) {
         console.error('Dashboard loading error:', error);
@@ -2362,6 +2372,53 @@ async function savePublishingSchedule() {
     } catch (err) {
         console.error('[Publishing Schedule] Save error:', err);
         showToast('Failed to save publishing schedule', 'error');
+    }
+}
+
+async function loadWeeklyHighlight() {
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return;
+
+        const { data: profile } = await supabaseClient
+            .from('user_profiles').select('tier').eq('user_id', user.id).single();
+        if (!profile || profile.tier === 'lite') return;
+
+        document.getElementById('weeklyHighlightPanel').style.display = 'block';
+
+        const res = await fetch(`https://api.autostreampro.com/api/weekly-highlight/status/${user.id}`);
+        const data = await res.json();
+        const state = data.state || 'idle';
+        const videoId = data.video_id;
+
+        const stateLabels = {
+            starting:       'Starting…',
+            downloading:    'Downloading clips…',
+            rendering:      'Rendering video…',
+            generating_seo: 'Generating title & description…',
+            uploading:      'Uploading to YouTube…',
+        };
+
+        const statusEl = document.getElementById('weeklyHighlightStatus');
+
+        if (state === 'idle') {
+            statusEl.innerHTML = `<p style="color: #374151; font-size: 14px;">Your weekly highlight reel will be compiled every Saturday night and published Sunday morning.</p>`;
+        } else if (stateLabels[state]) {
+            statusEl.innerHTML = `<p style="color: #374151; font-size: 14px;">⏳ ${stateLabels[state]}</p>`;
+        } else if (state === 'done') {
+            const linkHtml = videoId
+                ? ` <a href="https://youtube.com/watch?v=${videoId}" target="_blank" style="color: #16a34a; font-weight: 600; text-decoration: underline;">Watch on YouTube →</a>`
+                : '';
+            statusEl.innerHTML = `<p style="color: #15803d; font-size: 14px; font-weight: 500;">✅ This week's highlight reel is published!${linkHtml}</p>`;
+        } else if (state === 'skipped_insufficient_clips') {
+            statusEl.innerHTML = `<p style="color: #374151; font-size: 14px;">Not enough clips this week for a highlight reel. Keep streaming!</p>`;
+        } else if (state === 'error') {
+            statusEl.innerHTML = `<p style="color: #dc2626; font-size: 14px;">Something went wrong with this week's highlight reel. We'll retry next Saturday.</p>`;
+        } else {
+            statusEl.innerHTML = `<p style="color: #374151; font-size: 14px;">Status: ${state}</p>`;
+        }
+    } catch (err) {
+        console.error('[Weekly Highlight] Load error:', err);
     }
 }
 
