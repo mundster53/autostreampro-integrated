@@ -215,6 +215,8 @@
             const noCard = urlParams.get('no_card');
             const emailParam = urlParams.get('email');
             const planParam = urlParams.get('plan');
+            const gamerTagParam = urlParams.get('gamerTag');
+            const platformParam = urlParams.get('platform');
             
             console.log('🔑 Session ID:', sessionId);
             console.log('🆓 No-card trial:', noCard);
@@ -346,6 +348,29 @@
                 }
 
                 console.log('✅ Profile updated');
+
+                // Pre-seed streaming connection if gamerTag was collected at signup
+                if (gamerTagParam && platformParam && authData.user) {
+                    try {
+                        const { error: connError } = await supabaseClient
+                            .from('streaming_connections')
+                            .upsert({
+                                user_id: authData.user.id,
+                                platform: platformParam,
+                                platform_username: gamerTagParam,
+                                is_active: false,
+                                monitoring_active: false,
+                                created_at: new Date().toISOString()
+                            }, { onConflict: 'user_id,platform' });
+                        if (connError) {
+                            console.warn('streaming_connections upsert error:', connError);
+                        }
+                    } catch (connErr) {
+                        console.warn('streaming_connections upsert failed (non-blocking):', connErr);
+                    }
+                } else {
+                    console.warn('⚠️ gamerTag or platform missing — skipping streaming_connections upsert');
+                }
 
                 // Redirect to onboarding
                 submitBtn.innerHTML = '✓ Success! Redirecting...';

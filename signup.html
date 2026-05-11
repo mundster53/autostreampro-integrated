@@ -502,11 +502,27 @@
                         <input type="email" id="email" name="email" class="form-input" placeholder="your@email.com" required>
                         <div id="email-error" class="message error"></div>
                     </div>
-                    
+
+                    <div class="form-group">
+                        <label for="gamerTag" class="form-label">Streaming Channel Name</label>
+                        <input type="text" id="gamerTag" class="form-input" placeholder="e.g. your Kick or Twitch username" required>
+                        <div id="gamer-tag-error" class="message error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="platform" class="form-label">Streaming Platform</label>
+                        <select id="platform" class="form-input" required>
+                            <option value="">Select your platform</option>
+                            <option value="kick">Kick</option>
+                            <option value="twitch">Twitch</option>
+                        </select>
+                        <div id="platform-error" class="message error"></div>
+                    </div>
+
                     <p style="color: #64748b; font-size: 14px; margin: 16px 0; text-align: center;">
                         🎟️ Have a promo code? You can enter it on the payment page.
                     </p>
-                    
+
                     <button type="submit" class="signup-btn" id="signup-btn">
                         Get Started →
                     </button>
@@ -696,9 +712,11 @@
             console.log('🚀 Form submitted');
             
             const email = document.getElementById('email').value.trim();
+            const gamerTag = document.getElementById('gamerTag').value.trim();
+            const platform = document.getElementById('platform').value;
             const btn = document.getElementById('signup-btn');
-            
-            console.log('📊 Data: email=' + email + ', plan=' + selectedPlan);
+
+            console.log('📊 Data: email=' + email + ', plan=' + selectedPlan + ', gamerTag=' + gamerTag + ', platform=' + platform);
             
             // Clear previous messages
             clearMessages();
@@ -718,7 +736,17 @@
                 showError('form-message', 'Please select a plan');
                 return;
             }
-            
+
+            if (!gamerTag) {
+                showError('gamer-tag-error', 'Please enter your streaming channel name');
+                return;
+            }
+
+            if (!platform) {
+                showError('platform-error', 'Please select your streaming platform');
+                return;
+            }
+
             // Check Supabase
             if (!supabaseClient) {
                 showError('form-message', 'Connection error. Please refresh and try again.');
@@ -841,7 +869,7 @@
                     sessionStorage.setItem('noCardTrial', 'true');
                     sessionStorage.setItem('userEmail', email);
                     sessionStorage.setItem('selectedPlan', selectedPlan);
-                    window.location.href = '/complete-signup.html?no_card=true&email=' + encodeURIComponent(email) + '&plan=' + selectedPlan;
+                    window.location.href = '/complete-signup.html?no_card=true&email=' + encodeURIComponent(email) + '&plan=' + selectedPlan + '&gamerTag=' + encodeURIComponent(gamerTag) + '&platform=' + encodeURIComponent(platform);
                     return;
                 }
                 
