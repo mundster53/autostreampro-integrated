@@ -1013,6 +1013,21 @@
                         </div>
                     </div>
 
+                    <!-- VOD On-Demand Processing — hidden for Lite users -->
+                    <div id="vodPanel" style="display:none; background: #f0fdf4; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #22c55e;">
+                        <h3 style="color: #1f2937; margin-bottom: 5px;">📼 Process a Past Broadcast</h3>
+                        <p style="color: #6b7280; font-size: 13px; margin-bottom: 15px;">Already streamed? Paste your Twitch VOD URL and we'll find the best clips automatically.</p>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;">
+                            <input type="text" id="vodUrlInput" placeholder="https://www.twitch.tv/videos/..."
+                                style="flex: 1; min-width: 240px; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;" />
+                            <button onclick="processVod()" id="vodSubmitBtn"
+                                style="background: #22c55e; color: white; border: none; padding: 0.5rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer; white-space: nowrap;">
+                                Find Clips →
+                            </button>
+                        </div>
+                        <div id="vodStatus" style="font-size: 13px; color: #6b7280;"></div>
+                    </div>
+
                 </div>
 
                 <!-- Clips Captured by Stream Section -->
@@ -1792,6 +1807,7 @@ async function loadDashboard() {
         await loadAutoPublishSettings();
         await loadPublishingSchedule();
         await loadWeeklyHighlight();
+        await loadVodPanel();
 
     } catch (error) {
         console.error('Dashboard loading error:', error);
@@ -2432,6 +2448,113 @@ async function loadWeeklyHighlight() {
         }
     } catch (err) {
         console.error('[Weekly Highlight] Load error:', err);
+    }
+}
+
+async function loadVodPanel() {
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return;
+        const { data: profile } = await supabaseClient
+            .from('user_profiles').select('tier').eq('user_id', user.id).single();
+        if (!profile || profile.tier === 'lite') return;
+        document.getElementById('vodPanel').style.display = 'block';
+    } catch (e) {
+        console.error('[VOD Panel] Load error:', e);
+    }
+}
+
+async function processVod() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return;
+
+    const vodUrl = document.getElementById('vodUrlInput').value.trim();
+    const statusEl = document.getElementById('vodStatus');
+    const btn = document.getElementById('vodSubmitBtn');
+
+    if (!vodUrl) {
+        statusEl.style.color = '#ef4444';
+        statusEl.textContent = 'Please enter a Twitch VOD URL.';
+        return;
+    }
+    if (!vodUrl.includes('twitch.tv/videos/')) {
+        statusEl.style.color = '#ef4444';
+        statusEl.textContent = 'Invalid URL. Expected: https://www.twitch.tv/videos/...';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+    statusEl.style.color = '#6b7280';
+    statusEl.textContent = '⏳ Finding your VOD...';
+
+    try {
+        // Step 1: Fetch VOD metadata
+        const vodFetchRes = await fetch('https://api.autostreampro.com/api/twitch-vod-fetch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id, vodUrl })
+        });
+        const vodData = await vodFetchRes.json();
+        if (!vodFetchRes.ok || !vodData.success) {
+            throw new Error(vodData.message || vodData.error || 'Failed to fetch VOD');
+        }
+
+        const { vod } = vodData;
+        statusEl.textContent = `⏳ Analyzing "${vod.title}" (${vod.duration})...`;
+
+        // Step 2: Start VOD processing
+        const processRes = await fetch('https://api.autostreampro.com/api/process-vod', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id, s3Url: vod.url, vodId: vod.id })
+        });
+        const processData = await processRes.json();
+        if (!processRes.ok || !processData.success) {
+            throw new Error(processData.detail || processData.error || 'Failed to start processing');
+        }
+
+        const jobId = processData.job_id;
+        statusEl.textContent = '⏳ Analyzing stream... This can take a few minutes.';
+
+        // Step 3: Poll for completion every 10 seconds, max 6 minutes
+        let polls = 0;
+        const interval = setInterval(async () => {
+            polls++;
+            try {
+                const statusRes = await fetch(`https://api.autostreampro.com/api/process-vod/status/${jobId}`);
+                const statusData = await statusRes.json();
+                if (statusData.status === 'complete') {
+                    clearInterval(interval);
+                    statusEl.style.color = '#16a34a';
+                    statusEl.textContent = '✅ Done! Your clips are ready — scroll down to see them.';
+                    btn.disabled = false;
+                    btn.textContent = 'Find Clips →';
+                    await loadClips();
+                } else if (statusData.status === 'failed') {
+                    clearInterval(interval);
+                    throw new Error(statusData.error || 'Processing failed');
+                } else if (polls >= 36) {
+                    clearInterval(interval);
+                    statusEl.style.color = '#ef4444';
+                    statusEl.textContent = 'Processing is taking longer than expected. Check back in a few minutes.';
+                    btn.disabled = false;
+                    btn.textContent = 'Find Clips →';
+                }
+            } catch (pollErr) {
+                clearInterval(interval);
+                statusEl.style.color = '#ef4444';
+                statusEl.textContent = `❌ ${pollErr.message || 'Something went wrong. Please try again.'}`;
+                btn.disabled = false;
+                btn.textContent = 'Find Clips →';
+            }
+        }, 10000);
+
+    } catch (err) {
+        statusEl.style.color = '#ef4444';
+        statusEl.textContent = `❌ ${err.message || 'Something went wrong. Please try again.'}`;
+        btn.disabled = false;
+        btn.textContent = 'Find Clips →';
     }
 }
 
