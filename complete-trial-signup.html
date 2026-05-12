@@ -248,6 +248,7 @@
         const customerId = urlParams.get('customer');
         const gamerTag = urlParams.get('gamerTag');
         const platform = urlParams.get('platform');
+        const ref = urlParams.get('ref');
         
         // Validate we have required params
         if (!userEmail || !customerId) {
@@ -317,6 +318,7 @@
                             subscription_plan: 'creator',
                             trial_ends_at: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
                             timezone: userTimezone,
+                            ...(ref ? { referred_by: ref } : {}),
                             updated_at: new Date().toISOString()
                         })
                         .eq('email', email);

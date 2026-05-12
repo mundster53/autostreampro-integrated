@@ -423,6 +423,7 @@ async function loadSpotsRemaining() {
 loadSpotsRemaining();
 
         const urlPlan = new URLSearchParams(window.location.search).get('plan');
+        const urlRef = new URLSearchParams(window.location.search).get('ref');
         if (urlPlan === 'lite') {
             document.querySelector('.price-badge').textContent = '$9.99/month • Cancel anytime';
             document.querySelector('.form-title').textContent = 'Start Your Lite Plan';
@@ -512,11 +513,11 @@ loadSpotsRemaining();
                 if (!result.success) throw new Error(result.error || 'Failed to create account');
                 
                 if (result.redirectUrl) {
-                    window.location.href = result.redirectUrl + '&gamerTag=' + encodeURIComponent(gamerTag) + '&platform=' + encodeURIComponent(platform);
+                    window.location.href = result.redirectUrl + '&gamerTag=' + encodeURIComponent(gamerTag) + '&platform=' + encodeURIComponent(platform) + (urlRef ? '&ref=' + encodeURIComponent(urlRef) : '');
                 } else if (result.checkoutUrl) {
-                    window.location.href = result.checkoutUrl + '&gamerTag=' + encodeURIComponent(gamerTag) + '&platform=' + encodeURIComponent(platform);
+                    window.location.href = result.checkoutUrl + '&gamerTag=' + encodeURIComponent(gamerTag) + '&platform=' + encodeURIComponent(platform) + (urlRef ? '&ref=' + encodeURIComponent(urlRef) : '');
                 } else {
-                    window.location.href = '/onboarding.html?email=' + encodeURIComponent(email) + '&gamerTag=' + encodeURIComponent(gamerTag) + '&platform=' + encodeURIComponent(platform);
+                    window.location.href = '/onboarding.html?email=' + encodeURIComponent(email) + '&gamerTag=' + encodeURIComponent(gamerTag) + '&platform=' + encodeURIComponent(platform) + (urlRef ? '&ref=' + encodeURIComponent(urlRef) : '');
                 }
                 
             } catch (error) {
