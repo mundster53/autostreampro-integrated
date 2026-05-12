@@ -2839,7 +2839,6 @@ async function loadClipsBySession() {
         }
 
         const userTimezone = result.timezone || 'America/Chicago';
-        const userTimezone = result.timezone || 'America/Chicago';
         container.innerHTML = result.data.map(session => {
             const dateLabel = session.session_id === 'unmatched'
                 ? 'Other Clips'
