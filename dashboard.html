@@ -891,6 +891,11 @@
             <button id="btnSubscribeLite" onclick="startSubscription('lite', this)" style="margin-left: 1rem; background: white; color: #ee5a5a; border: none; padding: 0.4rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer;">Lite — $9.99/mo</button>
             <button id="btnSubscribeCreator" onclick="startSubscription('creator', this)" style="margin-left: 0.5rem; background: white; color: #ee5a5a; border: none; padding: 0.4rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer;">Creator — $19.99/mo</button>
         </div>
+        <!-- YouTube Reconnect Banner -->
+        <div id="youtubeBanner" style="display: none; background: linear-gradient(135deg, #f97316, #ea6c00); color: white; padding: 1rem 1.5rem; margin: 0 0 1rem 0; border-radius: 8px; text-align: center;">
+            <strong>⚠️ Your YouTube connection has expired — clips are not publishing.</strong>
+            <a id="youtubeReconnectBtn" href="#" style="margin-left: 1rem; background: white; color: #ea6c00; padding: 0.4rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block;">Reconnect YouTube →</a>
+        </div>
         <div class="dashboard-layout">
             <!-- Main Content Area -->
             <div class="main-content">
@@ -1847,6 +1852,14 @@ async function loadPlatformConnections() {
                     document.getElementById(`${platform}-status`).className = 'connection-status disconnected';
                 }
             });
+
+            // Show banner if YouTube row exists but is_active=false (publisher set this on invalid_grant)
+            const youtubeBroken = data.some(conn => conn.platform === 'youtube' && !conn.is_active && conn.refresh_token);
+            if (youtubeBroken) {
+                document.getElementById('youtubeReconnectBtn').href =
+                    `/api/auth/youtube?userId=${user.id}&return_to=/dashboard.html`;
+                document.getElementById('youtubeBanner').style.display = 'block';
+            }
 
             // Handle streaming platforms (kick, twitch) with monitoring state
             let activeMonitoringPlatform = null;
