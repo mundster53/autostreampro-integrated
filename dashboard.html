@@ -1016,9 +1016,9 @@
                     <!-- VOD On-Demand Processing — hidden for Lite users -->
                     <div id="vodPanel" style="display:none; background: #f0fdf4; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #22c55e;">
                         <h3 style="color: #1f2937; margin-bottom: 5px;">📼 Process a Past Broadcast</h3>
-                        <p style="color: #6b7280; font-size: 13px; margin-bottom: 15px;">Already streamed? Paste your Twitch VOD URL and we'll find the best clips automatically.</p>
+                        <p style="color: #6b7280; font-size: 13px; margin-bottom: 15px;">Already streamed? Paste your Twitch or Kick VOD URL and we'll find the best clips automatically.</p>
                         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;">
-                            <input type="text" id="vodUrlInput" placeholder="https://www.twitch.tv/videos/..."
+                            <input type="text" id="vodUrlInput" placeholder="https://www.twitch.tv/videos/... or https://kick.com/video/..."
                                 style="flex: 1; min-width: 240px; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;" />
                             <button onclick="processVod()" id="vodSubmitBtn"
                                 style="background: #22c55e; color: white; border: none; padding: 0.5rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer; white-space: nowrap;">
@@ -2474,12 +2474,14 @@ async function processVod() {
 
     if (!vodUrl) {
         statusEl.style.color = '#ef4444';
-        statusEl.textContent = 'Please enter a Twitch VOD URL.';
+        statusEl.textContent = 'Please enter a Twitch or Kick VOD URL.';
         return;
     }
-    if (!vodUrl.includes('twitch.tv/videos/')) {
+    const isTwitch = vodUrl.includes('twitch.tv/videos/');
+    const isKick = /kick\.com\/video\//.test(vodUrl);
+    if (!isTwitch && !isKick) {
         statusEl.style.color = '#ef4444';
-        statusEl.textContent = 'Invalid URL. Expected: https://www.twitch.tv/videos/...';
+        statusEl.textContent = 'Invalid URL. Expected: https://www.twitch.tv/videos/... or https://kick.com/video/...';
         return;
     }
 
@@ -2489,19 +2491,28 @@ async function processVod() {
     statusEl.textContent = '⏳ Finding your VOD...';
 
     try {
-        // Step 1: Fetch VOD metadata
-        const vodFetchRes = await fetch('https://api.autostreampro.com/api/twitch-vod-fetch', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: user.id, vodUrl })
-        });
-        const vodData = await vodFetchRes.json();
+        // Step 1: Fetch VOD metadata (platform-specific route)
+        let vodFetchRes, vodData;
+        if (isTwitch) {
+            vodFetchRes = await fetch('https://api.autostreampro.com/api/twitch-vod-fetch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user.id, vodUrl })
+            });
+        } else {
+            vodFetchRes = await fetch('https://api.autostreampro.com/api/kick-vod-fetch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user.id, kickVodUrl: vodUrl })
+            });
+        }
+        vodData = await vodFetchRes.json();
         if (!vodFetchRes.ok || !vodData.success) {
             throw new Error(vodData.message || vodData.error || 'Failed to fetch VOD');
         }
 
         const { vod } = vodData;
-        statusEl.textContent = `⏳ Analyzing "${vod.title}" (${vod.duration})...`;
+        statusEl.textContent = `⏳ Analyzing "${vod.title}"${vod.duration ? ' (' + vod.duration + ')' : ''}...`;
 
         // Step 2: Start VOD processing
         const processRes = await fetch('https://api.autostreampro.com/api/process-vod', {
