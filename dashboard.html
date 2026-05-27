@@ -948,7 +948,7 @@
                         <!-- Auto-Publish Toggle -->
                         <div style="padding-top: 15px; border-top: 1px solid #e5e7eb;">
                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                <input type="checkbox" id="globalAutoPublish" onchange="toggleGlobalAutoPublish()" 
+                                <input type="checkbox" id="globalAutoPublish" onchange="toggleGlobalAutoPublish()"
                                        style="width: 20px; height: 20px; cursor: pointer;">
                                 <span style="font-size: 16px; font-weight: 500;">
                                     🚀 Auto-publish clips scoring above 50%
@@ -958,7 +958,21 @@
                                 Requires AI optimization to be enabled above
                             </p>
                         </div>
-                        
+
+                        <!-- Horror Mode Toggle -->
+                        <div style="padding-top: 15px; border-top: 1px solid #e5e7eb;">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" id="horrorModeToggle" onchange="toggleHorrorMode()"
+                                       style="width: 20px; height: 20px; cursor: pointer;">
+                                <span style="font-size: 16px; font-weight: 500;">
+                                    🎃 Horror Mode — optimized clip detection for horror games
+                                </span>
+                            </label>
+                            <p style="color: #64748b; margin: 8px 0 0 30px; font-size: 13px;">
+                                Prioritizes jump scares, panic moments, and chaos transitions
+                            </p>
+                        </div>
+
                         <div style="background: #fff; padding: 10px; border-radius: 8px; margin-top: 15px;">
                             <p style="color: #64748b; margin: 0; font-size: 14px;">
                                 ⚡ YouTube Shorts (≤60s): Limited by membership tier (5 - 20 per day)<br>
@@ -2324,6 +2338,9 @@ async function loadAutoPublishSettings() {
             
             // Auto-publish
             document.getElementById('globalAutoPublish').checked = prefs.auto_publish_enabled || false;
+
+            // Horror mode
+            document.getElementById('horrorModeToggle').checked = data.horror_mode || false;
         }
     } catch (error) {
         console.error('Load settings error:', error);
@@ -2975,6 +2992,31 @@ async function retryClip(clipId, btn) {
         showToast('Retry failed: ' + error.message, 'error');
         btn.disabled = false;
         btn.innerHTML = original;
+    }
+}
+
+async function toggleHorrorMode() {
+    const checkbox = document.getElementById('horrorModeToggle');
+    const enabled = checkbox.checked;
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return;
+        const response = await fetch('https://api.autostreampro.com/api/user/horror-mode', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id, enabled })
+        });
+        const result = await response.json();
+        if (result.success) {
+            showToast(enabled ? '🎃 Horror Mode enabled' : 'Horror Mode disabled', 'success');
+        } else {
+            checkbox.checked = !enabled;
+            showToast('Failed to update Horror Mode', 'error');
+        }
+    } catch (err) {
+        console.error('[toggleHorrorMode] Error:', err);
+        checkbox.checked = !enabled;
+        showToast('Failed to update Horror Mode', 'error');
     }
 }
 </script>
