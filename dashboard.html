@@ -2339,8 +2339,13 @@ async function loadAutoPublishSettings() {
             // Auto-publish
             document.getElementById('globalAutoPublish').checked = prefs.auto_publish_enabled || false;
 
-            // Horror mode
-            document.getElementById('horrorModeToggle').checked = data.horror_mode || false;
+            // Horror mode — fetched from user_profiles
+            const { data: profileData } = await supabaseClient
+                .from('user_profiles')
+                .select('horror_mode')
+                .eq('user_id', user.id)
+                .single();
+            document.getElementById('horrorModeToggle').checked = profileData?.horror_mode || false;
         }
     } catch (error) {
         console.error('Load settings error:', error);
