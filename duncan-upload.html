@@ -246,16 +246,24 @@ async function uploadToYouTube(clipId, title, description, tags, videoUrl) {
     a.download = `${t.slice(0, 50)}.mp4`;
     a.click();
 
-    // Open YouTube Studio upload page
-    setTimeout(() => {
-        window.open('https://studio.youtube.com/channel/upload', '_blank');
-    }, 1000);
-
-    // Show confirmation
+    // Show YouTube Studio link instead of popup (popup blocked by Chrome)
     const btn = document.querySelector(`#card-${clipId} .btn-upload`);
     if (btn) {
         btn.textContent = '✓ Downloading...';
         btn.style.background = '#22c55e';
+    }
+    const actions = document.querySelector(`#card-${clipId} .clip-actions`);
+    if (actions) {
+        const link = document.createElement('a');
+        link.href = 'https://studio.youtube.com/channel/upload';
+        link.target = '_blank';
+        link.className = 'btn btn-upload';
+        link.style.background = '#ff0000';
+        link.style.marginTop = '8px';
+        link.style.textDecoration = 'none';
+        link.style.display = 'block';
+        link.textContent = '▶ Open YouTube Studio';
+        actions.appendChild(link);
     }
 }
 
