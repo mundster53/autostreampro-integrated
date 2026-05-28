@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duncan's Upload Queue — AutoStreamPro</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f0f;
+            color: #fff;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .instructions {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+        .instructions strong { color: #fff; }
+        .clip-grid {
+            display: grid;
+            gap: 20px;
+        }
+        .clip-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 200px 1fr auto;
+            gap: 20px;
+            align-items: start;
+        }
+        .clip-video {
+            width: 200px;
+            height: 112px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #000;
+        }
+        .clip-meta { flex: 1; }
+        .clip-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        .clip-description {
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        .clip-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .tag {
+            background: #2a2a3e;
+            color: #9b8fff;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .clip-score {
+            font-size: 12px;
+            color: #888;
+        }
+        .score-high { color: #22c55e; }
+        .score-mid { color: #f59e0b; }
+        .clip-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 160px;
+        }
+        .btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-upload {
+            background: #ff0000;
+            color: #fff;
+        }
+        .btn-copy {
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
+        }
+        .btn-download {
+            background: #1a1a3e;
+            color: #9b8fff;
+            border: 1px solid #9b8fff;
+            text-decoration: none;
+            display: block;
+        }
+        .copied {
+            background: #22c55e !important;
+            color: #fff !important;
+        }
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #888;
+            font-size: 16px;
+        }
+        .empty {
+            text-align: center;
+            padding: 60px;
+            color: #888;
+        }
+        .step-badge {
+            background: #ff0000;
+            color: #fff;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🎮 Duncan's Upload Queue</h1>
+<p class="subtitle">Your clips are ready. Upload them to YouTube in 3 steps.</p>
+
+<div class="instructions">
+    <p style="margin-bottom:12px">
+        <span class="step-badge">1</span>
+        <strong>Make sure you're logged into YouTube</strong> in this browser before clicking Upload.
+    </p>
+    <p style="margin-bottom:12px">
+        <span class="step-badge">2</span>
+        <strong>Click "Upload to YouTube"</strong> — it will open YouTube Studio and download your clip automatically.
+    </p>
+    <p>
+        <span class="step-badge">3</span>
+        <strong>Paste the title, description, and tags</strong> (already copied to your clipboard) into YouTube Studio, then publish.
+    </p>
+</div>
+
+<div id="clipGrid" class="clip-grid">
+    <div class="loading">Loading your clips...</div>
+</div>
+
+<script>
+const API_BASE = 'https://api.autostreampro.com';
+
+async function loadClips() {
+    try {
+        const res = await fetch(`${API_BASE}/api/duncan-clips`);
+        const data = await res.json();
+
+        const grid = document.getElementById('clipGrid');
+
+        if (!data.success || !data.clips || data.clips.length === 0) {
+            grid.innerHTML = '<div class="empty">No clips ready to upload right now. Check back after your next stream!</div>';
+            return;
+        }
+
+        grid.innerHTML = data.clips.map(clip => {
+            const tags = Array.isArray(clip.viral_tags) ? clip.viral_tags : [];
+            const tagsClean = tags.map(t => t.replace(/^#/, '')).join(', ');
+            const tagsDisplay = tags.map(t => `<span class="tag">${t}</span>`).join('');
+            const score = Math.round((clip.ai_score || 0) * 100);
+            const scoreClass = score >= 70 ? 'score-high' : 'score-mid';
+            const description = clip.viral_description || '';
+            const title = clip.viral_title || 'Gaming Highlight';
+
+            return `
+            <div class="clip-card" id="card-${clip.id}">
+                <video class="clip-video" src="${clip.video_url}" controls muted preload="metadata"></video>
+                <div class="clip-meta">
+                    <div class="clip-title">${title}</div>
+                    <div class="clip-description">${description}</div>
+                    <div class="clip-tags">${tagsDisplay}</div>
+                    <div class="clip-score">AI Score: <span class="${scoreClass}">${score}%</span></div>
+                </div>
+                <div class="clip-actions">
+                    <button class="btn btn-upload" onclick="uploadToYouTube('${clip.id}', '${encodeURIComponent(title)}', '${encodeURIComponent(description)}', '${encodeURIComponent(tagsClean)}', '${clip.video_url}')">
+                        ▶ Upload to YouTube
+                    </button>
+                    <button class="btn btn-copy" onclick="copyMeta('${clip.id}', '${encodeURIComponent(title)}', '${encodeURIComponent(description)}', '${encodeURIComponent(tagsClean)}')">
+                        📋 Copy Metadata
+                    </button>
+                    <a class="btn btn-download" href="${clip.video_url}" download target="_blank">
+                        ⬇ Download Clip
+                    </a>
+                </div>
+            </div>`;
+        }).join('');
+
+    } catch (err) {
+        document.getElementById('clipGrid').innerHTML =
+            '<div class="empty">Error loading clips. Try refreshing the page.</div>';
+        console.error('Error loading clips:', err);
+    }
+}
+
+async function uploadToYouTube(clipId, title, description, tags, videoUrl) {
+    const t = decodeURIComponent(title);
+    const d = decodeURIComponent(description);
+    const tg = decodeURIComponent(tags);
+
+    // Copy metadata to clipboard
+    const meta = `TITLE:\n${t}\n\nDESCRIPTION:\n${d}\n\nTAGS:\n${tg}`;
+    try {
+        await navigator.clipboard.writeText(meta);
+    } catch(e) {}
+
+    // Download the clip
+    const a = document.createElement('a');
+    a.href = videoUrl;
+    a.download = `${t.slice(0, 50)}.mp4`;
+    a.click();
+
+    // Open YouTube Studio upload page
+    setTimeout(() => {
+        window.open('https://studio.youtube.com/channel/upload', '_blank');
+    }, 1000);
+
+    // Show confirmation
+    const btn = document.querySelector(`#card-${clipId} .btn-upload`);
+    if (btn) {
+        btn.textContent = '✓ Downloading...';
+        btn.style.background = '#22c55e';
+    }
+}
+
+async function copyMeta(clipId, title, description, tags) {
+    const t = decodeURIComponent(title);
+    const d = decodeURIComponent(description);
+    const tg = decodeURIComponent(tags);
+
+    const meta = `TITLE:\n${t}\n\nDESCRIPTION:\n${d}\n\nTAGS:\n${tg}`;
+    try {
+        await navigator.clipboard.writeText(meta);
+        const btn = document.querySelector(`#card-${clipId} .btn-copy`);
+        if (btn) {
+            const orig = btn.textContent;
+            btn.textContent = '✓ Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = orig;
+                btn.classList.remove('copied');
+            }, 2000);
+        }
+    } catch(e) {
+        alert('Could not copy to clipboard. Please copy manually.');
+    }
+}
+
+loadClips();
+</script>
+</body>
+</html>
