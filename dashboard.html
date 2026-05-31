@@ -2504,7 +2504,7 @@ async function processVod() {
         return;
     }
     const isTwitch = vodUrl.includes('twitch.tv/videos/');
-    const isKick = /kick\.com\/video\//.test(vodUrl);
+    const isKick = /kick\.com\/(video\/|[^/]+\/videos\/)/.test(vodUrl);
     if (!isTwitch && !isKick) {
         statusEl.style.color = '#ef4444';
         statusEl.textContent = 'Invalid URL. Expected: https://www.twitch.tv/videos/... or https://kick.com/video/...';
