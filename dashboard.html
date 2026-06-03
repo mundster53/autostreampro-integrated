@@ -1034,16 +1034,42 @@
                     <!-- VOD On-Demand Processing — hidden for Lite users -->
                     <div id="vodPanel" style="display:none; background: #f0fdf4; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #22c55e;">
                         <h3 style="color: #1f2937; margin-bottom: 5px;">📼 Process a Past Broadcast</h3>
-                        <p style="color: #6b7280; font-size: 13px; margin-bottom: 15px;">Already streamed? Paste your Twitch or Kick VOD URL and we'll find the best clips automatically.</p>
-                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;">
-                            <input type="text" id="vodUrlInput" placeholder="https://www.twitch.tv/videos/... or https://kick.com/video/..."
-                                style="flex: 1; min-width: 240px; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;" />
-                            <button onclick="processVod()" id="vodSubmitBtn"
-                                style="background: #22c55e; color: white; border: none; padding: 0.5rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer; white-space: nowrap;">
-                                Find Clips →
-                            </button>
+                        <p style="color: #6b7280; font-size: 13px; margin-bottom: 15px;">Already streamed? Paste your Twitch VOD URL — or upload a Kick VOD file directly.</p>
+
+                        <!-- Twitch URL input -->
+                        <div style="margin-bottom: 12px;">
+                            <p style="font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">🟣 Twitch VOD URL</p>
+                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                <input type="text" id="vodUrlInput" placeholder="https://www.twitch.tv/videos/..."
+                                    style="flex: 1; min-width: 240px; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;" />
+                                <button onclick="processVod()" id="vodSubmitBtn"
+                                    style="background: #22c55e; color: white; border: none; padding: 0.5rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer; white-space: nowrap;">
+                                    Find Clips →
+                                </button>
+                            </div>
                         </div>
-                        <div id="vodStatus" style="font-size: 13px; color: #6b7280;"></div>
+
+                        <!-- Kick file upload -->
+                        <div style="border-top: 1px solid #d1fae5; padding-top: 12px;">
+                            <p style="font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 4px;">🟢 Kick VOD File Upload</p>
+                            <p style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">Download your Kick VOD first, then upload it here. Max 2GB.</p>
+                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                <input type="file" id="kickVodFile" accept="video/*"
+                                    style="flex: 1; min-width: 240px; padding: 0.4rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; background: white;" />
+                                <button onclick="uploadKickVod()" id="kickVodUploadBtn"
+                                    style="background: #22c55e; color: white; border: none; padding: 0.5rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer; white-space: nowrap;">
+                                    Upload & Find Clips →
+                                </button>
+                            </div>
+                            <div id="kickUploadProgress" style="margin-top: 8px; display: none;">
+                                <div style="background: #d1fae5; border-radius: 4px; height: 6px; overflow: hidden;">
+                                    <div id="kickProgressBar" style="background: #22c55e; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                                </div>
+                                <p id="kickUploadStatus" style="font-size: 12px; color: #6b7280; margin-top: 4px;"></p>
+                            </div>
+                        </div>
+
+                        <div id="vodStatus" style="font-size: 13px; color: #6b7280; margin-top: 10px;"></div>
                     </div>
 
                 </div>
@@ -2487,6 +2513,126 @@ async function loadVodPanel() {
         document.getElementById('vodPanel').style.display = 'block';
     } catch (e) {
         console.error('[VOD Panel] Load error:', e);
+    }
+}
+
+async function uploadKickVod() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return;
+
+    const fileInput = document.getElementById('kickVodFile');
+    const file = fileInput.files[0];
+    const statusEl = document.getElementById('vodStatus');
+    const btn = document.getElementById('kickVodUploadBtn');
+    const progressDiv = document.getElementById('kickUploadProgress');
+    const progressBar = document.getElementById('kickProgressBar');
+    const uploadStatus = document.getElementById('kickUploadStatus');
+
+    if (!file) {
+        statusEl.style.color = '#ef4444';
+        statusEl.textContent = 'Please select a video file first.';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Uploading...';
+    progressDiv.style.display = 'block';
+    uploadStatus.textContent = 'Getting upload URL...';
+
+    try {
+        // Step 1: Get presigned S3 URL
+        const presignRes = await fetch('https://api.autostreampro.com/api/vod-presign', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: user.id,
+                fileName: file.name,
+                fileSize: file.size,
+                contentType: file.type || 'video/mp4'
+            })
+        });
+        const presignData = await presignRes.json();
+        if (!presignRes.ok || !presignData.success) {
+            throw new Error(presignData.error || 'Failed to get upload URL');
+        }
+
+        const { presignedUrl: uploadUrl, s3Url, vodId } = presignData;
+
+        // Step 2: Upload file directly to S3 with progress
+        uploadStatus.textContent = 'Uploading video to server...';
+        await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('PUT', uploadUrl);
+            xhr.setRequestHeader('Content-Type', file.type || 'video/mp4');
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const pct = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = pct + '%';
+                    uploadStatus.textContent = `Uploading... ${pct}%`;
+                }
+            };
+            xhr.onload = () => xhr.status < 300 ? resolve() : reject(new Error('Upload failed'));
+            xhr.onerror = () => reject(new Error('Upload failed'));
+            xhr.send(file);
+        });
+
+        progressBar.style.width = '100%';
+        uploadStatus.textContent = 'Upload complete! Finding clips...';
+
+        // Step 3: Start VOD processing
+        const processRes = await fetch('https://api.autostreampro.com/api/process-vod', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id, s3Url, vodId })
+        });
+        const processData = await processRes.json();
+        if (!processRes.ok || !processData.success) {
+            throw new Error(processData.detail || processData.error || 'Failed to start processing');
+        }
+
+        const jobId = processData.job_id;
+        statusEl.style.color = '#6b7280';
+        statusEl.textContent = '⏳ Analyzing your VOD... This can take several minutes.';
+
+        // Step 4: Poll for completion
+        let polls = 0;
+        const interval = setInterval(async () => {
+            polls++;
+            try {
+                const statusRes = await fetch(`https://api.autostreampro.com/api/process-vod/status/${jobId}`);
+                const statusData = await statusRes.json();
+                if (statusData.status === 'complete') {
+                    clearInterval(interval);
+                    statusEl.style.color = '#16a34a';
+                    statusEl.textContent = '✅ Done! Your clips are ready — scroll down to see them.';
+                    btn.disabled = false;
+                    btn.textContent = 'Upload & Find Clips →';
+                    await loadClips();
+                } else if (statusData.status === 'failed') {
+                    clearInterval(interval);
+                    throw new Error(statusData.error || 'Processing failed');
+                } else if (polls >= 36) {
+                    clearInterval(interval);
+                    statusEl.style.color = '#6b7280';
+                    statusEl.textContent = 'Still processing — check back in a few minutes.';
+                    btn.disabled = false;
+                    btn.textContent = 'Upload & Find Clips →';
+                }
+            } catch (pollErr) {
+                clearInterval(interval);
+                statusEl.style.color = '#ef4444';
+                statusEl.textContent = `❌ ${pollErr.message || 'Something went wrong.'}`;
+                btn.disabled = false;
+                btn.textContent = 'Upload & Find Clips →';
+            }
+        }, 10000);
+
+    } catch (err) {
+        statusEl.style.color = '#ef4444';
+        statusEl.textContent = `❌ ${err.message || 'Something went wrong. Please try again.'}`;
+        btn.disabled = false;
+        btn.textContent = 'Upload & Find Clips →';
+        progressDiv.style.display = 'none';
     }
 }
 
